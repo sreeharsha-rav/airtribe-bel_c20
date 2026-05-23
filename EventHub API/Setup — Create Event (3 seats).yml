@@ -1,0 +1,50 @@
+info:
+  name: Setup — Create Event (3 seats)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/events/"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "PyCon India 2025",
+        "venue": "NIMHANS Convention Centre, Bangalore",
+        "date": "2025-09-20",
+        "total_seats": 3,
+        "available_seats": 3,
+        "status": "upcoming"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: "test('Event created (201)', function () {\r
+
+        \    expect(res.getStatus()).to.equal(201);\r
+
+        });\r
+
+        const body = res.getBody();\r
+
+        pm.collectionVariables.set('eventId', body.id);\r
+
+        test('Available seats == 3', function () {\r
+
+        \    expect(body.available_seats).to.eql(3);\r
+
+        });"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Creates a small event (3 seats) so the next two reservation requests can demonstrate both a successful booking and an overbooking rejection.

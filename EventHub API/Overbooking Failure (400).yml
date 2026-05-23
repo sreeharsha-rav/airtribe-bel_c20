@@ -1,0 +1,46 @@
+info:
+  name: Overbooking Failure (400)
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/reservations/"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "event": {{eventId}},
+        "attendee_name": "Overbooker",
+        "attendee_email": "over@example.com",
+        "seats_reserved": 5
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: "test('Rejected with 400', function () {\r
+
+        \    expect(res.getStatus()).to.equal(400);\r
+
+        });\r
+
+        const body = res.getBody();\r
+
+        test('Error mentions seat availability', function () {\r
+
+        \    expect(JSON.stringify(body)).to.match(/seat\\(s\\) available/);\r
+
+        });"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: "Attempts to reserve 5 seats when only 1 remains. Expected: 400 with `non_field_errors: ['Only 1 seat(s) available.']`."

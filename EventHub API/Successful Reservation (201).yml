@@ -1,0 +1,45 @@
+info:
+  name: Successful Reservation (201)
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/reservations/"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "event": {{eventId}},
+        "attendee_name": "Harsha Rav",
+        "attendee_email": "harsha@example.com",
+        "seats_reserved": 2
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        test('Reservation created (201)', function () {
+            expect(res.getStatus()).to.equal(201);
+        });
+        const body = res.getBody();
+
+        test('Status is confirmed', function () {
+            expect(body.status).to.eql('confirmed');
+        });
+        test('Seats reserved == 2', function () {
+            expect(body.seats_reserved).to.eql(2);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: "Reserves 2 of 3 seats. Expected: 201 with status='confirmed'. Server deducts seats from the event inside the serializer's create() (event.available_seats: 3 → 1)."

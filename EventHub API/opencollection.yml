@@ -1,0 +1,34 @@
+opencollection: 1.0.0
+
+info:
+  name: EventHub API
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: baseUrl
+      value: http://127.0.0.1:8000
+    - name: eventId
+      value: "1"
+    - name: reservationId
+      value: "1"
+
+docs:
+  content: "Focused flow for the EventHub reservation lifecycle: a successful reservation (201), an overbooking rejection (400), and a successful cancellation (200). Runs top-to-bottom via the Postman Collection Runner — earlier requests populate the `eventId` and `reservationId` collection variables consumed by later ones."
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
