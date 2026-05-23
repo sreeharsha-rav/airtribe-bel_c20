@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "EventHub API",
+    "description": "Focused flow for the EventHub reservation lifecycle: a successful reservation (201), an overbooking rejection (400), and a successful cancellation (200). Runs top-to-bottom via the Postman Collection Runner — earlier requests populate the `eventId` and `reservationId` collection variables consumed by later ones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "eventId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reservationId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup — Create Event (3 seats)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/events/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "events", ""]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"PyCon India 2025\",\n  \"venue\": \"NIMHANS Convention Centre, Bangalore\",\n  \"date\": \"2025-09-20\",\n  \"total_seats\": 3,\n  \"available_seats\": 3,\n  \"status\": \"upcoming\"\n}"
+        },
+        "description": "Creates a small event (3 seats) so the next two reservation requests can demonstrate both a successful booking and an overbooking rejection."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Event created (201)', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('eventId', body.id);",
+              "pm.test('Available seats == 3', function () {",
+              "    pm.expect(body.available_seats).to.eql(3);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Successful Reservation (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/reservations/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "reservations", ""]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": {{eventId}},\n  \"attendee_name\": \"Priya Sharma\",\n  \"attendee_email\": \"priya@example.com\",\n  \"seats_reserved\": 2\n}"
+        },
+        "description": "Reserves 2 of 3 seats. Expected: 201 with status='confirmed'. Server deducts seats from the event inside the serializer's create() (event.available_seats: 3 → 1)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Reservation created (201)', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('reservationId', body.id);",
+              "pm.test('Status is confirmed', function () {",
+              "    pm.expect(body.status).to.eql('confirmed');",
+              "});",
+              "pm.test('Seats reserved == 2', function () {",
+              "    pm.expect(body.seats_reserved).to.eql(2);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Overbooking Failure (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/reservations/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "reservations", ""]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": {{eventId}},\n  \"attendee_name\": \"Overbooker\",\n  \"attendee_email\": \"over@example.com\",\n  \"seats_reserved\": 5\n}"
+        },
+        "description": "Attempts to reserve 5 seats when only 1 remains. Expected: 400 with `non_field_errors: ['Only 1 seat(s) available.']`."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Rejected with 400', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.test('Error mentions seat availability', function () {",
+              "    pm.expect(JSON.stringify(body)).to.match(/seat\\(s\\) available/);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Successful Cancellation (200)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/reservations/{{reservationId}}/cancel/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "reservations", "{{reservationId}}", "cancel", ""]
+        },
+        "description": "Cancels the reservation created earlier. Expected: 200 with status='cancelled'. The event's available_seats is restored (1 → 3)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Cancelled (200)', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "const body = pm.response.json();",
+              "pm.test('Status is cancelled', function () {",
+              "    pm.expect(body.status).to.eql('cancelled');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
