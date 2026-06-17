@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}All Todos{% endblock %}
+
+{% block content %}
+<h1>Todos</h1>
+
+{% if todos %}
+    <ul>
+        {% for todo in todos %}
+        <li>
+            <a href="{% url 'todo-detail' todo.id %}">{{ todo.title }}</a>
+            {% if todo.completed %} <em>(done)</em> {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No todos yet.</p>
+{% endif %}
+{% endblock %}
