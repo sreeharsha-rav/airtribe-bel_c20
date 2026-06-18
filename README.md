@@ -52,10 +52,22 @@ pip install -r requirements.txt
 uv sync
 ```
 
-5. Go to specified project directory and run the server:
+5. Create Django project and app (if not already created):
 ```bash
+django-admin startproject devtrack
 cd devtrack
+
+python manage.py startapp issues
+```
+
+6. Apply migrations:
+```bash
+python manage.py migrate
+```
+
+7. Go to specified project directory and run the server:
+```bash
 python manage.py runserver
 ```
 
-6. Check the server at `http://localhost:8000/`
+8. Check the server at `http://localhost:8000/`
