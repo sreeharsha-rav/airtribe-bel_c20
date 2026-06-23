@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from jobs.models import Application, Company, Job
@@ -126,6 +127,12 @@ class Command(BaseCommand):
             Job.objects.all().delete()
             Company.objects.all().delete()
             self.stdout.write(self.style.WARNING("Cleared existing data."))
+
+        if not User.objects.filter(username="admin").exists():
+            User.objects.create_superuser(username="admin", email="admin@example.com", password="admin123")
+            self.stdout.write(self.style.SUCCESS("Created superuser: admin / admin123"))
+        else:
+            self.stdout.write("Superuser 'admin' already exists, skipping.")
 
         company_map = {}
         for data in COMPANIES:
