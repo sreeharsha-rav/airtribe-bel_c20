@@ -47,7 +47,7 @@ A backend service for browsing and applying for jobs. Demonstrates Django models
 | job             | ForeignKey    | References `Job`; cascade deletes applications                                |
 | applicant_name  | CharField     | Full name of the applicant                                                    |
 | applicant_email | EmailField    | Email address of the applicant (validated by regex)                           |
-| status          | CharField     | State machine: `pending` → `reviewed` → `accepted` / `rejected` (see below)  |
+| status          | CharField     | Read-only on create (always `pending`); writable on PATCH/PUT following state machine rules (see below) |
 | applied_at      | DateTimeField | Set automatically on creation (read-only)                                     |
 
 #### Application Status State Machine
@@ -64,7 +64,7 @@ pending ──► reviewed ──► accepted
 | `accepted` | — (terminal)             |
 | `rejected` | — (terminal)             |
 
-Status always starts as `pending` on creation. Clients update it via PATCH.
+Status always starts as `pending` on creation — the field is read-only on POST and any value sent is silently ignored. Clients advance it via PATCH (or PUT with a full body). Sending the current status again (same → same) is a no-op and always succeeds.
 
 ## Setup
 
@@ -148,7 +148,7 @@ python -m coverage html -d htmlcov    # HTML report → open htmlcov/index.html
 
 ## Test Coverage
 
-61 automated tests across 3 modules, using Django's `APITestCase` and an in-memory SQLite database. All tests run isolated — no shared state between tests.
+67 automated tests across 3 modules, using Django's `APITestCase` and an in-memory SQLite database. All tests run isolated — no shared state between tests.
 
 ### Test files
 
@@ -157,7 +157,8 @@ jobs/tests/
 ├── factories.py            # make_company / make_job / make_application helpers
 ├── test_companies.py       # 15 tests — CRUD, cascade delete, PUT validation
 ├── test_jobs.py            # 17 tests — CRUD, salary cross-field, job_type choices, PATCH partial
-└── test_applications.py    # 29 tests — CRUD, duplicate detection, email validation, state machine
+└── test_applications.py    # 35 tests — CRUD, status read-only on create, duplicate detection,
+                            #             email validation, PUT self-duplicate fix, state machine
 ```
 
 ### Coverage report
@@ -166,26 +167,26 @@ jobs/tests/
 Name                                    Stmts   Miss  Cover
 -----------------------------------------------------------
 jobs/models.py                             38      3    92%
-jobs/serializers.py                        59      2    97%
+jobs/serializers.py                        66      2    97%
 jobs/views.py                              21      0   100%
 jobs/urls.py                                8      0   100%
 jobs/tests/test_companies.py               76      0   100%
 jobs/tests/test_jobs.py                   102      0   100%
-jobs/tests/test_applications.py           182      0   100%
+jobs/tests/test_applications.py           218      0   100%
 -----------------------------------------------------------
-TOTAL (app code only)                     573     45    92%
+TOTAL (app code only)                     616     45    93%
 ```
 
 > `seed.py` is excluded from meaningful coverage — it is a dev-only management command, not application logic.  
-> The 5 uncovered lines are `__str__` methods on models (lines 13, 32, 56) and a `created_at is None` guard in `get_days_since_posted` (line 28 of serializers) that can't be triggered via the API since the field uses `auto_now_add`.
+> The 5 uncovered lines are `__str__` methods on models (lines 13, 32, 56) and a `created_at is None` guard in `get_days_since_posted` (serializers line 28) that cannot be reached via the API since `auto_now_add` always sets the field.
 
 ### Test summary by area
 
 | Area | Tests | What is covered |
 |------|------:|-----------------|
-| Companies | 15 | List, create, retrieve, PUT, PATCH, DELETE; PUT requires all fields; cascade delete; invalid website URL; 404 |
+| Companies | 15 | List, create, retrieve, PUT, PATCH, DELETE; PUT requires all fields; cascade delete removes jobs and applications; invalid website URL; 404 |
 | Jobs | 17 | List (nested company, `days_since_posted`), create, retrieve, PUT, PATCH, DELETE; `salary_min > salary_max`; salary bounds; invalid `job_type`; non-existent `company_id`; PATCH cross-field validation; 404 |
-| Applications | 29 | List (nested `job → company`, `applied_at`); create via `/applications/` and `/jobs/{id}/apply/`; `status` forced to `pending` on create; `applied_at` is read-only; duplicate detection on both endpoints; same email allowed on different jobs; invalid email; non-existent `job_id`; all 3 valid state transitions; 6 invalid transitions (backward + terminal); PATCH without `status` unchanged; error message content; DELETE + 404 |
+| Applications | 35 | List (nested `job → company`, `applied_at`, `status` present); create via `/applications/` and `/jobs/{id}/apply/`; `status` is read-only on create via both endpoints (any sent value ignored, always `pending`); `applied_at` is read-only; duplicate detection on both create endpoints; PUT self-duplicate false-positive fix; PUT with genuine duplicate still blocked; same email allowed on different jobs; invalid email; non-existent `job_id`; same-status PUT and PATCH allowed (no-op); all 3 valid state transitions; 6 invalid transitions (skip, backward, terminal); PATCH without `status` unchanged; error message names both states; DELETE + 404 |
 
 ---
 

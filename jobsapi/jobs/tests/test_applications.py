@@ -33,6 +33,12 @@ class ApplicationListTests(APITestCase):
         self.assertIn("applied_at", response.data[0])
         self.assertIsNotNone(response.data[0]["applied_at"])
 
+    def test_list_includes_status(self):
+        make_application(job=self.job)
+        response = self.client.get(self.url)
+        self.assertIn("status", response.data[0])
+        self.assertEqual(response.data[0]["status"], "pending")
+
 
 class ApplicationCreateTests(APITestCase):
     def setUp(self):
@@ -54,7 +60,8 @@ class ApplicationCreateTests(APITestCase):
         self.assertEqual(response.data["status"], "pending")
         self.assertEqual(response.data["job"]["id"], self.job.pk)
 
-    def test_status_is_always_pending_even_if_client_sends_accepted(self):
+    def test_status_is_read_only_on_create_and_defaults_to_pending(self):
+        # status is read-only on create; any value sent is silently ignored by DRF
         payload = {
             "job_id": self.job.pk,
             "applicant_name": "Charlie",
@@ -62,6 +69,16 @@ class ApplicationCreateTests(APITestCase):
             "status": "accepted",
         }
         response = self.client.post(self.list_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["status"], "pending")
+
+    def test_status_is_read_only_on_create_via_apply_action(self):
+        payload = {
+            "applicant_name": "Charlie",
+            "applicant_email": "charlie@example.com",
+            "status": "accepted",
+        }
+        response = self.client.post(self.apply_url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["status"], "pending")
 
@@ -136,6 +153,32 @@ class ApplicationValidationTests(APITestCase):
         response = self.client.post(self.url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_put_update_does_not_false_positive_duplicate(self):
+        app = make_application(job=self.job, applicant_email="put@example.com")
+        url = reverse("application-detail", args=[app.pk])
+        payload = {
+            "job_id": self.job.pk,
+            "applicant_name": "Put User",
+            "applicant_email": "put@example.com",
+            "status": "pending",
+        }
+        response = self.client.put(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_put_still_blocks_genuinely_duplicate_email(self):
+        make_application(job=self.job, applicant_email="existing@example.com")
+        app2 = make_application(job=self.job, applicant_email="other@example.com")
+        url = reverse("application-detail", args=[app2.pk])
+        payload = {
+            "job_id": self.job.pk,
+            "applicant_name": "Other",
+            "applicant_email": "existing@example.com",
+            "status": "pending",
+        }
+        response = self.client.put(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("applicant_email", response.data)
+
 
 class ApplicationDetailTests(APITestCase):
     def setUp(self):
@@ -167,6 +210,27 @@ class ApplicationStateMachineTests(APITestCase):
 
     def _url(self, app):
         return reverse("application-detail", args=[app.pk])
+
+    # --- same-status no-op (should always pass) ---
+
+    def test_put_with_same_status_is_allowed(self):
+        app = self._make_app(Application.Status.PENDING, email="noop@example.com")
+        url = self._url(app)
+        payload = {
+            "job_id": self.job.pk,
+            "applicant_name": app.applicant_name,
+            "applicant_email": app.applicant_email,
+            "status": "pending",
+        }
+        response = self.client.put(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "pending")
+
+    def test_patch_with_same_status_is_allowed(self):
+        app = self._make_app(Application.Status.REVIEWED, email="noop2@example.com")
+        response = self.client.patch(self._url(app), {"status": "reviewed"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "reviewed")
 
     # --- valid transitions ---
 

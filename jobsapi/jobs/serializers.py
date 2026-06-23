@@ -45,6 +45,12 @@ class ApplicationSerializer(serializers.ModelSerializer):
         fields = ["id", "job", "job_id", "applicant_name", "applicant_email", "status", "applied_at"]
         read_only_fields = ["id", "applied_at"]
 
+    def get_fields(self):
+        fields = super().get_fields()
+        if not self.instance:
+            fields["status"].read_only = True
+        return fields
+
     def validate_applicant_email(self, value):
         if not re.match(r"^[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}$", value):
             raise serializers.ValidationError("Enter a valid email address.")
@@ -53,7 +59,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
     def validate_status(self, value):
         current = self.instance.status if self.instance else None
 
-        if current and value not in Application.ALLOWED_TRANSITIONS.get(current, []):
+        if current and current != value and value not in Application.ALLOWED_TRANSITIONS.get(current, []):
             raise serializers.ValidationError(
                 f"Cannot transition from '{current}' to '{value}'."
             )
@@ -69,10 +75,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
             if not job:
                 raise serializers.ValidationError({"job_id": "Job not found."})
 
-            already_applied = Application.objects.filter(
-                job_id=job_id,
-                applicant_email=applicant_email
-            ).exists()
+            qs = Application.objects.filter(job_id=job_id, applicant_email=applicant_email)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            already_applied = qs.exists()
             if already_applied:
                 raise serializers.ValidationError({
                     "applicant_email": "This applicant has already applied for this job."
@@ -82,6 +88,5 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         job_id = validated_data.pop("job_id")
-        validated_data.pop("status", None)  # always start as pending (model default)
         job = Job.objects.get(id=job_id)
         return Application.objects.create(job=job, **validated_data)
