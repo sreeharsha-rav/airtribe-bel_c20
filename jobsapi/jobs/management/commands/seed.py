@@ -96,18 +96,18 @@ JOBS = [
 
 # (job_title, company_name, applicant_name, applicant_email, status)
 APPLICATIONS = [
-    ("Backend Engineer", "Stripe", "Alice Johnson", "alice@example.com", Application.Status.INTERVIEWING),
+    ("Backend Engineer", "Stripe", "Alice Johnson", "alice@example.com", Application.Status.REVIEWED),
     ("Backend Engineer", "Stripe", "Bob Smith", "bob@example.com", Application.Status.REJECTED),
-    ("Staff Engineer", "Stripe", "Carol White", "carol@example.com", Application.Status.APPLIED),
-    ("Frontend Engineer", "Vercel", "David Lee", "david@example.com", Application.Status.OFFERED),
-    ("Frontend Engineer", "Vercel", "Eva Martinez", "eva@example.com", Application.Status.INTERVIEWING),
-    ("Developer Advocate", "Vercel", "Frank Chen", "frank@example.com", Application.Status.APPLIED),
-    ("Data Engineer", "Shopify", "Grace Kim", "grace@example.com", Application.Status.APPLIED),
+    ("Staff Engineer", "Stripe", "Carol White", "carol@example.com", Application.Status.PENDING),
+    ("Frontend Engineer", "Vercel", "David Lee", "david@example.com", Application.Status.ACCEPTED),
+    ("Frontend Engineer", "Vercel", "Eva Martinez", "eva@example.com", Application.Status.REVIEWED),
+    ("Developer Advocate", "Vercel", "Frank Chen", "frank@example.com", Application.Status.PENDING),
+    ("Data Engineer", "Shopify", "Grace Kim", "grace@example.com", Application.Status.PENDING),
     ("Mobile Engineer (iOS)", "Shopify", "Henry Park", "henry@example.com", Application.Status.REJECTED),
-    ("Product Engineer", "Linear", "Isla Brown", "isla@example.com", Application.Status.INTERVIEWING),
-    ("Engineering Intern", "Linear", "Jack Wilson", "jack@example.com", Application.Status.OFFERED),
-    ("Design Engineer", "Figma", "Karen Patel", "karen@example.com", Application.Status.APPLIED),
-    ("ML Engineer", "Figma", "Liam Nguyen", "liam@example.com", Application.Status.INTERVIEWING),
+    ("Product Engineer", "Linear", "Isla Brown", "isla@example.com", Application.Status.REVIEWED),
+    ("Engineering Intern", "Linear", "Jack Wilson", "jack@example.com", Application.Status.ACCEPTED),
+    ("Design Engineer", "Figma", "Karen Patel", "karen@example.com", Application.Status.PENDING),
+    ("ML Engineer", "Figma", "Liam Nguyen", "liam@example.com", Application.Status.REVIEWED),
 ]
 
 

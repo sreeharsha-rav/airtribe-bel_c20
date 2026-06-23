@@ -9,8 +9,10 @@ A backend service for browsing and applying for jobs. Demonstrates Django models
 - **Migrations** — schema creation via `makemigrations` / `migrate`
 - **Admin** — models registered with `admin.site.register` for built-in CRUD UI
 - **Management command** — `python manage.py seed` to populate the database for development
-- **DRF APIView** — class-based views with manual serialization control
-- **DRF Serializers** — field-level and object-level validation, nested read serializers, computed fields
+- **DRF ModelViewSet** — full CRUD in a single class; custom actions via `@action`
+- **DRF DefaultRouter** — auto-generates all standard URL patterns from `router.register()`
+- **DRF Serializers** — field-level and object-level validation, nested read serializers, split read/write FK fields, `create` override, computed fields, state machine validation
+
 - **Middleware** — `RequestTimingMiddleware` logs method, path, status, and duration for every request
 
 ## Data Models
@@ -26,26 +28,43 @@ A backend service for browsing and applying for jobs. Demonstrates Django models
 
 ### Job
 
-| Field            | Type         | Notes                                                       |
-|------------------|--------------|-------------------------------------------------------------|
-| id               | AutoField    | Primary key                                                 |
-| title            | CharField    | Job title                                                   |
-| salary_min       | DecimalField | Minimum salary (1–500,000)                                  |
-| salary_max       | DecimalField | Maximum salary (1–500,000); must be ≥ salary_min            |
-| job_type         | CharField    | Choices: `full_time`, `part_time`, `contract`, `internship` |
-| location         | CharField    | Job location                                                |
-| company          | ForeignKey   | References `Company`; cascade deletes jobs                  |
-| created_at       | DateTimeField| Set automatically on creation                               |
+| Field      | Type          | Notes                                                       |
+|------------|---------------|-------------------------------------------------------------|
+| id         | AutoField     | Primary key                                                 |
+| title      | CharField     | Job title                                                   |
+| salary_min | DecimalField  | Minimum salary (1–500,000)                                  |
+| salary_max | DecimalField  | Maximum salary (1–500,000); must be ≥ salary_min            |
+| job_type   | CharField     | Choices: `full_time`, `part_time`, `contract`, `internship` |
+| location   | CharField     | Job location                                                |
+| company    | ForeignKey    | References `Company`; cascade deletes jobs                  |
+| created_at | DateTimeField | Set automatically on creation                               |
 
 ### Application
 
-| Field           | Type       | Notes                                                     |
-|-----------------|------------|-----------------------------------------------------------|
-| id              | AutoField  | Primary key                                               |
-| job             | ForeignKey | References `Job`; cascade deletes applications            |
-| applicant_name  | CharField  | Full name of the applicant                                |
-| applicant_email | EmailField | Email address of the applicant (validated by regex)       |
-| status          | CharField  | Choices: `applied`, `interviewing`, `offered`, `rejected` |
+| Field           | Type          | Notes                                                                         |
+|-----------------|---------------|-------------------------------------------------------------------------------|
+| id              | AutoField     | Primary key (read-only)                                                       |
+| job             | ForeignKey    | References `Job`; cascade deletes applications                                |
+| applicant_name  | CharField     | Full name of the applicant                                                    |
+| applicant_email | EmailField    | Email address of the applicant (validated by regex)                           |
+| status          | CharField     | State machine: `pending` → `reviewed` → `accepted` / `rejected` (see below)  |
+| applied_at      | DateTimeField | Set automatically on creation (read-only)                                     |
+
+#### Application Status State Machine
+
+```
+pending ──► reviewed ──► accepted
+                    └──► rejected
+```
+
+| From       | Allowed transitions      |
+|------------|--------------------------|
+| `pending`  | `reviewed`               |
+| `reviewed` | `accepted`, `rejected`   |
+| `accepted` | — (terminal)             |
+| `rejected` | — (terminal)             |
+
+Status always starts as `pending` on creation. Clients update it via PATCH.
 
 ## Setup
 
@@ -71,36 +90,104 @@ python manage.py runserver
 
 Base URL: `http://localhost:8000/api/`
 
+A browsable API root listing all endpoints is available at `http://localhost:8000/api/`.
+
 ### Companies
 
-| Method | Endpoint               | Description         |
-|--------|------------------------|---------------------|
-| GET    | `/api/companies/`      | List all companies  |
-| POST   | `/api/companies/`      | Create a company    |
-| GET    | `/api/companies/{id}/` | Get a company       |
-| PUT    | `/api/companies/{id}/` | Update a company    |
-| DELETE | `/api/companies/{id}/` | Delete a company    |
+| Method | Endpoint               | Description              |
+|--------|------------------------|--------------------------|
+| GET    | `/api/companies/`      | List all companies       |
+| POST   | `/api/companies/`      | Create a company         |
+| GET    | `/api/companies/{id}/` | Get a company            |
+| PUT    | `/api/companies/{id}/` | Replace a company        |
+| PATCH  | `/api/companies/{id}/` | Partially update company |
+| DELETE | `/api/companies/{id}/` | Delete a company         |
 
 ### Jobs
 
-| Method | Endpoint              | Description                        |
-|--------|-----------------------|------------------------------------|
-| GET    | `/api/jobs/`          | List all jobs                      |
-| POST   | `/api/jobs/`          | Create a job                       |
-| GET    | `/api/jobs/{id}/`     | Get a job                          |
-| PUT    | `/api/jobs/{id}/`     | Update a job                       |
-| DELETE | `/api/jobs/{id}/`     | Delete a job                       |
-| POST   | `/api/jobs/{id}/apply/` | Apply for a job                  |
+| Method | Endpoint                  | Description              |
+|--------|---------------------------|--------------------------|
+| GET    | `/api/jobs/`              | List all jobs            |
+| POST   | `/api/jobs/`              | Create a job             |
+| GET    | `/api/jobs/{id}/`         | Get a job                |
+| PUT    | `/api/jobs/{id}/`         | Replace a job            |
+| PATCH  | `/api/jobs/{id}/`         | Partially update a job   |
+| DELETE | `/api/jobs/{id}/`         | Delete a job             |
+| POST   | `/api/jobs/{id}/apply/`   | Apply for a job          |
 
 ### Applications
 
-| Method | Endpoint                    | Description            |
-|--------|-----------------------------|------------------------|
-| GET    | `/api/applications/`        | List all applications  |
-| POST   | `/api/applications/`        | Create an application  |
-| GET    | `/api/applications/{id}/`   | Get an application     |
-| PUT    | `/api/applications/{id}/`   | Update an application  |
-| DELETE | `/api/applications/{id}/`   | Delete an application  |
+| Method | Endpoint                    | Description                    |
+|--------|-----------------------------|--------------------------------|
+| GET    | `/api/applications/`        | List all applications          |
+| POST   | `/api/applications/`        | Create an application          |
+| GET    | `/api/applications/{id}/`   | Get an application             |
+| PUT    | `/api/applications/{id}/`   | Replace an application         |
+| PATCH  | `/api/applications/{id}/`   | Partially update (e.g. status) |
+| DELETE | `/api/applications/{id}/`   | Delete an application          |
+
+## Running Tests
+
+```bash
+# Run all tests
+python manage.py test jobs.tests
+
+# Run a single test module
+python manage.py test jobs.tests.test_companies
+python manage.py test jobs.tests.test_jobs
+python manage.py test jobs.tests.test_applications
+
+# Run with verbose output (shows each test name)
+python manage.py test jobs.tests --verbosity=2
+
+# Run with coverage (install once: python -m ensurepip && python -m pip install coverage)
+python -m coverage run --source=jobs manage.py test jobs.tests
+python -m coverage report -m          # terminal report
+python -m coverage html -d htmlcov    # HTML report → open htmlcov/index.html
+```
+
+## Test Coverage
+
+61 automated tests across 3 modules, using Django's `APITestCase` and an in-memory SQLite database. All tests run isolated — no shared state between tests.
+
+### Test files
+
+```
+jobs/tests/
+├── factories.py            # make_company / make_job / make_application helpers
+├── test_companies.py       # 15 tests — CRUD, cascade delete, PUT validation
+├── test_jobs.py            # 17 tests — CRUD, salary cross-field, job_type choices, PATCH partial
+└── test_applications.py    # 29 tests — CRUD, duplicate detection, email validation, state machine
+```
+
+### Coverage report
+
+```
+Name                                    Stmts   Miss  Cover
+-----------------------------------------------------------
+jobs/models.py                             38      3    92%
+jobs/serializers.py                        59      2    97%
+jobs/views.py                              21      0   100%
+jobs/urls.py                                8      0   100%
+jobs/tests/test_companies.py               76      0   100%
+jobs/tests/test_jobs.py                   102      0   100%
+jobs/tests/test_applications.py           182      0   100%
+-----------------------------------------------------------
+TOTAL (app code only)                     573     45    92%
+```
+
+> `seed.py` is excluded from meaningful coverage — it is a dev-only management command, not application logic.  
+> The 5 uncovered lines are `__str__` methods on models (lines 13, 32, 56) and a `created_at is None` guard in `get_days_since_posted` (line 28 of serializers) that can't be triggered via the API since the field uses `auto_now_add`.
+
+### Test summary by area
+
+| Area | Tests | What is covered |
+|------|------:|-----------------|
+| Companies | 15 | List, create, retrieve, PUT, PATCH, DELETE; PUT requires all fields; cascade delete; invalid website URL; 404 |
+| Jobs | 17 | List (nested company, `days_since_posted`), create, retrieve, PUT, PATCH, DELETE; `salary_min > salary_max`; salary bounds; invalid `job_type`; non-existent `company_id`; PATCH cross-field validation; 404 |
+| Applications | 29 | List (nested `job → company`, `applied_at`); create via `/applications/` and `/jobs/{id}/apply/`; `status` forced to `pending` on create; `applied_at` is read-only; duplicate detection on both endpoints; same email allowed on different jobs; invalid email; non-existent `job_id`; all 3 valid state transitions; 6 invalid transitions (backward + terminal); PATCH without `status` unchanged; error message content; DELETE + 404 |
+
+---
 
 ## Sample Workflow
 
@@ -146,23 +233,71 @@ curl -X POST http://localhost:8000/api/jobs/1/apply/ \
 ```
 
 ```json
-{"id": 1, "job": 1, "applicant_name": "Jane Doe", "applicant_email": "jane@example.com", "status": "applied"}
+{
+  "id": 1,
+  "job": {
+    "id": 1,
+    "title": "Backend Engineer",
+    "job_type": "full_time",
+    "location": "Remote",
+    "salary_min": "80000.00",
+    "salary_max": "120000.00",
+    "company": {"id": 1, "name": "Acme Corp", "location": "San Francisco", "website": "https://acme.com"},
+    "days_since_posted": 0
+  },
+  "applicant_name": "Jane Doe",
+  "applicant_email": "jane@example.com",
+  "status": "pending",
+  "applied_at": "2024-01-15T10:30:00Z"
+}
 ```
 
-### 4. Check all applications
+### 4. Advance application status
 
 ```bash
-curl http://localhost:8000/api/applications/
-```
-
-### 5. Update application status
-
-```bash
-curl -X PUT http://localhost:8000/api/applications/1/ \
+curl -X PATCH http://localhost:8000/api/applications/1/ \
   -H "Content-Type: application/json" \
-  -d '{"status": "interviewing"}'
+  -d '{"status": "reviewed"}'
 ```
 
 ```json
-{"id": 1, "job": 1, "applicant_name": "Jane Doe", "applicant_email": "jane@example.com", "status": "interviewing"}
+{
+  "id": 1,
+  "job": {"id": 1, "title": "Backend Engineer", ...},
+  "applicant_name": "Jane Doe",
+  "applicant_email": "jane@example.com",
+  "status": "reviewed",
+  "applied_at": "2024-01-15T10:30:00Z"
+}
+```
+
+Invalid transitions return a 400:
+
+```bash
+curl -X PATCH http://localhost:8000/api/applications/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"status": "pending"}'
+```
+
+```json
+{"status": ["Cannot transition from 'reviewed' to 'pending'."]}
+```
+
+### 5. Create an application directly
+
+```bash
+curl -X POST http://localhost:8000/api/applications/ \
+  -H "Content-Type: application/json" \
+  -d '{"job_id": 1, "applicant_name": "Jane Doe", "applicant_email": "jane@example.com"}'
+```
+
+```json
+{
+  "id": 1,
+  "job": {"id": 1, "title": "Backend Engineer", ...},
+  "applicant_name": "Jane Doe",
+  "applicant_email": "jane@example.com",
+  "status": "pending",
+  "applied_at": "2024-01-15T10:30:00Z"
+}
 ```

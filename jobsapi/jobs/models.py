@@ -34,15 +34,24 @@ class Job(models.Model):
 
 class Application(models.Model):
     class Status(models.TextChoices):
-        APPLIED = "applied", "Applied"
-        INTERVIEWING = "interviewing", "Interviewing"
-        OFFERED = "offered", "Offered"
+        PENDING = "pending", "Pending"
+        REVIEWED = "reviewed", "Reviewed"
+        ACCEPTED = "accepted", "Accepted"
         REJECTED = "rejected", "Rejected"
+
+    ALLOWED_TRANSITIONS = {
+        "pending": ["reviewed"],
+        "reviewed": ["accepted", "rejected"],
+        "accepted": [],
+        "rejected": [],
+    }
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="applications")
     applicant_name = models.CharField(max_length=255)
     applicant_email = models.EmailField()
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.APPLIED)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    applied_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return f"{self.applicant_name} -> {self.job.title}"
+    

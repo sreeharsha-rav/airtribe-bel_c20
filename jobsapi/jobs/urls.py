@@ -1,12 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
+router = DefaultRouter()
+router.register("companies", views.CompanyViewSet)
+router.register("jobs", views.JobViewSet)
+router.register("applications", views.ApplicationViewSet)
+
 urlpatterns = [
-    path("companies/", views.CompanyListView.as_view()),
-    path("companies/<int:pk>/", views.CompanyDetailView.as_view()),
-    path("jobs/", views.JobListView.as_view()),
-    path("jobs/<int:pk>/", views.JobDetailView.as_view()),
-    path("applications/", views.ApplicationListView.as_view()),
-    path("applications/<int:pk>/", views.ApplicationDetailView.as_view()),
-    path("jobs/<int:pk>/apply/", views.apply_for_job),
+    path("", include(router.urls)),
 ]
