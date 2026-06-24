@@ -8,7 +8,9 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 2. [todos_proj](./todos_proj/): A simple todo list application built with Django. It allows users to create, read, update, and delete todo items. The project demonstrates basic CRUD operations and RESTful API design principles.
 
-3. [jobsapi](./jobsapi/): A backend API for browsing and applying for jobs. Demonstrates middleware, Django REST Framework (DRF) and serializers usage.
+3. [jobsapi](./jobsapi/): A backend API for browsing and applying for jobs. Demonstrates middleware, Django REST Framework (DRF), serializers, filtering, and API documentation using drf-spectacular. It includes models for companies, jobs, and applications, along with views and serializers to handle API requests.
+
+4. [clear_ledger](./clear_ledger/): A simple ledger application built with Django. It allows users to link bank accounts, categorize and track transactions, get monthly budgets per category, get spending reports and manage their finances. The project demonstrates schema design, model relationships, queries, query sets, transactions and query optimization.
 
 ## Projects
 
