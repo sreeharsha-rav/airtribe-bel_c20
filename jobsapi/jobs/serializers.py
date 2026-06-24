@@ -1,4 +1,5 @@
 import re
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from .models import Company, Job, Application
 
@@ -22,6 +23,7 @@ class JobSerializer(serializers.ModelSerializer):
         model = Job
         fields = ["id", "title", "job_type", "location", "salary_min", "salary_max", "company", "company_id", "days_since_posted"]
 
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
     def get_days_since_posted(self, obj):
         from django.utils import timezone
         if obj.created_at is None:
