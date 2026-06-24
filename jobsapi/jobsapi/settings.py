@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    "drf_spectacular",
     'jobs',
 ]
 
@@ -123,4 +124,39 @@ STATIC_URL = 'static/'
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Jobs API",
+    "DESCRIPTION": (
+        "A RESTful API for managing job postings, companies, and applicant tracking.\n\n"
+        "## Overview\n"
+        "The Jobs API lets you build a full recruitment workflow:\n\n"
+        "- **Companies** — create and manage employer profiles.\n"
+        "- **Jobs** — post openings with type, location, and salary range. "
+        "Supports filtering by `job_type` and `location`, full-text search on `title`, "
+        "salary range filtering via `salary_min__gte` / `salary_max__lte`, "
+        "and ordering by `created_at` or `salary_min`.\n"
+        "- **Applications** — applicants apply to jobs; status advances through a "
+        "defined state machine: `pending` → `reviewed` → `accepted` | `rejected`.\n\n"
+        "## Business areas\n"
+        "| Tag | Description |\n"
+        "|-----|-------------|\n"
+        "| `companies` | Employer company management |\n"
+        "| `jobs` | Job posting lifecycle and candidate applications |\n"
+        "| `applications` | Applicant tracking and status transitions |\n"
+        "| `admin` | Django admin site (browser-based) |\n\n"
+        "## Pagination\n"
+        "All list endpoints return paginated results with a default page size of **10**. "
+        "Use `?page=<n>` to navigate pages."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "TAGS": [
+        {"name": "companies", "description": "Create and manage employer company profiles."},
+        {"name": "jobs", "description": "Post and search job openings. Supports filtering, search, and ordering."},
+        {"name": "applications", "description": "Track job applications and advance their status through the hiring pipeline."},
+        {"name": "admin", "description": "Django admin interface for superuser management."},
+    ],
 }
