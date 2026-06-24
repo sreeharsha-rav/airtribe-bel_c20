@@ -12,7 +12,7 @@ A backend service for browsing and applying for jobs. Demonstrates Django models
 - **DRF ModelViewSet** — full CRUD in a single class; custom actions via `@action`
 - **DRF DefaultRouter** — auto-generates all standard URL patterns from `router.register()`
 - **DRF Serializers** — field-level and object-level validation, nested read serializers, split read/write FK fields, `create` override, computed fields, state machine validation
-
+- **DRF Pagination** — `PageNumberPagination` wraps all list responses in `{count, next, previous, results}`
 - **Middleware** — `RequestTimingMiddleware` logs method, path, status, and duration for every request
 
 ## Data Models
@@ -126,6 +126,36 @@ A browsable API root listing all endpoints is available at `http://localhost:800
 | PATCH  | `/api/applications/{id}/`   | Partially update (e.g. status) |
 | DELETE | `/api/applications/{id}/`   | Delete an application          |
 
+## Pagination
+
+All list endpoints (`GET /api/companies/`, `GET /api/jobs/`, `GET /api/applications/`) return a paginated envelope instead of a bare array.
+
+**Default page size:** 10
+
+**Response shape:**
+```json
+{
+  "count": 42,
+  "next": "http://localhost:8000/api/jobs/?page=3",
+  "previous": "http://localhost:8000/api/jobs/?page=1",
+  "results": [ ... ]
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `count` | Total number of records across all pages |
+| `next` | URL of the next page, or `null` if on the last page |
+| `previous` | URL of the previous page, or `null` if on the first page |
+| `results` | Array of objects for the current page |
+
+**Navigating pages:**
+```bash
+GET /api/jobs/          # page 1 (default)
+GET /api/jobs/?page=2   # page 2
+GET /api/jobs/?page=3   # page 3
+```
+
 ## Running Tests
 
 ```bash
@@ -148,17 +178,17 @@ python -m coverage html -d htmlcov    # HTML report → open htmlcov/index.html
 
 ## Test Coverage
 
-67 automated tests across 3 modules, using Django's `APITestCase` and an in-memory SQLite database. All tests run isolated — no shared state between tests.
+77 automated tests across 3 modules, using Django's `APITestCase` and an in-memory SQLite database. All tests run isolated — no shared state between tests.
 
 ### Test files
 
 ```
 jobs/tests/
 ├── factories.py            # make_company / make_job / make_application helpers
-├── test_companies.py       # 15 tests — CRUD, cascade delete, PUT validation
-├── test_jobs.py            # 17 tests — CRUD, salary cross-field, job_type choices, PATCH partial
-└── test_applications.py    # 35 tests — CRUD, status read-only on create, duplicate detection,
-                            #             email validation, PUT self-duplicate fix, state machine
+├── test_companies.py       # 21 tests — CRUD, pagination envelope, multi-page, cascade delete
+├── test_jobs.py            # 23 tests — CRUD, pagination envelope, multi-page, salary validation
+└── test_applications.py    # 41 tests — CRUD, pagination envelope, multi-page, status read-only
+                            #             on create, duplicate detection, state machine
 ```
 
 ### Coverage report
@@ -166,27 +196,27 @@ jobs/tests/
 ```
 Name                                    Stmts   Miss  Cover
 -----------------------------------------------------------
-jobs/models.py                             38      3    92%
+jobs/models.py                             43      3    93%
 jobs/serializers.py                        66      2    97%
 jobs/views.py                              21      0   100%
 jobs/urls.py                                8      0   100%
-jobs/tests/test_companies.py               76      0   100%
-jobs/tests/test_jobs.py                   102      0   100%
-jobs/tests/test_applications.py           218      0   100%
+jobs/tests/test_companies.py              102      0   100%
+jobs/tests/test_jobs.py                   123      0   100%
+jobs/tests/test_applications.py           239      0   100%
 -----------------------------------------------------------
-TOTAL (app code only)                     616     45    93%
+TOTAL (app code only)                     689     45    93%
 ```
 
 > `seed.py` is excluded from meaningful coverage — it is a dev-only management command, not application logic.  
-> The 5 uncovered lines are `__str__` methods on models (lines 13, 32, 56) and a `created_at is None` guard in `get_days_since_posted` (serializers line 28) that cannot be reached via the API since `auto_now_add` always sets the field.
+> The 5 uncovered lines are `__str__` methods on models and a `created_at is None` guard in `get_days_since_posted` that cannot be reached via the API since `auto_now_add` always sets the field.
 
 ### Test summary by area
 
 | Area | Tests | What is covered |
 |------|------:|-----------------|
-| Companies | 15 | List, create, retrieve, PUT, PATCH, DELETE; PUT requires all fields; cascade delete removes jobs and applications; invalid website URL; 404 |
-| Jobs | 17 | List (nested company, `days_since_posted`), create, retrieve, PUT, PATCH, DELETE; `salary_min > salary_max`; salary bounds; invalid `job_type`; non-existent `company_id`; PATCH cross-field validation; 404 |
-| Applications | 35 | List (nested `job → company`, `applied_at`, `status` present); create via `/applications/` and `/jobs/{id}/apply/`; `status` is read-only on create via both endpoints (any sent value ignored, always `pending`); `applied_at` is read-only; duplicate detection on both create endpoints; PUT self-duplicate false-positive fix; PUT with genuine duplicate still blocked; same email allowed on different jobs; invalid email; non-existent `job_id`; same-status PUT and PATCH allowed (no-op); all 3 valid state transitions; 6 invalid transitions (skip, backward, terminal); PATCH without `status` unchanged; error message names both states; DELETE + 404 |
+| Companies | 21 | Pagination envelope (count, next, previous, results); 12-item dataset — 10 on page 1, 2 on page 2; single-page next/previous null; CRUD; PUT requires all fields; cascade delete; invalid website URL; 404 |
+| Jobs | 23 | Pagination envelope; multi-page navigation; nested company in list; `days_since_posted`; CRUD; `salary_min > salary_max`; salary bounds; invalid `job_type`; non-existent `company_id`; PATCH cross-field validation; 404 |
+| Applications | 41 | Pagination envelope; multi-page navigation; nested `job → company`; `applied_at` and `status` present; create via `/applications/` and `/jobs/{id}/apply/`; `status` read-only on create (both endpoints); `applied_at` read-only; duplicate detection; PUT self-duplicate false-positive fix; genuine duplicate still blocked; same email across different jobs; invalid email; non-existent `job_id`; same-status no-op; 3 valid state transitions; 6 invalid transitions; PATCH without `status` unchanged; error message content; DELETE + 404 |
 
 ---
 
@@ -204,7 +234,33 @@ curl -X POST http://localhost:8000/api/companies/ \
 {"id": 1, "name": "Acme Corp", "location": "San Francisco", "website": "https://acme.com"}
 ```
 
-### 2. Post a job
+### 2. List jobs (paginated)
+
+```bash
+curl http://localhost:8000/api/jobs/
+```
+
+```json
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "title": "Backend Engineer",
+      "job_type": "full_time",
+      "location": "Remote",
+      "salary_min": "80000.00",
+      "salary_max": "120000.00",
+      "company": {"id": 1, "name": "Acme Corp", "location": "San Francisco", "website": "https://acme.com"},
+      "days_since_posted": 0
+    }
+  ]
+}
+```
+
+### 3. Post a job
 
 ```bash
 curl -X POST http://localhost:8000/api/jobs/ \
@@ -225,7 +281,7 @@ curl -X POST http://localhost:8000/api/jobs/ \
 }
 ```
 
-### 3. Apply for the job
+### 4. Apply for the job
 
 ```bash
 curl -X POST http://localhost:8000/api/jobs/1/apply/ \
@@ -253,7 +309,7 @@ curl -X POST http://localhost:8000/api/jobs/1/apply/ \
 }
 ```
 
-### 4. Advance application status
+### 5. Advance application status
 
 ```bash
 curl -X PATCH http://localhost:8000/api/applications/1/ \
@@ -284,7 +340,7 @@ curl -X PATCH http://localhost:8000/api/applications/1/ \
 {"status": ["Cannot transition from 'reviewed' to 'pending'."]}
 ```
 
-### 5. Create an application directly
+### 6. Create an application directly
 
 ```bash
 curl -X POST http://localhost:8000/api/applications/ \

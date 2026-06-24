@@ -17,20 +17,44 @@ class JobListTests(APITestCase):
         make_job(company=self.company, title="Job B")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_list_nests_company_object(self):
         make_job(company=self.company)
         response = self.client.get(self.url)
-        company_data = response.data[0]["company"]
+        company_data = response.data["results"][0]["company"]
         self.assertCountEqual(company_data.keys(), ["id", "name", "location", "website"])
         self.assertEqual(company_data["id"], self.company.pk)
 
     def test_list_includes_days_since_posted(self):
         make_job(company=self.company)
         response = self.client.get(self.url)
-        self.assertIn("days_since_posted", response.data[0])
-        self.assertIsNotNone(response.data[0]["days_since_posted"])
+        self.assertIn("days_since_posted", response.data["results"][0])
+        self.assertIsNotNone(response.data["results"][0]["days_since_posted"])
+
+    def test_list_response_has_pagination_envelope(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for key in ("count", "next", "previous", "results"):
+            self.assertIn(key, response.data)
+
+    def test_list_paginates_beyond_page_size(self):
+        for i in range(12):
+            make_job(company=self.company, title=f"Job {i}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.data["count"], 12)
+        self.assertEqual(len(response.data["results"]), 10)
+        self.assertIsNotNone(response.data["next"])
+
+    def test_list_page_two_returns_remaining_items(self):
+        for i in range(12):
+            make_job(company=self.company, title=f"Job {i}")
+        response = self.client.get(self.url + "?page=2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 2)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNotNone(response.data["previous"])
 
     def test_create_job(self):
         payload = {

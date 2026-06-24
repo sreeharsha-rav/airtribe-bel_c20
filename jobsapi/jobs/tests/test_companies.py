@@ -16,12 +16,42 @@ class CompanyListTests(APITestCase):
         make_company(name="Beta")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_list_returns_expected_fields(self):
         make_company(name="Alpha")
         response = self.client.get(self.url)
-        self.assertCountEqual(response.data[0].keys(), ["id", "name", "location", "website"])
+        self.assertCountEqual(response.data["results"][0].keys(), ["id", "name", "location", "website"])
+
+    def test_list_response_has_pagination_envelope(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for key in ("count", "next", "previous", "results"):
+            self.assertIn(key, response.data)
+
+    def test_list_next_is_none_when_single_page(self):
+        make_company(name="OnlyOne")
+        response = self.client.get(self.url)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNone(response.data["previous"])
+
+    def test_list_paginates_beyond_page_size(self):
+        for i in range(12):
+            make_company(name=f"Co{i}")
+        response = self.client.get(self.url)
+        self.assertEqual(response.data["count"], 12)
+        self.assertEqual(len(response.data["results"]), 10)
+        self.assertIsNotNone(response.data["next"])
+
+    def test_list_page_two_returns_remaining_items(self):
+        for i in range(12):
+            make_company(name=f"Co{i}")
+        response = self.client.get(self.url + "?page=2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 2)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNotNone(response.data["previous"])
 
     def test_create_company(self):
         payload = {"name": "NewCo", "location": "NYC", "website": "https://newco.com"}

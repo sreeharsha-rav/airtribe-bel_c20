@@ -17,12 +17,13 @@ class ApplicationListTests(APITestCase):
         make_application(job=self.job, applicant_email="b@example.com")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_list_nests_job_and_company(self):
         make_application(job=self.job)
         response = self.client.get(self.url)
-        app = response.data[0]
+        app = response.data["results"][0]
         self.assertIn("job", app)
         self.assertIn("company", app["job"])
         self.assertCountEqual(app["job"]["company"].keys(), ["id", "name", "location", "website"])
@@ -30,14 +31,37 @@ class ApplicationListTests(APITestCase):
     def test_list_includes_applied_at(self):
         make_application(job=self.job)
         response = self.client.get(self.url)
-        self.assertIn("applied_at", response.data[0])
-        self.assertIsNotNone(response.data[0]["applied_at"])
+        self.assertIn("applied_at", response.data["results"][0])
+        self.assertIsNotNone(response.data["results"][0]["applied_at"])
 
     def test_list_includes_status(self):
         make_application(job=self.job)
         response = self.client.get(self.url)
-        self.assertIn("status", response.data[0])
-        self.assertEqual(response.data[0]["status"], "pending")
+        self.assertIn("status", response.data["results"][0])
+        self.assertEqual(response.data["results"][0]["status"], "pending")
+
+    def test_list_response_has_pagination_envelope(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for key in ("count", "next", "previous", "results"):
+            self.assertIn(key, response.data)
+
+    def test_list_paginates_beyond_page_size(self):
+        for i in range(12):
+            make_application(job=self.job, applicant_email=f"user{i}@example.com")
+        response = self.client.get(self.url)
+        self.assertEqual(response.data["count"], 12)
+        self.assertEqual(len(response.data["results"]), 10)
+        self.assertIsNotNone(response.data["next"])
+
+    def test_list_page_two_returns_remaining_items(self):
+        for i in range(12):
+            make_application(job=self.job, applicant_email=f"user{i}@example.com")
+        response = self.client.get(self.url + "?page=2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 2)
+        self.assertIsNone(response.data["next"])
+        self.assertIsNotNone(response.data["previous"])
 
 
 class ApplicationCreateTests(APITestCase):

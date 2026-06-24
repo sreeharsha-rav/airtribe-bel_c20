@@ -7,6 +7,7 @@ class Company(models.Model):
     website = models.URLField()
 
     class Meta:
+        ordering = ["id"]
         verbose_name_plural = "companies"
 
     def __str__(self):
@@ -27,6 +28,9 @@ class Job(models.Model):
     job_type = models.CharField(max_length=20, choices=JobType.choices, default=JobType.FULL_TIME)
     location = models.CharField(max_length=255)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="jobs")
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return f"{self.title} at {self.company.name}"
@@ -51,6 +55,9 @@ class Application(models.Model):
     applicant_email = models.EmailField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     applied_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        ordering = ["id"]
 
     def __str__(self):
         return f"{self.applicant_name} -> {self.job.title}"
