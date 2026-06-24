@@ -337,3 +337,50 @@ class JobViewSet(viewsets.ModelViewSet):
 class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.select_related("job__company").all()
     serializer_class = ApplicationSerializer
+
+    @extend_schema(
+        tags=["applications"],
+        summary="Withdraw an application",
+        description=(
+            "Allows an applicant to withdraw their application. "
+            "Only applications in `pending` status can be withdrawn. "
+            "Returns 400 if the application is already withdrawn or if it has "
+            "progressed past `pending` (reviewed, accepted, or rejected)."
+        ),
+        request=None,
+        responses={
+            200: ApplicationSerializer,
+            400: OpenApiResponse(
+                description="Cannot withdraw — already withdrawn or status is past pending",
+                examples=[
+                    OpenApiExample(
+                        "Already withdrawn",
+                        value={"detail": "Application is already withdrawn."},
+                        response_only=True,
+                    ),
+                    OpenApiExample(
+                        "Past pending",
+                        value={"detail": "Cannot withdraw an application with status 'reviewed'."},
+                        response_only=True,
+                    ),
+                ],
+            ),
+            404: _404,
+        },
+    )
+    @action(detail=True, methods=["post"])
+    def withdrawn(self, request, pk=None):
+        application = self.get_object()
+        if application.status == Application.Status.WITHDRAWN:
+            return Response(
+                {"detail": "Application is already withdrawn."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if application.status != Application.Status.PENDING:
+            return Response(
+                {"detail": f"Cannot withdraw an application with status '{application.status}'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        application.status = Application.Status.WITHDRAWN
+        application.save()
+        return Response(ApplicationSerializer(application).data)

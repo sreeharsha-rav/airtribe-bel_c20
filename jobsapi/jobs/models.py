@@ -42,12 +42,14 @@ class Application(models.Model):
         REVIEWED = "reviewed", "Reviewed"
         ACCEPTED = "accepted", "Accepted"
         REJECTED = "rejected", "Rejected"
+        WITHDRAWN = "withdrawn", "Withdrawn"
 
     ALLOWED_TRANSITIONS = {
-        "pending": ["reviewed"],
+        "pending": ["reviewed", "withdrawn"],
         "reviewed": ["accepted", "rejected"],
         "accepted": [],
         "rejected": [],
+        "withdrawn": [],
     }
 
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="applications")

@@ -326,3 +326,71 @@ class ApplicationStateMachineTests(APITestCase):
         error_msg = response.data["status"][0]
         self.assertIn("reviewed", error_msg)
         self.assertIn("pending", error_msg)
+
+
+class ApplicationWithdrawTests(APITestCase):
+    def setUp(self):
+        self.job = make_job()
+
+    def _make_app(self, app_status=Application.Status.PENDING, email="withdraw@example.com"):
+        return make_application(job=self.job, applicant_email=email, status=app_status)
+
+    def _url(self, app):
+        return reverse("application-withdrawn", args=[app.pk])
+
+    def test_withdraw_pending_returns_200_and_withdrawn_status(self):
+        app = self._make_app()
+        response = self.client.post(self._url(app))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "withdrawn")
+        app.refresh_from_db()
+        self.assertEqual(app.status, Application.Status.WITHDRAWN)
+
+    def test_withdraw_already_withdrawn_returns_400(self):
+        app = self._make_app(Application.Status.WITHDRAWN, email="w2@example.com")
+        response = self.client.post(self._url(app))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already withdrawn", response.data["detail"])
+
+    def test_withdraw_reviewed_returns_400(self):
+        app = self._make_app(Application.Status.REVIEWED, email="w3@example.com")
+        response = self.client.post(self._url(app))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("reviewed", response.data["detail"])
+
+    def test_withdraw_accepted_returns_400(self):
+        app = self._make_app(Application.Status.ACCEPTED, email="w4@example.com")
+        response = self.client.post(self._url(app))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("accepted", response.data["detail"])
+
+    def test_withdraw_rejected_returns_400(self):
+        app = self._make_app(Application.Status.REJECTED, email="w5@example.com")
+        response = self.client.post(self._url(app))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("rejected", response.data["detail"])
+
+    def test_withdraw_nonexistent_returns_404(self):
+        response = self.client.post(reverse("application-withdrawn", args=[99999]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_withdrawn_blocks_patch_status_change(self):
+        app = self._make_app(email="w6@example.com")
+        self.client.post(self._url(app))
+        response = self.client.patch(
+            reverse("application-detail", args=[app.pk]),
+            {"status": "pending"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("status", response.data)
+
+    def test_patch_pending_to_withdrawn_allowed(self):
+        app = self._make_app(email="w7@example.com")
+        response = self.client.patch(
+            reverse("application-detail", args=[app.pk]),
+            {"status": "withdrawn"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "withdrawn")
