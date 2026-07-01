@@ -12,6 +12,8 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 4. [clear_ledger](./clear_ledger/): A simple ledger application built with Django. It allows users to link bank accounts, categorize and track transactions, get monthly budgets per category, get spending reports and manage their finances. The project demonstrates schema design, model relationships, queries, query sets, transactions and query optimization.
 
+5. [event_hub](./event_hub/): A backend REST API for a simplified event ticketing platform — browse events, reserve seats, and cancel reservations. The project demonstrates ORM usage, queries, serializers, viewsets and middleware in Django REST Framework (DRF).
+
 ## Projects
 
 - [devtrack](./devtrack): A backend API for tracking engineering issues. Engineers report bugs, assign priorities, and track status similar to a stripped-down GitHub Issues.
