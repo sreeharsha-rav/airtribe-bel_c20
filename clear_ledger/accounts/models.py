@@ -7,16 +7,18 @@ class UserProfile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f"{self.user.username}'s profile"
-
 
 class Account(models.Model):
+    CHECKING = 'checking'
+    SAVINGS = 'savings'
+    CREDIT = 'credit'
+    INVESTMENT = 'investment'
+    
     ACCOUNT_TYPE_CHOICES = [
-        ('checking', 'Checking'),
-        ('savings', 'Savings'),
-        ('credit', 'Credit'),
-        ('investment', 'Investment'),
+        (CHECKING, 'Checking'),
+        (SAVINGS, 'Savings'),
+        (CREDIT, 'Credit'),
+        (INVESTMENT, 'Investment'),
     ]
     
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='accounts')
