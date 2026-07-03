@@ -15,10 +15,10 @@
 
 ## `transactions` app
 - [x] Create app: `python manage.py startapp transactions`
-- [ ] Create `Category` model
-- [ ] Create `Label` model
-- [ ] Create `TransactionLabel` model (M2M through)
-- [ ] Create `Transaction` model
+- [x] Create `Category` model
+- [x] Create `Label` model
+- [x] Create `TransactionLabel` model (M2M through)
+- [x] Create `Transaction` model
 - [ ] Create serializers for all models
 - [ ] Create views (categories, labels, transactions CRUD + label tagging)
 - [ ] Write URL patterns for `transactions` app
@@ -26,7 +26,7 @@
 
 ## `budgets` app
 - [x] Create app: `python manage.py startapp budgets`
-- [ ] Create `Budget` model
+- [x] Create `Budget` model
 - [ ] Create serializers for `Budget`
 - [ ] Create views (budgets CRUD)
 - [ ] Write URL patterns for `budgets` app
