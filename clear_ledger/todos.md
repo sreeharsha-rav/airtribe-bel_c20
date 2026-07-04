@@ -5,6 +5,13 @@
 - [x] Configure `rest_framework`, `django_filters`, `drf_spectacular` in `INSTALLED_APPS`
 - [ ] Wire up root `urls.py` with API and schema endpoints
 
+## Authentication
+- [x] Create custom `User` model
+- [x] Create `UserProfile` model
+- [x] Create serializers for `User` and `UserProfile`
+- [x] Create views for register, login, logout, profile
+- [x] Setup JWT authentication with `rest_framework_simplejwt`
+
 ## `accounts` app
 - [x] Create `UserProfile` model
 - [x] Create `Account` model

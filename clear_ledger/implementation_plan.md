@@ -171,6 +171,68 @@ User ──1:N──▶ Budget (category + month + year)
 
 ---
 
+## Authentication — JWT
+
+### Custom User Model
+
+`accounts.User` extends `AbstractUser` with a `role` field:
+
+| Role | Value | Purpose |
+|---|---|---|
+| Owner | `owner` | Full read/write access to all resources |
+| Accountant | `accountant` | Can manage transactions and budgets |
+| Viewer | `viewer` | Read-only access |
+
+`AUTH_USER_MODEL = 'accounts.User'` must be set before the first migration.
+
+### JWT Configuration (`SIMPLE_JWT`)
+
+| Setting | Value | Reason |
+|---|---|---|
+| `ACCESS_TOKEN_LIFETIME` | 15 minutes | Short-lived; stateless, cannot be revoked |
+| `REFRESH_TOKEN_LIFETIME` | 7 days | Long-lived; stored server-side for blacklisting |
+| `ROTATE_REFRESH_TOKENS` | `True` | Issues a new refresh token on every `/token/refresh/` call |
+| `BLACKLIST_AFTER_ROTATION` | `True` | Old refresh token is invalidated after rotation |
+| `UPDATE_LAST_LOGIN` | `True` | Keeps `User.last_login` current |
+| `ALGORITHM` | `HS256` | HMAC-SHA256 symmetric signing |
+| `AUTH_HEADER_TYPES` | `Bearer` | Standard `Authorization: Bearer <token>` header |
+
+`rest_framework_simplejwt.token_blacklist` must be in `INSTALLED_APPS` for blacklisting to work.
+
+### Custom Token Serializer (`CustomTokenObtainPairSerializer`)
+
+Extends `TokenObtainPairSerializer` to embed `role` and `email` in:
+- The **JWT payload** (via `get_token()`) — readable by the client without an extra API call
+- The **login response body** (via `validate()`) — convenient for immediate use after login
+
+```
+POST /api/auth/login/
+→ { access, refresh, role, email }
+   JWT payload: { user_id, role, email, exp, ... }
+```
+
+### Auth Flow
+
+```
+Register ──▶ returns access + refresh tokens immediately
+Login    ──▶ validates credentials → returns access + refresh tokens
+Refresh  ──▶ POST refresh token → returns new access + new refresh (old refresh blacklisted)
+Logout   ──▶ POST refresh token → blacklisted; access token expires naturally (15 min)
+```
+
+### View Design Choices
+
+| View | Base Class | Why |
+|---|---|---|
+| `RegisterView` | `generics.CreateAPIView` | Single POST operation; returns tokens in custom response |
+| `LoginView` | `TokenObtainPairView` | simplejwt base; swaps in custom serializer only |
+| `LogoutView` | `APIView` | No model/queryset; just calls `token.blacklist()` |
+| `ProfileView` | `generics.RetrieveUpdateAPIView` | GET + PATCH on a single user-scoped object |
+
+`ModelViewSet` is intentionally not used for auth — each endpoint does something structurally different (not standard CRUD on one resource). ViewSets are appropriate for `accounts`, `transactions`, `budgets`, and `categories`.
+
+---
+
 ## Design Decisions
 
 - **Category vs Label**: Categories are structural (used for budgets and reports); Labels are ad-hoc free-form tags. Both serve distinct purposes.
@@ -178,3 +240,4 @@ User ──1:N──▶ Budget (category + month + year)
 - **`Budget.unique_together`** on `(user, category, month, year)` enforces one budget cap per category per month.
 - **`UserProfile` currency** stores user preference for display; `Account.currency` stores the actual account currency — needed for multi-currency support.
 - **Reports** are computed views (aggregation queries), not stored models — they use `django_filters` for query params and DRF's response layer.
+- **JWT over session auth**: Stateless access tokens suit API clients (mobile, SPA). Refresh token rotation + blacklisting provides logout support without sacrificing statelessness for the access token.
