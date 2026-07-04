@@ -18,6 +18,10 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 - [devtrack](./devtrack): A backend API for tracking engineering issues. Engineers report bugs, assign priorities, and track status similar to a stripped-down GitHub Issues.
 
+- [team_board](./TeamBoard): A backend API for providing curated questions and answers on common technical topics such as APIs, databases, cloud infrastructure, backend frameworks, and more.
+
+- [pulse_notify](./pulse_notify): A backend API for sending notifications to users based on their preferences. Users can subscribe to different notification channels (email, SMS, push notifications) and receive updates about events, promotions, or other relevant information.
+
 ## Prerequisites
 
 - Python 3.12+
