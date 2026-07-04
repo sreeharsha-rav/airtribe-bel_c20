@@ -15,6 +15,7 @@ A personal finance ledger API built with Django REST Framework. Users register w
 - **`unique_together`** — `Budget(user, category, month, year)` and `TransactionLabel(transaction, label)`
 - **`django-filter`** — query-param filtering on list endpoints
 - **OpenAPI / Swagger** — `drf-spectacular` generates a fully annotated schema; `@extend_schema` / `@extend_schema_view` on every auth view; `inline_serializer` for token response shapes; `COMPONENT_SPLIT_REQUEST` separates read/write schemas
+- **Structured logging** — every log line is a single-line JSON object with a request-scoped correlation id; `RequestLoggingMiddleware` logs one line per request with timing, actor, and outcome
 
 ---
 
@@ -193,6 +194,68 @@ python manage.py test accounts -v 2
 ```
 
 See [TEST_REPORT.md](TEST_REPORT.md) for a full breakdown of what each test verifies and current coverage gaps.
+
+---
+
+## Logging
+
+All application logs are single-line JSON objects, making them greppable and easy to feed into log aggregators (ELK, Loki, CloudWatch, etc.).
+
+Everything lives in `clear_ledger/middleware.py`:
+
+| Component | Responsibility |
+|---|---|
+| `JSONFormatter` | Renders every `LogRecord` (standard fields + any `extra={...}`) as one JSON line |
+| `request_id_var` + `RequestIDLogFilter` | A `contextvars.ContextVar` that stamps every log line emitted during a request with that request's correlation id |
+| `RequestLoggingMiddleware` | Logs one `request_completed` / `request_failed` line per request |
+
+The `LOGGING` dict in `settings.py` wires these together (formatters, handlers, loggers) — there's no separate logging config file.
+
+### Request logging middleware
+
+`RequestLoggingMiddleware` is the first entry in `MIDDLEWARE` so it measures the full request lifecycle. For every request it logs:
+
+- `request_id` — from the incoming `X-Request-ID` header, or a generated UUID; echoed back in the `X-Request-ID` response header for client-side correlation
+- `http_method`, `path`, `query_string`
+- `user` — the authenticated username, or `"anonymous"`
+- `ip` — first entry of `X-Forwarded-For`, falling back to `REMOTE_ADDR`
+- `user_agent`
+- `duration_ms`
+- On success: `status_code`, `response_size`
+- On an unhandled exception: full traceback via `logger.exception(...)`, then the exception is re-raised so Django's normal error handling still applies
+
+Request/response **bodies are never logged** (avoids leaking passwords, tokens, or PII into log storage).
+
+### Where logs go
+
+- **Console** (`logging.StreamHandler`) — for local development and container stdout capture
+- **File** (`logs/app.log`, rotating at 10 MB × 5 backups) — `logs/` is created automatically on startup and is git-ignored
+
+Example line:
+```json
+{"timestamp": "2026-07-04T13:43:34+0530", "level": "INFO", "logger": "clear_ledger.request", "message": "request_completed", "request_id": "3f0ac461c6db453baeed32f07e782c65", "http_method": "POST", "path": "/api/auth/login/", "user": "anonymous", "ip": "127.0.0.1", "duration_ms": 12.4, "status_code": 401}
+```
+
+### Searching logs
+
+Since every line is valid JSON, use `jq` to filter:
+```bash
+# All requests for a given correlation id, across the whole request lifecycle
+grep '"request_id": "3f0ac461' logs/app.log | jq .
+
+# All failed requests
+jq 'select(.status_code >= 400)' logs/app.log
+
+# Slowest requests
+jq -s 'sort_by(.duration_ms) | reverse | .[:10]' logs/app.log
+```
+
+### Adding structured context to your own log calls
+
+Any code can attach searchable fields the same way — they'll appear directly in the JSON line without touching the formatter:
+```python
+logger.info("budget_exceeded", extra={"user_id": user.id, "category": category.name, "overspend": amount})
+```
 
 ---
 
