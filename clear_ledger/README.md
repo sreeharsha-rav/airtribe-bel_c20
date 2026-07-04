@@ -162,6 +162,40 @@ python manage.py runserver
 
 ---
 
+## Testing
+
+Unit and API tests for the `accounts` app (models, serializers, and all auth endpoints) live under `accounts/tests/` as one module per concern:
+
+| Module | Covers |
+|---|---|
+| `test_models.py` | `User`, `UserProfile` model behavior |
+| `test_serializers.py` | `RegisterSerializer`, `CustomTokenObtainPairSerializer`, `UserSerializer`, `ProfileSerializer` |
+| `test_register_api.py` | `POST /api/auth/register/` |
+| `test_login_api.py` | `POST /api/auth/login/` |
+| `test_token_refresh_api.py` | `POST /api/auth/token/refresh/` |
+| `test_logout_api.py` | `POST /api/auth/logout/` |
+| `test_profile_api.py` | `GET`/`PATCH /api/auth/profile/` |
+
+Run the full suite:
+```bash
+python manage.py test accounts
+```
+
+Run a single module or test case:
+```bash
+python manage.py test accounts.tests.test_login_api
+python manage.py test accounts.tests.test_login_api.LoginAPITests.test_login_success_returns_role_and_email
+```
+
+Run with verbose per-test output:
+```bash
+python manage.py test accounts -v 2
+```
+
+See [TEST_REPORT.md](TEST_REPORT.md) for a full breakdown of what each test verifies and current coverage gaps.
+
+---
+
 ## API Endpoints
 
 ### Auth
