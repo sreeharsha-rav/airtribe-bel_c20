@@ -1,0 +1,387 @@
+openapi: 3.0.3
+info:
+  title: ClearLedger API
+  version: 1.0.0
+  description: Personal finance ledger API. Allows users to link bank accounts, categorize
+    transactions, set monthly budgets, and view spending reports.
+paths:
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Authenticates with username and password. Returns access and refresh
+        tokens. Both the JWT payload and the response body carry `role` and `email`
+        for client convenience.
+      summary: Login
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: ''
+        '401':
+          description: Invalid credentials
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklists the provided refresh token. The access token cannot
+        be revoked — it expires naturally after its lifetime (15 min). Refresh token
+        rotation means each `/token/refresh/` call also invalidates the previous refresh
+        token.
+      summary: Logout
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: Logged out — refresh token blacklisted
+        '400':
+          description: Token is invalid, expired, or already blacklisted
+  /api/auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      description: Returns the authenticated user's profile. The profile record is
+        created automatically on first request if it does not exist.
+      summary: Get profile
+      tags:
+      - Auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+    patch:
+      operationId: auth_profile_partial_update
+      description: Partially updates the profile. Only `currency_preference` is writable.
+        The `user`, `created_at`, and `updated_at` fields are read-only.
+      summary: Update profile
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Creates a new user account with the given credentials. Role defaults
+        to `owner` if not provided. Returns JWT access and refresh tokens immediately
+        — no separate login step required.
+      summary: Register a new user
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+          description: ''
+        '400':
+          description: Validation error — username already taken or password too weak
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: Issues a new access token using a valid refresh token. Because
+        `ROTATE_REFRESH_TOKENS` is enabled, a new refresh token is also returned and
+        the submitted refresh token is blacklisted immediately.
+      summary: Refresh access token
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponse'
+          description: ''
+        '401':
+          description: Refresh token is invalid, expired, or already blacklisted
+components:
+  schemas:
+    CustomTokenObtainPairRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    LoginResponse:
+      type: object
+      properties:
+        access:
+          type: string
+          description: Short-lived JWT access token (15 min)
+        refresh:
+          type: string
+          description: Long-lived JWT refresh token (7 days)
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User role embedded in response body and JWT payload
+
+            * `owner` - Owner
+            * `accountant` - Accountant
+            * `viewer` - Viewer
+        email:
+          type: string
+          format: email
+          description: User email embedded in response body and JWT payload
+      required:
+      - access
+      - email
+      - refresh
+      - role
+    LogoutRequestRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+          description: The refresh token to blacklist
+      required:
+      - refresh
+    PatchedProfileRequest:
+      type: object
+      properties:
+        currency_preference:
+          type: string
+          minLength: 1
+          maxLength: 3
+    Profile:
+      type: object
+      properties:
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        currency_preference:
+          type: string
+          maxLength: 3
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - updated_at
+      - user
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - password
+      - username
+    RegisterResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/RegisterUserInfo'
+        access:
+          type: string
+          description: Short-lived JWT access token (15 min)
+        refresh:
+          type: string
+          description: Long-lived JWT refresh token (7 days)
+      required:
+      - access
+      - refresh
+      - user
+    RegisterUserInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - id
+      - role
+      - username
+    RoleEnum:
+      enum:
+      - owner
+      - accountant
+      - viewer
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `accountant` - Accountant
+        * `viewer` - Viewer
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenRefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+          description: New short-lived access token (15 min)
+        refresh:
+          type: string
+          description: New refresh token — submitted token is now blacklisted
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - username
+    UserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Auth
+  description: Registration, login, logout, token refresh, and user profile

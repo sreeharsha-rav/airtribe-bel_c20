@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view, inline_serializer
 from rest_framework import generics, serializers, status
 from rest_framework.permissions import AllowAny
@@ -8,10 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
 
-from .models import UserProfile
+from .models import User, UserProfile
 from .serializers import CustomTokenObtainPairSerializer, ProfileSerializer, RegisterSerializer
-
-User = get_user_model()
 
 
 @extend_schema(
@@ -33,7 +30,7 @@ User = get_user_model()
                         'id': serializers.IntegerField(),
                         'username': serializers.CharField(),
                         'email': serializers.EmailField(),
-                        'role': serializers.ChoiceField(choices=['owner', 'accountant', 'viewer']),
+                        'role': serializers.ChoiceField(choices=User.ROLE_CHOICES),
                     },
                 ),
                 'access': serializers.CharField(help_text='Short-lived JWT access token (15 min)'),
@@ -83,7 +80,7 @@ class RegisterView(generics.CreateAPIView):
                 'access': serializers.CharField(help_text='Short-lived JWT access token (15 min)'),
                 'refresh': serializers.CharField(help_text='Long-lived JWT refresh token (7 days)'),
                 'role': serializers.ChoiceField(
-                    choices=['owner', 'accountant', 'viewer'],
+                    choices=User.ROLE_CHOICES,
                     help_text='User role embedded in response body and JWT payload',
                 ),
                 'email': serializers.EmailField(help_text='User email embedded in response body and JWT payload'),
