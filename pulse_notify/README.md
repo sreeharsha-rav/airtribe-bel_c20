@@ -11,6 +11,38 @@ PulseNotify is an flight price monitoring service that allows users to set price
 
 ## Data Models
 
+### User *(extends AbstractUser)*
+
+| Field      | Type      | Notes                                             |
+|------------|-----------|---------------------------------------------------|
+| id         | AutoField | Primary key                                       |
+| username   | CharField | Inherited from `AbstractUser`                     |
+| email      | EmailField | Inherited from `AbstractUser`                    |
+| password   | CharField | Hashed via `create_user()`; write-only in API     |
+| role       | CharField | Choices: `admin`, `user`; default `user`          |
+
+### PriceAlert *(N per User)*
+
+| Field      | Type      | Notes                                             |
+|------------|-----------|---------------------------------------------------|
+| id         | AutoField | Primary key                                       |
+| user       | ForeignKey | References the `User` model; on delete cascade   |
+| origin     | CharField | Origin airport code                               |
+| destination| CharField | Destination airport code                          |
+| threshold_price | DecimalField | Target price for the alert                |
+| status     | CharField | Choices: `active`, `inactive`, `triggered`; default `active`  |
+| created_at | DateTimeField | Auto-set on creation                          |
+
+### Notification *(N per PriceAlert)*
+
+| Field      | Type      | Notes                                             |
+|------------|-----------|---------------------------------------------------|
+| id         | AutoField | Primary key                                       |
+| alert      | ForeignKey | References the `PriceAlert` model; on delete cascade |
+| triggered_price | DecimalField | Price at which the notification was triggered |
+| message    | TextField | Notification message (e.g., "Flight price dropped to $XXX for route {origin} to {destination}") |
+| notified_at | DateTimeField | Auto-set when the notification is sent          |
+
 ---
 
 ## API Endpoints
