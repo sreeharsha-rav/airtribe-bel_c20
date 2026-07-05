@@ -61,7 +61,9 @@ Full interactive docs at `http://localhost:8000/api/docs/` once the server is ru
 ### Prerequisites
 
 - Python 3.13+
-- Docker (for Postgres)
+- Docker (for Postgres, Redis)
+- Docker Engine running (because `docker compose` is used to start Postgres and Redis)
+- PgAdmin (optional, for database management)
 
 ### 1. Create and activate a virtual environment
 
@@ -99,8 +101,11 @@ cp .env.sample .env
 | `POSTGRES_DB`       | Postgres database name        | *(required)*|
 | `POSTGRES_HOST`     | Postgres host                 | `127.0.0.1` |
 | `POSTGRES_PORT`     | Postgres port                 | `5432`      |
+| `REDIS_HOST`        | Redis host                    | `127.0.0.1` |
+| `REDIS_PORT`        | Redis port                    | `6379`      |
+| `REDIS_PASSWORD`    | Redis password                | *(required)*|
 
-### 4. Start Postgres with Docker Compose
+### 4. Start Postgres, Redis with Docker Compose
 
 ```bash
 docker compose up -d
