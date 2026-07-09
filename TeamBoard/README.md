@@ -15,9 +15,35 @@ This service is designed for B2B integration, allowing companies to embed the AP
 
 ### Company
 
+| Field        | Type           | Notes                                                       |
+|--------------|----------------|-------------------------------------------------------------|
+| id           | AutoField      | Primary key                                                 |
+| user         | OneToOneField  | References Django's built-in `User` model; cascade deletes company profile |
+| company_name | CharField      | The display name of the company                              |
+| api_key      | CharField      | Unique auto-generated key used for B2B requests             |
+| role         | CharField      | Choices: `admin`, `client` (defaults to `client`)            |
+| created_at   | DateTimeField  | Set automatically on creation                               |
+
 ### KBEntry
 
-### QueryModel
+| Field      | Type          | Notes                                                       |
+|------------|---------------|-------------------------------------------------------------|
+| id         | AutoField     | Primary key                                                 |
+| question   | TextField     | The question/topic text                                     |
+| answer     | TextField     | The solution/article body                                   |
+| category   | CharField     | Choices: `api`, `database`, `cloud`, `framework`, `general` |
+| created_at | DateTimeField | Set automatically on creation                               |
+
+### QueryLog
+
+| Field         | Type          | Notes                                                       |
+|---------------|---------------|-------------------------------------------------------------|
+| id            | AutoField     | Primary key                                                 |
+| company       | ForeignKey    | References `Company`; cascade deletes query logs            |
+| search_term   | CharField     | The string searched                                         |
+| results_count | IntegerField  | Number of matching knowledge base results                   |
+| queried_at    | DateTimeField | Set automatically on creation                               |
+
 
 ---
 
@@ -27,8 +53,8 @@ This service is designed for B2B integration, allowing companies to embed the AP
 
 | Method     | Endpoint                    | Description                                          |
 |------------|-----------------------------|------------------------------------------------------|
-| POST       | `/api/auth/register/`       | Register — returns access + refresh tokens immediately |
-| POST       | `/api/auth/login/`          | Login — returns access + refresh + role + email      |
+| POST       | `/api/auth/register/`       | Register new company — returns username, company_name, api_key, access token |
+| POST       | `/api/auth/login/`          | Login — returns access token, company_name, and api_key |
 
 ### KBEntry
 
@@ -42,48 +68,97 @@ This service is designed for B2B integration, allowing companies to embed the AP
 
 ### Prerequisites
 
+- Python 3.12+
 - Docker (for the PostgreSQL database)
+- Docker Engine running (because `docker compose` is used to start Postgres)
+- PgAdmin (optional, for database management)
 
-### Installation
+### 1. Create and activate a virtual environment
 
-1. Install dependencies (if not setup in root using `uv` env):
 ```bash
-python -m venv venv
+python -m venv .venv
 
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+# Windows
+.venv\Scripts\activate
 
+# macOS / Linux
+source .venv/bin/activate
+```
+
+### 2. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-2. Create your `.env` file from the sample and adjust values if needed:
+### 3. Configure environment variables
+
+Copy the sample file and fill in your values:
+
 ```bash
-cp .env.sample .env   # On Windows use `copy .env.sample .env`
+cp .env.sample .env
 ```
 
-3. Start the PostgreSQL container:
+| Variable            | Description                   | Default     |
+|---------------------|-------------------------------|-------------|
+| `SECRET_KEY`        | Django secret key             | *(required)*|
+| `DEBUG`             | Enable debug mode             | `True`      |
+| `ALLOWED_HOSTS`     | Comma-separated allowed hosts | *(empty)*   |
+| `POSTGRES_USER`     | Postgres username             | *(required)*|
+| `POSTGRES_PASSWORD` | Postgres password             | *(required)*|
+| `POSTGRES_DB`       | Postgres database name        | *(required)*|
+| `POSTGRES_HOST`     | Postgres host                 | `127.0.0.1` |
+| `POSTGRES_PORT`     | Postgres port                 | `5432`      |
+
+### 4. Start Postgres with Docker Compose
+
 ```bash
 docker compose up -d
 ```
-This starts a `postgres:16-alpine` container named `teamboard_postgres`, using the `DB_*` credentials from `.env` and persisting data in the `teamboard_postgres_data` Docker volume.
 
-4. Apply migrations:
+Wait for the healthcheck to pass before running migrations:
+
 ```bash
-python manage.py makemigrations
+docker compose ps
+# postgres should show: Up (healthy)
+```
+
+**Stop** (data preserved in the `pgdata` volume):
+```bash
+docker compose down
+```
+
+**Stop and destroy all data:**
+```bash
+docker compose down -v
+```
+
+### 5. Run migrations
+
+```bash
 python manage.py migrate
 ```
 
-5. Run the development server:
+### 6. Start the development server
+
 ```bash
 python manage.py runserver
 ```
 
-6. Open interactive API docs at `http://127.0.0.1:8000/api/docs`
+### 7. Open the API docs
 
-### Database container management
+```
+http://localhost:8000/api/docs/
+```
+
+---
+
+## Running Tests
+
+The test suite runs against a temporary database. A dynamic SQLite fallback is set up in `settings.py` so the tests can run without having Postgres/Docker running.
 
 ```bash
-docker compose ps          # check container/health status
-docker compose logs -f db  # tail Postgres logs
-docker compose down        # stop the container (keeps data volume)
-docker compose down -v     # stop and wipe the data volume
+# Run all tests in the api app
+python manage.py test api
 ```
+

@@ -1,3 +1,193 @@
 from django.test import TestCase
+from django.contrib.auth.models import User
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
+from .models import Company
 
-# Create your tests here.
+
+class RegisterTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.register_url = reverse('auth-register')
+
+    def test_successful_registration(self):
+        data = {
+            "username": "acmecorp",
+            "password": "securepass123",
+            "company_name": "Acme Corp",
+            "email": "dev@acmecorp.com"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify response structure
+        self.assertEqual(response.data['username'], "acmecorp")
+        self.assertEqual(response.data['company_name'], "Acme Corp")
+        self.assertTrue('api_key' in response.data)
+        self.assertTrue('access' in response.data)
+        
+        # Verify db entries
+        user = User.objects.get(username="acmecorp")
+        self.assertEqual(user.email, "dev@acmecorp.com")
+        
+        company = Company.objects.get(user=user)
+        self.assertEqual(company.company_name, "Acme Corp")
+        self.assertEqual(company.api_key, response.data['api_key'])
+        self.assertEqual(company.role, Company.Role.CLIENT)
+
+    def test_duplicate_username_registration(self):
+        # Create initial user
+        User.objects.create_user(username="acmecorp", password="password123")
+        
+        data = {
+            "username": "acmecorp",
+            "password": "securepass123",
+            "company_name": "Acme Corp",
+            "email": "dev@acmecorp.com"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("username", response.data)
+
+    def test_missing_email_registration(self):
+        # email is required
+        data = {
+            "username": "acmecorp",
+            "password": "securepass123",
+            "company_name": "Acme Corp"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+
+    def test_missing_company_name_registration(self):
+        data = {
+            "username": "acmecorp",
+            "password": "securepass123",
+            "email": "dev@acmecorp.com"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("company_name", response.data)
+
+    def test_password_too_short(self):
+        data = {
+            "username": "acmecorp",
+            "password": "short",
+            "company_name": "Acme Corp",
+            "email": "dev@acmecorp.com"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
+
+    def test_role_cannot_be_set_from_request_body(self):
+        data = {
+            "username": "admincorp",
+            "password": "securepass123",
+            "company_name": "Admin Corp",
+            "email": "admin@admincorp.com",
+            "role": "admin"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        user = User.objects.get(username="admincorp")
+        company = Company.objects.get(user=user)
+        # role must default to CLIENT even if "admin" is passed in request body
+        self.assertEqual(company.role, Company.Role.CLIENT)
+
+    def test_signal_only_runs_on_creation(self):
+        data = {
+            "username": "testcorp",
+            "password": "securepass123",
+            "company_name": "Test Corp",
+            "email": "test@testcorp.com"
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        user = User.objects.get(username="testcorp")
+        company = Company.objects.get(user=user)
+        original_api_key = company.api_key
+        original_company_id = company.id
+        
+        # Save user again (update)
+        user.email = "newemail@testcorp.com"
+        user.save()
+        
+        # Verify no duplicate company has been created and api_key remains unchanged
+        self.assertEqual(Company.objects.filter(user=user).count(), 1)
+        company.refresh_from_db()
+        self.assertEqual(company.id, original_company_id)
+        self.assertEqual(company.api_key, original_api_key)
+
+
+class LoginTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.login_url = reverse('auth-login')
+        
+        # Setup a test user and company
+        self.user = User.objects.create_user(username="acmecorp", password="securepass123", email="dev@acmecorp.com")
+        self.company = self.user.company
+        self.company.company_name = "Acme Corp"
+        self.company.api_key = "test-api-key"
+        self.company.save()
+
+    def test_login_success(self):
+        data = {
+            "username": "acmecorp",
+            "password": "securepass123"
+        }
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify returned data structure
+        self.assertTrue('access' in response.data)
+        self.assertEqual(response.data['company_name'], "Acme Corp")
+        self.assertEqual(response.data['api_key'], "test-api-key")
+
+    def test_login_invalid_credentials(self):
+        data = {
+            "username": "acmecorp",
+            "password": "wrongpassword"
+        }
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['detail'], "Invalid credentials.")
+
+    def test_login_missing_username(self):
+        data = {
+            "password": "securepass123"
+        }
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "username and password are required.")
+
+    def test_login_missing_password(self):
+        data = {
+            "username": "acmecorp"
+        }
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['detail'], "username and password are required.")
+
+    def test_login_user_without_company_graceful(self):
+        # Create a user (which triggers the signal to create the company)
+        user = User.objects.create_user(username="nocompanyuser", password="securepass123")
+        # Delete the company profile to test the graceful fallback path
+        Company.objects.filter(user=user).delete()
+        
+        data = {
+            "username": "nocompanyuser",
+            "password": "securepass123"
+        }
+        response = self.client.post(self.login_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('access' in response.data)
+        self.assertEqual(response.data['company_name'], "")
+        self.assertEqual(response.data['api_key'], "")
+
+
