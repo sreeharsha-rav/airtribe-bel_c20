@@ -8,10 +8,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from .serializers import RegisterSerializer, KBEntrySerializer
 from .models import Company, KBEntry, QueryLog
+from .permissions import IsAdminUser
 
 
 
@@ -286,3 +287,70 @@ class KBQueryView(APIView):
             "count": count,
             "results": serializer.data
         }, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Admin"],
+    summary="Get Platform Usage Summary",
+    description=(
+        "Returns platform-wide usage statistics: total queries ever made, number of distinct "
+        "companies that have queried, and the top 5 most-searched terms. "
+        "Only users belonging to a company with the ADMIN role can access this endpoint."
+    ),
+    responses={
+        200: OpenApiResponse(
+            description="Usage summary retrieved successfully.",
+            examples=[
+                OpenApiExample(
+                    "Success",
+                    value={
+                        "total_queries": 284,
+                        "active_companies": 7,
+                        "top_search_terms": [
+                            {"search_term": "select_related", "count": 42},
+                            {"search_term": "transaction atomic", "count": 31},
+                            {"search_term": "JWT authentication", "count": 28},
+                            {"search_term": "Q objects", "count": 19},
+                            {"search_term": "signals django", "count": 14}
+                        ]
+                    },
+                    response_only=True,
+                    status_codes=["200"],
+                )
+            ],
+        ),
+        401: OpenApiResponse(
+            description="Authentication required.",
+        ),
+        403: OpenApiResponse(
+            description="Permission denied. Admin role required.",
+        ),
+    },
+)
+class UsageSummaryView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        try:
+            stats = QueryLog.objects.aggregate(
+                total_queries=Count('id'),
+                active_companies=Count('company', distinct=True),
+            )
+            
+            top_search_terms = list(
+                QueryLog.objects
+                .values('search_term')
+                .annotate(count=Count('search_term'))
+                .order_by('-count')[:5]
+            )
+
+            return Response({
+                "total_queries": stats['total_queries'] or 0,
+                "active_companies": stats['active_companies'] or 0,
+                "top_search_terms": top_search_terms
+            }, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(
+                {"detail": "An error occurred while fetching usage statistics."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

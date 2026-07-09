@@ -62,6 +62,12 @@ This service is designed for B2B integration, allowing companies to embed the AP
 |------------|-----------------------------|------------------------------------------------------|
 | POST       | `/api/kb/query/`            | Send a search term and receive relevant knowledge base answer |
 
+### Admin
+
+| Method     | Endpoint                    | Description                                          |
+|------------|-----------------------------|------------------------------------------------------|
+| GET        | `/api/admin/usage-summary/` | Returns platform-wide usage statistics (Admin role required) |
+
 ---
 
 ## Setup
