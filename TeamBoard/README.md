@@ -139,13 +139,20 @@ docker compose down -v
 python manage.py migrate
 ```
 
-### 6. Start the development server
+### 6. Seed the database
+
+```bash
+python manage.py seed           # skips already-existing records
+python manage.py seed --clear   # wipes and re-seeds from scratch
+```
+
+### 7. Start the development server
 
 ```bash
 python manage.py runserver
 ```
 
-### 7. Open the API docs
+### 8. Open the API docs
 
 ```
 http://localhost:8000/api/docs/

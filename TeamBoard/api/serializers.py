@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import KBEntry
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -24,3 +25,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.company_name = company_name
         user.save()
         return user
+
+
+class KBEntrySerializer(serializers.ModelSerializer):
+    id = serializers.CharField()
+
+    class Meta:
+        model = KBEntry
+        fields = ('id', 'question', 'answer', 'category')

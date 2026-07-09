@@ -10,4 +10,5 @@ from . import views
 urlpatterns = [
     path('auth/register/', views.RegisterView.as_view(), name='auth-register'),
     path('auth/login/', views.LoginView.as_view(), name='auth-login'),
+    path('kb/query/', views.KBQueryView.as_view(), name='kb-query'),
 ]

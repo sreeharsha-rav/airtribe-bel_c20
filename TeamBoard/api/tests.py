@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from .models import Company
+from .models import Company, KBEntry, QueryLog
 
 
 class RegisterTestCase(TestCase):
@@ -191,3 +191,71 @@ class LoginTestCase(TestCase):
         self.assertEqual(response.data['api_key'], "")
 
 
+class KBQueryTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.query_url = reverse('kb-query')
+        
+        self.user = User.objects.create_user(username="acmecorp", password="securepass123")
+        self.company = self.user.company
+        
+        # Authenticate client
+        response = self.client.post(reverse('auth-login'), {"username": "acmecorp", "password": "securepass123"}, format='json')
+        self.token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+        
+        # Create some KB entries
+        KBEntry.objects.create(question="What is Django ORM?", answer="It is an Object Relational Mapper.", category="framework")
+        KBEntry.objects.create(question="How to use select_related?", answer="select_related performs a SQL JOIN.", category="database")
+        KBEntry.objects.create(question="Explain prefetch_related", answer="It does a separate lookup for many-to-many.", category="database")
+
+    def test_query_success_match(self):
+        data = {"search": "select_related"}
+        response = self.client.post(self.query_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['search'], "select_related")
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['question'], "How to use select_related?")
+        
+        # Check QueryLog was created
+        log = QueryLog.objects.first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.company, self.company)
+        self.assertEqual(log.search_term, "select_related")
+        self.assertEqual(log.results_count, 1)
+
+    def test_query_empty_results(self):
+        data = {"search": "nonexistentterm"}
+        response = self.client.post(self.query_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(len(response.data['results']), 0)
+        
+        # Check QueryLog was still created
+        log = QueryLog.objects.first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.results_count, 0)
+
+    def test_query_missing_search(self):
+        data = {}
+        response = self.client.post(self.query_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        # Check QueryLog was NOT created
+        self.assertEqual(QueryLog.objects.count(), 0)
+
+    def test_query_blank_search(self):
+        data = {"search": "   "}
+        response = self.client.post(self.query_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        # Check QueryLog was NOT created
+        self.assertEqual(QueryLog.objects.count(), 0)
+
+    def test_query_unauthenticated(self):
+        self.client.credentials()  # Remove token
+        data = {"search": "select_related"}
+        response = self.client.post(self.query_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(QueryLog.objects.count(), 0)
