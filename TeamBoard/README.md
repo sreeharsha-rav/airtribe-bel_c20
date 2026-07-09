@@ -164,6 +164,32 @@ python manage.py runserver
 http://localhost:8000/api/docs/
 ```
 
+### 9. Test with Postman
+
+You can easily import the API into Postman by using the `schema.yml` file. Generate it via the following command:
+
+```bash
+python manage.py spectacular --file schema.yml
+```
+
+Import this file into Postman to automatically set up the API endpoints with prefilled data and descriptions.
+
+#### Recommended Testing Scenarios
+
+| #  | Scenario | Endpoint | Expected |
+|----|----------|----------|----------|
+| 1  | Register a new company | POST `/api/auth/register/` | 201 + api_key + JWT token |
+| 2  | Register with duplicate username | POST `/api/auth/register/` | 400 |
+| 3  | Login with valid credentials | POST `/api/auth/login/` | 200 + JWT token |
+| 4  | Login with wrong password | POST `/api/auth/login/` | 401 |
+| 5  | Query KB - no token | POST `/api/kb/query/` | 401 |
+| 6  | Query KB - valid token, keyword with results | POST `/api/kb/query/` | 200 + results list |
+| 7  | Query KB - valid token, no matching results | POST `/api/kb/query/` | 200 + empty list, count 0 |
+| 8  | Query KB - missing search field | POST `/api/kb/query/` | 400 |
+| 9  | Usage summary - CLIENT token | GET `/api/admin/usage-summary/` | 403 |
+| 10 | Usage summary - Admin token | GET `/api/admin/usage-summary/` | 200 + stats |
+| 11 | Verify QueryLog created | *Check PGAdmin after scenarios 6 & 7* | Row exists in `querylog` table |
+
 ---
 
 ## Running Tests
