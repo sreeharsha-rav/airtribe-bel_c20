@@ -22,6 +22,8 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 - [pulse_notify](./pulse_notify): A backend API for flight price tracking and notification service. Users can set up alerts for specific flights, receive notifications when prices drop, and manage their flight preferences.
 
+- [collab_docs](./collab_docs/): A backend REST API for a simplified collaborative document platform — create workspaces, invite collaborators, write and version documents, leave comments, and control access with role-based permissions.
+
 ## Prerequisites
 
 - Python 3.12+
