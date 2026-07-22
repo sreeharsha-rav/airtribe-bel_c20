@@ -13,7 +13,7 @@ import uuid
 from django.db import IntegrityError, OperationalError, connection, transaction
 from django.test import TestCase
 
-from core.models import Comment, Document, Tag, User, Workspace, WorkspaceMember
+from ..core.models import AuditLog, Comment, Document, Tag, User, Workspace, WorkspaceMember
 
 
 class PostgresConnectivityTests(TestCase):
@@ -90,3 +90,33 @@ class ModelPersistenceTests(TestCase):
         )
         self.assertIn(reply, parent.replies.all())
         self.assertEqual(reply.parent, parent)
+
+
+class AuditLogSignalTests(TestCase):
+
+    def setUp(self):
+        self.owner = User.objects.create(
+            first_name="Grace", last_name="Hopper", email="grace@example.com", phone="1112223333"
+        )
+        self.workspace = Workspace.objects.create(name="Research", owner=self.owner)
+
+    def test_document_create_writes_created_audit_log(self):
+        document = Document.objects.create(
+            title="Doc", content="v1", workspace=self.workspace, created_by=self.owner
+        )
+        logs = AuditLog.objects.filter(model_name="Document", object_id=str(document.id))
+        self.assertEqual(logs.count(), 1)
+        log = logs.first()
+        self.assertEqual(log.action, AuditLog.Action.CREATED)
+        self.assertEqual(log.actor, self.owner)
+
+    def test_document_update_writes_updated_audit_log(self):
+        document = Document.objects.create(
+            title="Doc", content="v1", workspace=self.workspace, created_by=self.owner
+        )
+        document.title = "Doc v2"
+        document.save()
+        logs = AuditLog.objects.filter(model_name="Document", object_id=str(document.id)).order_by("timestamp")
+        self.assertEqual(list(logs.values_list("action", flat=True)), [
+            AuditLog.Action.CREATED, AuditLog.Action.UPDATED,
+        ])

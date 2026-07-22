@@ -101,8 +101,12 @@ class Tag(BaseModel):
 
 
 class AuditLog(BaseModel):
+    class Action(models.TextChoices):
+        CREATED = 'created', 'Created'
+        UPDATED = 'updated', 'Updated'
+
     actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='audit_logs')
-    action = models.CharField(max_length=50)
+    action = models.CharField(max_length=50, choices=Action.choices)
     model_name = models.CharField(max_length=100)
     object_id = models.CharField(max_length=100)
     timestamp = models.DateTimeField(auto_now_add=True)
