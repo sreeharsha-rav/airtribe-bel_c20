@@ -142,7 +142,25 @@ erDiagram
 
 ## API Endpoints
 
-<!-- TODO -->
+Full interactive docs (Swagger UI) are served at `/api/docs/` once the server is
+running (see [Setup](#setup) below); the raw OpenAPI schema is also checked in at
+[schema.yml](schema.yml) (regenerate with `python manage.py spectacular --file schema.yml`).
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST   | `/api/plans` | Create a subscription plan |
+| GET    | `/api/plans` | List plans |
+| PATCH  | `/api/plans/{plan_id}` | Update/deactivate a plan |
+| POST   | `/api/customers` | Create a customer |
+| GET    | `/api/customers` | List customers |
+| GET    | `/api/customers/{customer_id}` | Fetch customer details |
+| POST   | `/api/subscriptions` | Create a subscription |
+| GET    | `/api/subscriptions` | List subscriptions |
+| PATCH  | `/api/subscriptions/{subscription_id}/cancel` | Cancel a subscription |
+| POST   | `/api/invoices/generate` | Generate an invoice for a subscription |
+| GET    | `/api/invoices/{invoice_id}` | Fetch invoice details |
+| POST   | `/api/payments/record` | Record a payment attempt |
+| GET    | `/api/customers/{customer_id}/ledger` | Fetch a customer's ledger history |
 
 ---
 
@@ -241,6 +259,144 @@ python manage.py runserver
 ```
 http://localhost:8000/api/docs/
 ```
+
+---
+
+## Sample Workflow
+
+A full plan → customer → subscription → invoice → payment → ledger walkthrough with
+`curl`, against a locally running server (`python manage.py runserver`, default
+`http://localhost:8000`). IDs below assume a fresh database — substitute the ids your
+own responses actually return.
+
+### 1. Create a plan
+
+```bash
+curl -X POST http://localhost:8000/api/plans \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Pro Monthly", "billing_cycle": "monthly", "price": "100.00"}'
+```
+```json
+{
+  "id": 1, "name": "Pro Monthly", "description": "", "billing_cycle": "monthly",
+  "price": "100.00", "currency": "USD", "status": "active",
+  "created_at": "...", "updated_at": "..."
+}
+```
+
+### 2. Create a customer
+
+```bash
+curl -X POST http://localhost:8000/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Ada Lovelace", "email": "ada@example.com"}'
+```
+```json
+{
+  "id": 1, "name": "Ada Lovelace", "email": "ada@example.com",
+  "company_name": "", "status": "active", "created_at": "..."
+}
+```
+
+### 3. Subscribe the customer to the plan
+
+```bash
+curl -X POST http://localhost:8000/api/subscriptions \
+  -H "Content-Type: application/json" \
+  -d '{"customer_id": 1, "plan_id": 1}'
+```
+```json
+{
+  "id": 1, "customer_id": 1, "plan_id": 1, "status": "active",
+  "start_date": "...", "current_period_start": "...",
+  "current_period_end": "... (+1 month)", "cancelled_at": null
+}
+```
+
+### 4. Generate an invoice for the subscription
+
+```bash
+curl -X POST http://localhost:8000/api/invoices/generate \
+  -H "Content-Type: application/json" \
+  -d '{"subscription_id": 1}'
+```
+```json
+{
+  "id": 1, "subscription_id": 1, "customer_id": 1,
+  "amount_due": "100.00", "amount_paid": "0.00", "currency": "USD",
+  "status": "issued", "period_start": "...", "period_end": "...",
+  "due_date": "...", "created_at": "..."
+}
+```
+
+This also advances the subscription's `current_period_start`/`current_period_end` to
+the next cycle — calling `/invoices/generate` again immediately bills the *new*
+period rather than raising a duplicate error; the duplicate check only fires if you
+generate twice for the *same* period.
+
+### 5. Record a payment
+
+```bash
+curl -X POST http://localhost:8000/api/payments/record \
+  -H "Content-Type: application/json" \
+  -d '{"invoice_id": 1, "amount": "100.00", "currency": "USD", "status": "success"}'
+```
+```json
+{
+  "payment_attempt": {
+    "id": 1, "invoice_id": 1, "amount": "100.00", "currency": "USD",
+    "status": "success", "provider_reference": "", "failure_reason": "", "created_at": "..."
+  },
+  "invoice": {
+    "id": 1, "subscription_id": 1, "customer_id": 1,
+    "amount_due": "100.00", "amount_paid": "100.00", "currency": "USD",
+    "status": "paid", "period_start": "...", "period_end": "...",
+    "due_date": "...", "created_at": "..."
+  }
+}
+```
+
+A payment above the remaining balance (e.g. `"amount": "1000.00"`) or with a
+mismatched `currency` returns `400 Bad Request` instead.
+
+### 6. View the customer's ledger
+
+```bash
+curl http://localhost:8000/api/customers/1/ledger
+```
+```json
+[
+  {
+    "id": 1, "customer_id": 1, "invoice_id": 1, "entry_type": "invoice_created",
+    "amount": "100.00", "currency": "USD", "reference_id": "invoice:1",
+    "description": "", "created_at": "..."
+  },
+  {
+    "id": 2, "customer_id": 1, "invoice_id": 1, "entry_type": "payment_success",
+    "amount": "100.00", "currency": "USD", "reference_id": "payment:1",
+    "description": "", "created_at": "..."
+  }
+]
+```
+
+### 7. Cancel the subscription
+
+```bash
+curl -X PATCH http://localhost:8000/api/subscriptions/1/cancel
+```
+```json
+{
+  "id": 1, "customer_id": 1, "plan_id": 1, "status": "cancelled",
+  "start_date": "...", "current_period_start": "...",
+  "current_period_end": "...", "cancelled_at": "..."
+}
+```
+
+Cancelling only stops future billing — the invoice from step 4 keeps its own `paid`
+status untouched ([DESIGN.md §0](DESIGN.md#0-locked-decisions-resolved-ambiguities-from-rdmd)).
+
+This exact flow, plus every business-rule rejection along the way, is exercised
+automatically in `billing/tests/` — see [Running Tests](#running-tests) below.
 
 ---
 

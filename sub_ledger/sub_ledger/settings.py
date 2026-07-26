@@ -152,4 +152,16 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Payments', 'description': 'Record payment attempts against invoices.'},
         {'name': 'Ledger', 'description': 'Read-only, append-only ledger history per customer.'},
     ],
+    # Plan/Customer/Subscription/Invoice/PaymentAttempt all have a field
+    # literally named "status" backed by a different TextChoices enum —
+    # without this, drf-spectacular can't tell them apart and falls back to
+    # auto-generated names like "Status74cEnum".
+    'ENUM_NAME_OVERRIDES': {
+        'ActivationStatusEnum': 'billing.models.ActivationStatus.choices',
+        'BillingCycleEnum': 'billing.models.BillingCycle.choices',
+        'SubscriptionStatusEnum': 'billing.models.SubscriptionStatus.choices',
+        'InvoiceStatusEnum': 'billing.models.InvoiceStatus.choices',
+        'PaymentAttemptStatusEnum': 'billing.models.PaymentAttemptStatus.choices',
+        'LedgerEntryTypeEnum': 'billing.models.LedgerEntryType.choices',
+    },
 }

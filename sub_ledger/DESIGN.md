@@ -225,3 +225,80 @@ classDiagram
     PaymentService --> LedgerService
     InvoiceService ..> SubscriptionService : reads via SubscriptionRepository
 ```
+
+## 9. Testing Strategy & Workflow Expectations
+
+Companion to `billing/tests/`. Tests exercise the service layer directly (not mocked) against a real, throwaway Postgres database — Django's `TestCase` creates `test_subledger` on the same container dev uses and drops it when the run finishes, so no separate test-DB setup is needed beyond `docker compose up -d`.
+
+### Coverage Map
+
+Every rule in §4's Business Rule Ownership table has at least one test exercising it end-to-end through the owning service.
+
+| # | Workflow | Rule (rd.md §7) | Test |
+|---|---|---|---|
+| 1 | Create a plan with price ≤ 0 | Plan price must be > 0 | `test_plan_rules.PlanPriceValidationTests` |
+| 2 | Create a customer with a duplicate email | Customer email must be unique | `test_customer_rules.CustomerEmailUniquenessTests` |
+| 3 | Subscribe to an inactive plan | Inactive plan cannot be subscribed to | `test_subscription_rules.SubscriptionRulesTests.test_subscribing_to_inactive_plan_is_rejected` |
+| 4 | Create a second active subscription for the same customer+plan | No duplicate active subscription | `test_subscription_rules.SubscriptionRulesTests.test_second_active_subscription_same_customer_and_plan_is_rejected` |
+| 5 | Generate an invoice, then change the plan's price | Invoice `amount_due` comes from the plan price at generation time | `test_invoice_rules.InvoiceAmountSnapshotTests.test_invoice_amount_due_snapshots_plan_price_at_generation_time` |
+| 6 | Overpay / pay in full / pay partially | Payment cannot exceed unpaid amount; `paid`/`partially_paid` transitions | `test_payment_rules.PaymentAmountRulesTests` |
+| 7 | Fail a payment, then generate+pay again | Failed payment doesn't increase `amount_paid`; ledger is append-only and correctly ordered | `test_ledger_rules.FailedPaymentAndLedgerTests` |
+
+### Sample Workflow — Invoice Amount Snapshot (workflow 5)
+
+This is the rule most likely to be broken by a naive implementation (e.g. one that joins to the live `Plan` row on invoice read instead of snapshotting `amount_due` at generation time), so it's worth spelling out precisely:
+
+```text
+Given a plan priced at 100.00 and a customer with an active subscription to it
+When  InvoiceService.generate_invoice(subscription_id) is called
+Then  the resulting invoice.amount_due == 100.00
+
+Given that invoice already exists
+When  PlanService.update_plan(plan_id, price=999.00) is called afterward
+Then  invoice.amount_due (re-fetched from the DB) is still 100.00 —
+      it must NOT change just because the plan's price changed later.
+```
+
+```python
+def test_invoice_amount_due_snapshots_plan_price_at_generation_time(self):
+    invoice = self.invoice_service.generate_invoice(self.subscription.id)
+    self.assertEqual(invoice.amount_due, self.plan.price)
+
+    self.plan_service.update_plan(self.plan.id, price=Decimal("999.00"))
+
+    invoice.refresh_from_db()
+    self.assertEqual(invoice.amount_due, self.plan.price)  # unchanged
+```
+
+### Sample Workflow — Payment State Machine (workflow 6)
+
+```text
+Given an issued invoice with amount_due = 100.00, amount_paid = 0.00
+When  a payment of 150.00 (status=success) is recorded
+Then  PaymentExceedsBalanceError is raised
+
+When  a payment of 40.00 (status=success) is recorded instead
+Then  invoice.status == "partially_paid" and invoice.amount_paid == 40.00
+
+When  a further payment of 60.00 (status=success) is recorded
+Then  invoice.status == "paid" and invoice.amount_paid == 100.00
+```
+
+### Sample Workflow — Ledger Trail (workflow 7)
+
+```text
+Given an issued invoice
+When  a failed payment (30.00) is recorded, then a successful payment (100.00)
+Then  the customer's ledger, in order, is exactly:
+        invoice_created  (amount=100.00, reference_id="invoice:<id>")
+        payment_failure  (amount=30.00,  reference_id="payment:<attempt_id>")
+        payment_success  (amount=100.00, reference_id="payment:<attempt_id>")
+      and none of these rows can later be updated or deleted
+      (LedgerEntry.save()/delete() raise ValueError on an already-persisted row).
+```
+
+### Running the suite
+
+```bash
+python manage.py test billing --verbosity=2
+```

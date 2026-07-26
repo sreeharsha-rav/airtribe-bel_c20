@@ -159,3 +159,12 @@ class PaymentRecordSerializer(serializers.Serializer):
         if value <= Decimal("0"):
             raise serializers.ValidationError("Payment amount must be greater than 0.")
         return value
+
+
+class PaymentRecordResponseSerializer(serializers.Serializer):
+    # DESIGN.md §7 step 8: "Route returns the payment attempt and the
+    # invoice's updated status." Nested under separate keys because both
+    # serializers share field names (id, currency, created_at, status) that
+    # would silently collide if merged flat.
+    payment_attempt = PaymentAttemptSerializer()
+    invoice = InvoiceSerializer()

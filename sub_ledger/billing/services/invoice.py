@@ -63,3 +63,9 @@ class InvoiceService:
         )
 
         return invoice
+
+    def get_invoice(self, invoice_id):
+        invoice = self.invoice_repo.get_by_id(invoice_id)
+        if invoice is None:
+            raise NotFoundError(f"Invoice {invoice_id} not found")
+        return invoice
