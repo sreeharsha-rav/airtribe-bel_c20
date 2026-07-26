@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Todos{% endblock %}</title>
+    <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'todo-list' %}">All Todos</a>
+    </nav>
+    <hr>
+    {% block content %}{% endblock %}
+</body>
+</html>

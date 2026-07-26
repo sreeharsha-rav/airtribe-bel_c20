@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}{{ todo.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ todo.title }}</h1>
+
+<p>{{ todo.description|default:"No description." }}</p>
+<p>Status: {% if todo.completed %} Done {% else %} Pending {% endif %}</p>
+<p>Created: {{ todo.created_at }}</p>
+<p>Updated: {{ todo.updated_at }}</p>
+
+<a href="{% url 'todo-list' %}">← Back to list</a>
+{% endblock %}

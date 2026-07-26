@@ -1,0 +1,1063 @@
+openapi: 3.0.3
+info:
+  title: Jobs API
+  version: 1.0.0
+  description: |-
+    A RESTful API for managing job postings, companies, and applicant tracking.
+
+    ## Overview
+    The Jobs API lets you build a full recruitment workflow:
+
+    - **Companies** — create and manage employer profiles.
+    - **Jobs** — post openings with type, location, and salary range. Supports filtering by `job_type` and `location`, full-text search on `title`, salary range filtering via `salary_min__gte` / `salary_max__lte`, and ordering by `created_at` or `salary_min`.
+    - **Applications** — applicants apply to jobs; status advances through a defined state machine: `pending` → `reviewed` → `accepted` | `rejected`.
+
+    ## Business areas
+    | Tag | Description |
+    |-----|-------------|
+    | `companies` | Employer company management |
+    | `jobs` | Job posting lifecycle and candidate applications |
+    | `applications` | Applicant tracking and status transitions |
+    | `admin` | Django admin site (browser-based) |
+
+    ## Pagination
+    All list endpoints return paginated results with a default page size of **10**. Use `?page=<n>` to navigate pages.
+paths:
+  /api/applications/:
+    get:
+      operationId: applications_list
+      description: Returns a paginated list of all job applications with nested job
+        and company details.
+      summary: List all applications
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - applications
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApplicationList'
+          description: ''
+    post:
+      operationId: applications_create
+      description: Creates a new application for a job directly. Prefer `POST /jobs/{id}/apply/`
+        for a more natural workflow.
+      summary: Submit a job application
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+            examples:
+              CreateApplication:
+                value:
+                  job_id: 1
+                  applicant_name: John Smith
+                  applicant_email: john@example.com
+                summary: Create application
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Application'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: ''
+        '400':
+          description: Validation error
+  /api/applications/{id}/:
+    get:
+      operationId: applications_retrieve
+      description: Returns a single job application by ID.
+      summary: Retrieve an application
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this application.
+        required: true
+      tags:
+      - applications
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: ''
+        '404':
+          description: Not found
+    put:
+      operationId: applications_update
+      description: Fully updates an application by ID. Status transition rules are
+        enforced.
+      summary: Update an application
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this application.
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+            examples:
+              UpdateApplication:
+                value:
+                  job_id: 1
+                  applicant_name: John Smith
+                  applicant_email: john@example.com
+                  status: reviewed
+                summary: Update application
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Application'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: ''
+        '400':
+          description: Validation error
+        '404':
+          description: Not found
+    patch:
+      operationId: applications_partial_update
+      description: 'Updates the status of an application. Allowed transitions: `pending`
+        → `reviewed` → `accepted` | `rejected`. Terminal states `accepted` and `rejected`
+        cannot be changed.'
+      summary: Advance application status
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this application.
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedApplication'
+            examples:
+              AdvanceToReviewed:
+                value:
+                  status: reviewed
+                summary: Advance to reviewed
+              AcceptApplication:
+                value:
+                  status: accepted
+                summary: Accept application
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedApplication'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedApplication'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: ''
+        '400':
+          description: Invalid status transition
+        '404':
+          description: Not found
+    delete:
+      operationId: applications_destroy
+      description: Permanently deletes an application.
+      summary: Delete an application
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this application.
+        required: true
+      tags:
+      - applications
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+        '404':
+          description: Not found
+  /api/applications/{id}/withdrawn/:
+    post:
+      operationId: applications_withdrawn_create
+      description: Allows an applicant to withdraw their application. Only applications
+        in `pending` status can be withdrawn. Returns 400 if the application is already
+        withdrawn or if it has progressed past `pending` (reviewed, accepted, or rejected).
+      summary: Withdraw an application
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this application.
+        required: true
+      tags:
+      - applications
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: ''
+        '400':
+          description: Cannot withdraw — already withdrawn or status is past pending
+        '404':
+          description: Not found
+  /api/companies/:
+    get:
+      operationId: companies_list
+      description: Returns a paginated list of all companies.
+      summary: List all companies
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - companies
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompanyList'
+          description: ''
+    post:
+      operationId: companies_create
+      description: Creates and returns a new company.
+      summary: Create a company
+      tags:
+      - companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+            examples:
+              CreateCompany:
+                value:
+                  name: Acme Corp
+                  location: San Francisco, CA
+                  website: https://acme.example.com
+                summary: Create company
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Company'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Company'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+        '400':
+          description: Validation error
+  /api/companies/{id}/:
+    get:
+      operationId: companies_retrieve
+      description: Returns a single company by ID.
+      summary: Retrieve a company
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this company.
+        required: true
+      tags:
+      - companies
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+        '404':
+          description: Not found
+    put:
+      operationId: companies_update
+      description: Fully updates a company by ID.
+      summary: Update a company
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this company.
+        required: true
+      tags:
+      - companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+            examples:
+              UpdateCompany:
+                value:
+                  name: Acme Corp
+                  location: New York, NY
+                  website: https://acme.example.com
+                summary: Update company
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Company'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Company'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+        '400':
+          description: Validation error
+        '404':
+          description: Not found
+    patch:
+      operationId: companies_partial_update
+      description: Updates one or more fields of a company by ID.
+      summary: Partially update a company
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this company.
+        required: true
+      tags:
+      - companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompany'
+            examples:
+              PartialUpdateCompany:
+                value:
+                  location: Austin, TX
+                summary: Partial update company
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompany'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompany'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+        '400':
+          description: Validation error
+        '404':
+          description: Not found
+    delete:
+      operationId: companies_destroy
+      description: Permanently deletes a company and all its associated jobs.
+      summary: Delete a company
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this company.
+        required: true
+      tags:
+      - companies
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+        '404':
+          description: Not found
+  /api/jobs/:
+    get:
+      operationId: jobs_list
+      description: Returns a paginated list of jobs. Supports filtering by `job_type`
+        and `location`, salary range filtering via `salary_min` (≥ value) and `salary_max`
+        (≤ value), full-text search on `title`, and ordering by `created_at` or `salary_min`.
+      summary: List all job postings
+      parameters:
+      - in: query
+        name: job_type
+        schema:
+          type: string
+          enum:
+          - contract
+          - full_time
+          - internship
+          - part_time
+        description: |-
+          * `full_time` - Full Time
+          * `part_time` - Part Time
+          * `contract` - Contract
+          * `internship` - Internship
+      - in: query
+        name: location
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: salary_max
+        schema:
+          type: number
+      - in: query
+        name: salary_min
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJobList'
+          description: ''
+    post:
+      operationId: jobs_create
+      description: Creates and returns a new job posting associated with a company.
+      summary: Create a job posting
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+            examples:
+              CreateJob:
+                value:
+                  title: Backend Engineer
+                  job_type: full_time
+                  location: Remote
+                  salary_min: '80000.00'
+                  salary_max: '120000.00'
+                  company_id: 1
+                summary: Create job
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Job'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+        '400':
+          description: Validation error
+  /api/jobs/{id}/:
+    get:
+      operationId: jobs_retrieve
+      description: Returns a single job posting by ID, including nested company details.
+      summary: Retrieve a job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+        '404':
+          description: Not found
+    put:
+      operationId: jobs_update
+      description: Fully updates a job posting by ID.
+      summary: Update a job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+            examples:
+              UpdateJob:
+                value:
+                  title: Senior Backend Engineer
+                  job_type: full_time
+                  location: Remote
+                  salary_min: '100000.00'
+                  salary_max: '150000.00'
+                  company_id: 1
+                summary: Update job
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Job'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+        '400':
+          description: Validation error
+        '404':
+          description: Not found
+    patch:
+      operationId: jobs_partial_update
+      description: Updates one or more fields of a job posting by ID.
+      summary: Partially update a job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJob'
+            examples:
+              PartialUpdateJob:
+                value:
+                  salary_max: '130000.00'
+                summary: Partial update job
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedJob'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedJob'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+        '400':
+          description: Validation error
+        '404':
+          description: Not found
+    delete:
+      operationId: jobs_destroy
+      description: Permanently deletes a job posting and all its associated applications.
+      summary: Delete a job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+        '404':
+          description: Not found
+  /api/jobs/{id}/apply/:
+    post:
+      operationId: jobs_apply_create
+      description: Submits a job application for the specified job. Each applicant
+        email may only apply once per job. The `status` field is set to `pending`
+        automatically.
+      summary: Apply to a job
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+            examples:
+              ApplyToJob:
+                value:
+                  applicant_name: Jane Doe
+                  applicant_email: jane@example.com
+                summary: Apply to job
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Application'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Application'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+          description: ''
+        '400':
+          description: Validation error — duplicate application or invalid field
+        '404':
+          description: Not found
+components:
+  schemas:
+    Application:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+          readOnly: true
+        job_id:
+          type: integer
+          writeOnly: true
+        applicant_name:
+          type: string
+          maxLength: 255
+        applicant_email:
+          type: string
+          format: email
+          maxLength: 254
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        applied_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - applicant_email
+      - applicant_name
+      - applied_at
+      - id
+      - job
+      - job_id
+      - status
+    Company:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          maxLength: 255
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+      required:
+      - id
+      - location
+      - name
+      - website
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        job_type:
+          $ref: '#/components/schemas/JobTypeEnum'
+        location:
+          type: string
+          maxLength: 255
+        salary_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        salary_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        company:
+          allOf:
+          - $ref: '#/components/schemas/Company'
+          readOnly: true
+        company_id:
+          type: integer
+          writeOnly: true
+        days_since_posted:
+          type: integer
+          nullable: true
+          readOnly: true
+      required:
+      - company
+      - company_id
+      - days_since_posted
+      - id
+      - location
+      - salary_max
+      - salary_min
+      - title
+    JobTypeEnum:
+      enum:
+      - full_time
+      - part_time
+      - contract
+      - internship
+      type: string
+      description: |-
+        * `full_time` - Full Time
+        * `part_time` - Part Time
+        * `contract` - Contract
+        * `internship` - Internship
+    PaginatedApplicationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Application'
+    PaginatedCompanyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Company'
+    PaginatedJobList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+    PatchedApplication:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+          readOnly: true
+        job_id:
+          type: integer
+          writeOnly: true
+        applicant_name:
+          type: string
+          maxLength: 255
+        applicant_email:
+          type: string
+          format: email
+          maxLength: 254
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          readOnly: true
+        applied_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedCompany:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        location:
+          type: string
+          maxLength: 255
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+    PatchedJob:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        job_type:
+          $ref: '#/components/schemas/JobTypeEnum'
+        location:
+          type: string
+          maxLength: 255
+        salary_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        salary_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        company:
+          allOf:
+          - $ref: '#/components/schemas/Company'
+          readOnly: true
+        company_id:
+          type: integer
+          writeOnly: true
+        days_since_posted:
+          type: integer
+          nullable: true
+          readOnly: true
+    StatusEnum:
+      enum:
+      - pending
+      - reviewed
+      - accepted
+      - rejected
+      - withdrawn
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `reviewed` - Reviewed
+        * `accepted` - Accepted
+        * `rejected` - Rejected
+        * `withdrawn` - Withdrawn
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+tags:
+- name: companies
+  description: Create and manage employer company profiles.
+- name: jobs
+  description: Post and search job openings. Supports filtering, search, and ordering.
+- name: applications
+  description: Track job applications and advance their status through the hiring
+    pipeline.
+- name: admin
+  description: Django admin interface for superuser management.

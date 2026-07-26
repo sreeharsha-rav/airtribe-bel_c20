@@ -1,0 +1,310 @@
+openapi: 3.0.3
+info:
+  title: TeamBoard API
+  version: 1.0.0
+  description: 'A RESTful API for TeamBoard, a knowledge base and query logging system
+    for companies. '
+paths:
+  /api/admin/usage-summary/:
+    get:
+      operationId: admin_usage_summary_retrieve
+      description: 'Returns platform-wide usage statistics: total queries ever made,
+        number of distinct companies that have queried, and the top 5 most-searched
+        terms. Only users belonging to a company with the ADMIN role can access this
+        endpoint.'
+      summary: Get Platform Usage Summary
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Usage summary retrieved successfully.
+        '401':
+          description: Authentication required.
+        '403':
+          description: Permission denied. Admin role required.
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Validates credentials using Django's `authenticate()` backend.
+        Returns a JWT `access` token, `company_name`, and `api_key` on success.
+      summary: Login and obtain JWT tokens
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - username
+              - password
+              properties:
+                username:
+                  type: string
+                  example: acmecorp
+                password:
+                  type: string
+                  example: securepass123
+            examples:
+              ValidLogin:
+                value:
+                  username: acmecorp
+                  password: securepass123
+                summary: Valid login
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Login successful.
+        '400':
+          description: Missing username or password.
+        '401':
+          description: Invalid credentials or inactive account.
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Creates a new user account and an associated company profile with
+        the default role of `CLIENT`. Returns the newly generated API key and a JWT
+        access token on success.
+      summary: Register a new user and company profile
+      tags:
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+            examples:
+              CompanyRegistration:
+                value:
+                  username: acmecorp
+                  password: securepass123
+                  company_name: Acme Corp
+                  email: dev@acmecorp.com
+                summary: Company registration
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          description: User and Company created successfully.
+        '400':
+          description: Validation error — missing fields, password too short, or duplicate
+            username.
+  /api/kb/query/:
+    post:
+      operationId: kb_query_create
+      description: Search for KB entries by keyword. Matches against question or answer
+        fields. Queries are logged automatically.
+      summary: Query the Knowledge Base
+      tags:
+      - KB
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - search
+              properties:
+                search:
+                  type: string
+                  example: how to use select_related
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Query successful.
+        '400':
+          description: Missing search parameter.
+        '401':
+          description: Authentication required.
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - ht
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        company_name:
+          type: string
+          writeOnly: true
+          maxLength: 255
+      required:
+      - company_name
+      - email
+      - password
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
