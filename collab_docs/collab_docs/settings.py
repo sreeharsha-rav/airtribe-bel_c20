@@ -160,8 +160,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    # AllowAny until auth is actually built (login/JWT issuance is out of
+    # scope for now) — IsAuthenticated with no way to obtain a token would
+    # make every endpoint permanently unreachable, including from Swagger.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
 }
 
@@ -173,4 +176,14 @@ SPECTACULAR_SETTINGS = {
         'and control access with role-based permissions.'
     ),
     'VERSION': '1.0.0',
+    # Explicit order + description for each Swagger UI folder (default is
+    # first-seen order, which depends on router registration order).
+    'TAGS': [
+        {'name': 'Users', 'description': 'Create and look up users.'},
+        {'name': 'Workspaces', 'description': 'Workspaces, membership, and summary stats.'},
+        {'name': 'Documents', 'description': 'Documents, versions, and per-document stats.'},
+        {'name': 'Comments', 'description': 'Threaded comments on documents.'},
+        {'name': 'Tags', 'description': 'Tags and their document associations.'},
+        {'name': 'Audit Logs', 'description': 'Read-only log of document create/update actions.'},
+    ],
 }
