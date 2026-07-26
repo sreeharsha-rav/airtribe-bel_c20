@@ -24,6 +24,8 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 - [collab_docs](./collab_docs/): A backend REST API for a simplified collaborative document platform — create workspaces, invite collaborators, write and version documents, leave comments, and control access with role-based permissions.
 
+- [sub_ledger](./sub_ledger/): A backend REST API for a simplified SaaS subscription & billing system — manage plans, customers, subscriptions, invoices, payments, and an append-only ledger. Demonstrates a layered LLD (routes/services/repositories/models) and the Repository pattern.
+
 ## Prerequisites
 
 - Python 3.12+
