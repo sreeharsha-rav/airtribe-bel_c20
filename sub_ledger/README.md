@@ -32,7 +32,111 @@ sub_ledger/
 
 ## Data Models
 
-<!-- TODO -->
+Six models, all in `billing/models.py`. Full ERD, business-rule ownership, and locked
+design decisions live in [DESIGN.md](DESIGN.md#1-entity-relationship-diagram); this is
+the quick-reference version.
+
+```mermaid
+erDiagram
+    PLAN {
+        int id PK
+        string name
+        string description
+        string billing_cycle "monthly | quarterly | yearly | custom"
+        numeric price "> 0"
+        string currency
+        string status "active | inactive"
+        datetime created_at
+        datetime updated_at
+    }
+
+    CUSTOMER {
+        int id PK
+        string name
+        string email "unique"
+        string company_name
+        string status "active | inactive"
+        datetime created_at
+    }
+
+    SUBSCRIPTION {
+        int id PK
+        int customer_id FK
+        int plan_id FK
+        string status "active | cancelled"
+        datetime start_date
+        datetime current_period_start
+        datetime current_period_end
+        datetime cancelled_at "nullable"
+    }
+
+    INVOICE {
+        int id PK
+        int subscription_id FK
+        int customer_id FK
+        numeric amount_due
+        numeric amount_paid
+        string currency
+        string status "draft|issued|partially_paid|paid|overdue|void"
+        datetime period_start
+        datetime period_end
+        datetime due_date "= period_end"
+        datetime created_at
+    }
+
+    PAYMENT_ATTEMPT {
+        int id PK
+        int invoice_id FK
+        numeric amount
+        string currency
+        string status "success | failed"
+        string provider_reference
+        string failure_reason
+        datetime created_at
+    }
+
+    LEDGER_ENTRY {
+        int id PK
+        int customer_id FK
+        int invoice_id FK
+        string entry_type "invoice_created|payment_success|payment_failure"
+        numeric amount "positive magnitude"
+        string currency
+        string reference_id "invoice:{id} | payment:{id}"
+        string description
+        datetime created_at
+    }
+
+    CUSTOMER ||--o{ SUBSCRIPTION : "has many"
+    PLAN ||--o{ SUBSCRIPTION : "has many"
+    SUBSCRIPTION ||--o{ INVOICE : "has many"
+    INVOICE ||--o{ PAYMENT_ATTEMPT : "has many"
+    INVOICE ||--o{ LEDGER_ENTRY : "linked to"
+    CUSTOMER ||--o{ LEDGER_ENTRY : "has many"
+```
+
+| Model | Purpose | Key fields |
+|---|---|---|
+| `Plan` | Subscription plan a customer can be signed up for. | `price` (`> 0`, `DecimalField(12,2)`), `billing_cycle`, `currency` (default `USD`), `status` |
+| `Customer` | Account being billed. | `email` (unique), `company_name`, `status` |
+| `Subscription` | Links a `Customer` to a `Plan`; tracks the current billing period. | `customer` FK, `plan` FK, `status` (`active`/`cancelled`), `current_period_start`/`current_period_end`, `cancelled_at` |
+| `Invoice` | A billable charge for one subscription period. | `subscription` FK, `customer` FK, `amount_due`/`amount_paid`, `status`, `period_start`/`period_end`, `due_date` (= `period_end`) |
+| `PaymentAttempt` | One try at paying an invoice — recorded whether it succeeds or fails. | `invoice` FK, `amount`, `status` (`success`/`failed`), `failure_reason` |
+| `LedgerEntry` | Append-only audit trail of every billing event. | `customer` FK, `invoice` FK, `entry_type`, `amount` (always positive), `reference_id` (`invoice:{id}` / `payment:{id}`) |
+
+**Relationships**
+
+- `Customer` → many `Subscription`, many `LedgerEntry`
+- `Plan` → many `Subscription`
+- `Subscription` → many `Invoice`
+- `Invoice` → many `PaymentAttempt`, many `LedgerEntry`
+
+**Enforced at the model layer**
+
+- Every cross-entity FK uses `on_delete=PROTECT` — financial history can never be silently cascade-deleted.
+- `Plan.price` requires `MinValueValidator(0.01)`.
+- `Customer.email` is `unique=True`.
+- `LedgerEntry.save()`/`delete()` raise `ValueError` on any attempt to update or delete an existing row — the model-level backstop for append-only, on top of the service/repository layer never exposing an update path.
 
 ---
 
