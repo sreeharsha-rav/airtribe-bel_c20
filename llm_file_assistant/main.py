@@ -1,17 +1,26 @@
 """Terminal chat client for a LangChain agent with in-memory, per-thread history."""
 
-from typing import Sequence
+from typing import Iterator, Sequence, cast
 
 from dotenv import load_dotenv
-from rich.console import Console
+from rich.console import Console, Group
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
 
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
-from langchain.messages import AIMessage, AnyMessage, HumanMessage, RemoveMessage, ToolMessage
+from langchain.messages import (
+    AIMessage,
+    AnyMessage,
+    HumanMessage,
+    ReasoningContentBlock,
+    RemoveMessage,
+    TextContentBlock,
+    ToolMessage,
+)
 from langchain_core.language_models import BaseChatModel
+from langchain_core.language_models.chat_model_stream import ChatModelStream
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
@@ -24,6 +33,7 @@ SYSTEM_PROMPT = (
     "If you don't know the answer, say 'I don't know' instead of making up an answer."
 )
 DEFAULT_THREAD_ID = "thread_001"
+SHOW_REASONING_DEFAULT = False
 
 
 # --- Agent setup -------------------------------------------------------------
@@ -45,27 +55,33 @@ def build_thread_config(thread_id: str = DEFAULT_THREAD_ID) -> RunnableConfig:
     return {"configurable": {"thread_id": thread_id}}
 
 
-# --- History rendering ---------------------------------------------------------
+# --- Message content helpers ---------------------------------------------------
 
-def _message_text(message: AnyMessage) -> str:
-    """Extracts displayable text from a message's content (str or content-block list)."""
+def _split_message_blocks(message: AnyMessage) -> tuple[str, str]:
+    """Splits a message's content into (reasoning_text, text).
+
+    Content is either a plain string (no reasoning) or a list of v1
+    content blocks — `TextContentBlock` (`text`) and `ReasoningContentBlock`
+    (`reasoning`) hold their text under different keys, so they can't be
+    read with one shared field name.
+    """
     content = message.content
     if isinstance(content, str):
-        return content
+        return "", content
 
-    parts: list[str] = []
+    reasoning_parts: list[str] = []
+    text_parts: list[str] = []
     for block in content:
-        if isinstance(block, dict):
-            if block.get("type") in ("text", "output_text", "reasoning"):
-                parts.append(block.get("text", ""))
-        else:
-            text = getattr(block, "text", None)
-            if text:
-                parts.append(text)
-    return "".join(parts)
+        if not isinstance(block, dict):
+            continue
+        if block["type"] == "reasoning":
+            reasoning_parts.append(cast(ReasoningContentBlock, block).get("reasoning", ""))
+        elif block["type"] == "text":
+            text_parts.append(cast(TextContentBlock, block).get("text", ""))
+    return "".join(reasoning_parts), "".join(text_parts)
 
 
-def render_history(console: Console, messages: Sequence[AnyMessage]) -> None:
+def render_history(console: Console, messages: Sequence[AnyMessage], *, show_reasoning: bool) -> None:
     """Renders an agent thread's message history to the console."""
     if not messages:
         console.print(Panel("[yellow]No chat history found.[/yellow]", border_style="yellow"))
@@ -73,19 +89,22 @@ def render_history(console: Console, messages: Sequence[AnyMessage]) -> None:
 
     for message in messages:
         if isinstance(message, HumanMessage):
-            text = _message_text(message)
+            _, text = _split_message_blocks(message)
             if text:
                 console.print(Panel(text, title="You", border_style="cyan"))
 
         elif isinstance(message, AIMessage):
-            text = _message_text(message)
+            reasoning_text, text = _split_message_blocks(message)
+            if show_reasoning and reasoning_text:
+                console.print(Panel(reasoning_text, title="Reasoning", border_style="magenta", style="dim italic"))
             if text:
                 console.print(Panel(Markdown(text), title="Assistant", border_style="green"))
             for tool_call in message.tool_calls or []:
                 console.print(f"[dim]Tool call: {tool_call['name']}({tool_call['args']})[/dim]")
 
         elif isinstance(message, ToolMessage):
-            console.print(f"[dim]Tool result ({message.name}): {_message_text(message)}[/dim]")
+            _, text = _split_message_blocks(message)
+            console.print(f"[dim]Tool result ({message.name}): {text}[/dim]")
 
 
 # --- Thread history operations --------------------------------------------------
@@ -100,11 +119,40 @@ def clear_history(agent: CompiledStateGraph, config: RunnableConfig) -> None:
 
 # --- Streaming reply -----------------------------------------------------------
 
+def _iter_message_deltas(item: ChatModelStream) -> Iterator[tuple[str, str]]:
+    """Yields ("reasoning" | "text", delta) tuples from a message stream's
+    raw `content-block-delta` events, in arrival order.
+
+    `ChatModelStream.text` and `.reasoning` each only report done once the
+    whole message finishes, so iterating one alone can't show reasoning
+    and the final answer live as they actually arrive. Raw event iteration
+    (documented on `ChatModelStream`) preserves arrival order across both.
+    """
+    for event in item:
+        if event.get("event") != "content-block-delta":
+            continue
+        delta = event.get("delta") or {}
+        if delta.get("type") == "reasoning-delta":
+            yield "reasoning", delta.get("reasoning", "")
+        elif delta.get("type") == "text-delta":
+            yield "text", delta.get("text", "")
+
+
+def _render_turn(reasoning_text: str, assistant_text: str) -> Group:
+    renderables = []
+    if reasoning_text:
+        renderables.append(Panel(reasoning_text, title="Reasoning", border_style="magenta", style="dim italic"))
+    renderables.append(Panel(Markdown(assistant_text or "..."), title="Assistant", border_style="green"))
+    return Group(*renderables)
+
+
 def stream_assistant_reply(
     agent: CompiledStateGraph,
     config: RunnableConfig,
     user_message: str,
     console: Console,
+    *,
+    show_reasoning: bool,
 ) -> None:
     """Streams the assistant's reply for a single user turn, live-updating the console."""
     stream = agent.stream_events(
@@ -113,22 +161,22 @@ def stream_assistant_reply(
         version="v3",
     )
 
+    reasoning_buffer = ""
     assistant_text_buffer = ""
     console.print()  # Add spacing
 
-    with Live(Panel(Markdown("..."), title="Assistant", border_style="green"), refresh_per_second=10, console=console) as live:
+    with Live(_render_turn("", ""), refresh_per_second=10, console=console) as live:
         for kind, item in stream.interleave("messages"):
-            if kind == "messages":
-                for delta in item.text:
+            if kind != "messages":
+                continue
+            for delta_kind, delta in _iter_message_deltas(item):
+                if delta_kind == "reasoning":
+                    if not show_reasoning:
+                        continue
+                    reasoning_buffer += delta
+                else:
                     assistant_text_buffer += delta
-                    live.update(Panel(Markdown(assistant_text_buffer), title="Assistant", border_style="green"))
-
-            # FUTURE: Handle tool calls if needed
-            # elif kind == "tool_calls":
-            #     print(f"\nTool call: {item.tool_name}({item.input})")
-            #     for delta in item.output_deltas:
-            #         print(delta, end="", flush=True)
-            #     print(f"\nTool result: {item.output}")
+                live.update(_render_turn(reasoning_buffer, assistant_text_buffer))
 
         stream.output  # Drive the run to completion
 
@@ -136,9 +184,12 @@ def stream_assistant_reply(
 # --- REPL ------------------------------------------------------------------------
 
 def run_chat_loop(agent: CompiledStateGraph, config: RunnableConfig, console: Console) -> None:
+    show_reasoning = SHOW_REASONING_DEFAULT
+
     console.print(Panel(
         "[bold green]Chat started![/bold green] Type 'exit' or 'quit' to end.\n"
-        "[yellow]Type 'clear' to clear chat history, 'load' to show previous history.[/yellow]",
+        "[yellow]Type 'clear' to clear chat history, 'load' to show previous history, "
+        "'reasoning' to toggle showing the model's reasoning.[/yellow]",
         title="LangChain Chat", border_style="cyan",
     ))
 
@@ -158,10 +209,16 @@ def run_chat_loop(agent: CompiledStateGraph, config: RunnableConfig, console: Co
             continue
 
         if user_message.lower() == "load":
-            render_history(console, get_history(agent, config))
+            render_history(console, get_history(agent, config), show_reasoning=show_reasoning)
             continue
 
-        stream_assistant_reply(agent, config, user_message, console)
+        if user_message.lower() == "reasoning":
+            show_reasoning = not show_reasoning
+            status = "on" if show_reasoning else "off"
+            console.print(Panel(f"[bold yellow]Reasoning display turned {status}.[/bold yellow]", border_style="yellow"))
+            continue
+
+        stream_assistant_reply(agent, config, user_message, console, show_reasoning=show_reasoning)
 
 
 def main() -> None:
