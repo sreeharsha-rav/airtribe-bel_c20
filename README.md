@@ -24,6 +24,8 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 - [collab_docs](./collab_docs/): A backend REST API for a simplified collaborative document platform — create workspaces, invite collaborators, write and version documents, leave comments, and control access with role-based permissions.
 
+- [llm_file_assistant](./llm_file_assistant/): A terminal chat agent built with LangChain + LangGraph that manages files inside a sandboxed directory, demoed as a Resume Filing Clerk. The agent lists, reads, keyword-searches, and writes resume files (`.txt`, `.docx`, `.pdf`) through sandboxed tool calls, with reasoning and tool calls streamed live in the terminal.
+
 ## Prerequisites
 
 - Python 3.12+
