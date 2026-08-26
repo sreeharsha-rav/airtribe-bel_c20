@@ -1,0 +1,27 @@
+Sam Okafor
+Backend Software Engineer
+sam.okafor@example.com | Atlanta, GA
+
+SUMMARY
+Backend engineer with 2 years of experience building REST APIs and
+services for early-stage products. Comfortable moving fast in a small team.
+
+SKILLS
+Node.js, Express, MongoDB, JavaScript, REST APIs, Git
+
+EXPERIENCE
+Backend Engineer, Kindleworth Labs (2023-Present)
+- Built and maintained REST APIs in Node.js/Express powering the company's
+  mobile app, serving around 10,000 daily active users.
+- Designed MongoDB schemas for the user and order data used across three
+  internal services.
+- Wrote integration tests with Jest, catching two production-impacting bugs
+  before release.
+
+Junior Developer, Fernglade Apps (2022-2023)
+- Fixed bugs and added small features to an Express.js backend under
+  senior engineer supervision.
+- Wrote documentation for internal API endpoints used by the frontend team.
+
+EDUCATION
+B.S. Computer Science, Georgia State University

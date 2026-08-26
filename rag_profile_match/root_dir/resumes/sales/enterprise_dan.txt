@@ -1,0 +1,27 @@
+Dan O'Brien
+Enterprise Account Executive
+dan.obrien@example.com | Chicago, IL
+
+SUMMARY
+Enterprise sales executive with 8 years closing complex, multi-stakeholder
+deals for B2B software. Consistent quota over-achiever.
+
+SKILLS
+Salesforce, enterprise negotiation, solution selling, forecasting, quota
+attainment
+
+EXPERIENCE
+Senior Enterprise Account Executive, Meridian Cloud Systems (2020-Present)
+- Closed $4.2M in new annual recurring revenue in FY2024, at 138% of quota.
+- Managed a pipeline of 25+ enterprise accounts in Salesforce, each with
+  6-12 month sales cycles.
+- Led contract negotiation for the company's largest deal to date, a
+  $900K multi-year agreement.
+
+Enterprise Account Executive, Castlewood Data (2016-2020)
+- Carried and exceeded a $1.5M annual quota for three consecutive years.
+- Built and maintained forecasting accuracy within 5% using Salesforce
+  pipeline reporting.
+
+EDUCATION
+B.S. Business Administration, University of Illinois

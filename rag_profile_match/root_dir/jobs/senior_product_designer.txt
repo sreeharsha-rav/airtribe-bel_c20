@@ -1,0 +1,23 @@
+Senior Product Designer
+Company: Healthcare fintech | Location: Bangalore, India (hybrid)
+
+About the role
+We're hiring a Senior Product Designer to lead design for our core
+product experience, from research through shipped, polished UI.
+
+Responsibilities
+- Own end-to-end product design for major features, from early concepts
+  to production-ready specs in Figma.
+- Build and evolve our design system in partnership with engineering.
+- Run or guide usability research to validate design decisions.
+- Mentor other designers and raise the bar for design craft.
+
+Must-have requirements
+- 6+ years of product design experience.
+- Strong portfolio of shipped product design work in Figma.
+- Experience building or scaling a design system.
+- Experience mentoring or leading other designers.
+
+Nice-to-have
+- Experience in fintech, healthcare, or another regulated industry.
+- Experience running usability testing or user research.

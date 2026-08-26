@@ -1,0 +1,29 @@
+Victor Alvarez
+Sales Engineer
+victor.alvarez@example.com | Austin, TX
+
+SUMMARY
+Technical pre-sales engineer with 5 years bridging sales and engineering,
+running product demos and technical evaluations for enterprise buyers.
+
+SKILLS
+Technical pre-sales, API integrations, solution demos, Python (scripting),
+Salesforce, proof-of-concept delivery
+
+EXPERIENCE
+Senior Sales Engineer, Ferrostack Cloud (2021-Present)
+- Ran technical discovery and live product demos for enterprise deals
+  averaging $250K ACV, supporting a $6M+ closed pipeline in FY2024.
+- Built custom Python scripts to demonstrate API integrations during
+  proof-of-concept evaluations.
+- Partnered with account executives to answer security and architecture
+  questionnaires for enterprise procurement.
+
+Sales Engineer, Quarrywood Systems (2019-2021)
+- Delivered proof-of-concept implementations for prospective customers
+  evaluating the platform's REST API.
+- Logged and tracked technical objections in Salesforce, feeding a
+  quarterly win/loss analysis.
+
+EDUCATION
+B.S. Computer Engineering, University of Texas at Austin

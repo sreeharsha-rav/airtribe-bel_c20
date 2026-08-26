@@ -1,0 +1,81 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 941 >>
+stream
+BT
+/F1 10 Tf
+14 TL
+50 742 Td
+(John Doe) Tj
+T*
+(Software Engineer) Tj
+T*
+(john.doe@example.com | Remote) Tj
+T*
+() Tj
+T*
+(SUMMARY) Tj
+T*
+(Generalist software engineer with 4 years of experience across backend) Tj
+T*
+(services and internal tooling, with strong Python experience.) Tj
+T*
+() Tj
+T*
+(SKILLS) Tj
+T*
+(Python, Flask, PostgreSQL, Docker, Git, REST APIs) Tj
+T*
+() Tj
+T*
+(EXPERIENCE) Tj
+T*
+(Software Engineer, Briarcliff Systems \(2022-Present\)) Tj
+T*
+(- Built internal tooling in Python \(Flask\) used by three teams daily.) Tj
+T*
+(- Wrote a Python migration script that moved 2M records between) Tj
+T*
+(  PostgreSQL databases with zero downtime.) Tj
+T*
+() Tj
+T*
+(Junior Developer, Oakhollow Software \(2020-2022\)) Tj
+T*
+(- Maintained a Python/Django billing service.) Tj
+T*
+(- Wrote automated tests in Python, raising coverage from 40% to 85%.) Tj
+T*
+() Tj
+T*
+(EDUCATION) Tj
+T*
+(B.S. Computer Science, Arizona State University) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000185 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1303
+%%EOF
