@@ -1,0 +1,27 @@
+Leo Rossi
+Business Intelligence Engineer
+leo.rossi@example.com | Milan, Italy
+
+SUMMARY
+BI engineer with 6 years designing data pipelines and reporting
+infrastructure for finance and operations stakeholders.
+
+SKILLS
+SQL, Tableau, Power BI, data pipelines, dbt, data warehousing
+
+EXPERIENCE
+BI Engineer, Torretta Financial Group (2020-Present)
+- Built dbt-based data pipelines feeding a Snowflake warehouse, cutting
+  nightly reporting refresh time from 4 hours to 40 minutes.
+- Migrated legacy Power BI reports to Tableau, standardizing the company's
+  reporting stack on a single platform.
+- Wrote and optimized SQL transformations used across finance and
+  operations dashboards.
+
+Reporting Analyst, Vallesecca Group (2017-2020)
+- Maintained Power BI dashboards for regional sales reporting.
+- Wrote SQL queries to reconcile discrepancies between source systems and
+  the reporting warehouse.
+
+EDUCATION
+B.Sc. Management Engineering, Politecnico di Milano

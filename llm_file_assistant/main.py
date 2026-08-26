@@ -1,6 +1,6 @@
 """Terminal chat client for a LangChain agent with in-memory, per-thread history."""
 
-from typing import Iterator, Sequence, cast
+from typing import Any, Iterator, Sequence, cast
 
 from dotenv import load_dotenv
 from rich.console import Console, Group
@@ -26,14 +26,31 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.graph.state import CompiledStateGraph
 
+from fs_tools import keyword_search, list_directory, read_file, write_file
+
 MODEL_NAME = "openai/gpt-oss-120b"
 MODEL_PROVIDER = "openrouter"
 SYSTEM_PROMPT = (
-    "You are a helpful assistant, be concise and provide accurate information. "
-    "If you don't know the answer, say 'I don't know' instead of making up an answer."
+    "You are the Resume Filing Clerk, an assistant that manages a folder of candidate "
+    "resumes on behalf of a hiring team. All resumes live under a single sandboxed "
+    "directory (root_dir/), organized into role subfolders such as engineering/, "
+    "marketing/, sales/, design/, and data/. You have four tools, and no other access "
+    "to the filesystem:\n"
+    "- list_directory(path): see what role folders and candidate files exist.\n"
+    "- read_file(path): read one resume's full text.\n"
+    "- keyword_search(query, path): find which resumes mention a skill or keyword.\n"
+    "- write_file(path, content): create a new file, e.g. a shortlist or summary "
+    "report. It will refuse to overwrite an existing file.\n\n"
+    "Always explore before acting: list or search before you read, and read the "
+    "actual resume text before describing a candidate's skills or experience — never "
+    "invent details about a candidate you haven't read. When you write a file, say "
+    "exactly which file you created and which source resumes it's based on. Be "
+    "concise and accurate; if something isn't in the resumes you've read, say you "
+    "don't know instead of guessing."
 )
 DEFAULT_THREAD_ID = "thread_001"
 SHOW_REASONING_DEFAULT = False
+TOOLS = [list_directory, read_file, keyword_search, write_file]
 
 
 # --- Agent setup -------------------------------------------------------------
@@ -46,6 +63,7 @@ def build_assistant_agent(model: BaseChatModel | None = None) -> CompiledStateGr
     return create_agent(
         model=model or build_chat_model(),
         system_prompt=SYSTEM_PROMPT,
+        tools=TOOLS,
         checkpointer=InMemorySaver(),
         name="assistant_agent",
     )
@@ -119,29 +137,47 @@ def clear_history(agent: CompiledStateGraph, config: RunnableConfig) -> None:
 
 # --- Streaming reply -----------------------------------------------------------
 
-def _iter_message_deltas(item: ChatModelStream) -> Iterator[tuple[str, str]]:
-    """Yields ("reasoning" | "text", delta) tuples from a message stream's
-    raw `content-block-delta` events, in arrival order.
+def _iter_message_deltas(item: ChatModelStream) -> Iterator[tuple[str, Any]]:
+    """Yields ("reasoning" | "text" | "tool_call", delta) tuples from a message
+    stream's raw `content-block-delta` events, in arrival order.
 
-    `ChatModelStream.text` and `.reasoning` each only report done once the
-    whole message finishes, so iterating one alone can't show reasoning
-    and the final answer live as they actually arrive. Raw event iteration
-    (documented on `ChatModelStream`) preserves arrival order across both.
+    `ChatModelStream.text`, `.reasoning`, and `.tool_calls` each only report
+    done once the whole message finishes, so iterating one alone can't show
+    reasoning, text, and tool calls live as they actually arrive relative to
+    each other. Raw event iteration (documented on `ChatModelStream`)
+    preserves arrival order across all three. A tool call in progress shows
+    up as a `block-delta` whose `fields` carry a `tool_call_chunk` with
+    `name`/`args`/`id`/`index`.
     """
     for event in item:
         if event.get("event") != "content-block-delta":
             continue
         delta = event.get("delta") or {}
-        if delta.get("type") == "reasoning-delta":
+        delta_type = delta.get("type")
+        if delta_type == "reasoning-delta":
             yield "reasoning", delta.get("reasoning", "")
-        elif delta.get("type") == "text-delta":
+        elif delta_type == "text-delta":
             yield "text", delta.get("text", "")
+        elif delta_type == "block-delta":
+            fields = delta.get("fields") or {}
+            if fields.get("type") == "tool_call_chunk":
+                yield "tool_call", fields
 
 
-def _render_turn(reasoning_text: str, assistant_text: str) -> Group:
+def _render_tool_calls(tool_call_buffers: dict[int, dict[str, str]]) -> list[Panel]:
+    panels = []
+    for buf in tool_call_buffers.values():
+        name = buf.get("name") or "..."
+        args = buf.get("args") or ""
+        panels.append(Panel(f"{name}({args})", title="Tool Call", border_style="yellow", style="dim"))
+    return panels
+
+
+def _render_turn(reasoning_text: str, assistant_text: str, tool_call_buffers: dict[int, dict[str, str]] | None = None) -> Group:
     renderables = []
     if reasoning_text:
         renderables.append(Panel(reasoning_text, title="Reasoning", border_style="magenta", style="dim italic"))
+    renderables.extend(_render_tool_calls(tool_call_buffers or {}))
     renderables.append(Panel(Markdown(assistant_text or "..."), title="Assistant", border_style="green"))
     return Group(*renderables)
 
@@ -163,9 +199,10 @@ def stream_assistant_reply(
 
     reasoning_buffer = ""
     assistant_text_buffer = ""
+    tool_call_buffers: dict[int, dict[str, str]] = {}
     console.print()  # Add spacing
 
-    with Live(_render_turn("", ""), refresh_per_second=10, console=console) as live:
+    with Live(_render_turn("", "", tool_call_buffers), refresh_per_second=10, console=console) as live:
         for kind, item in stream.interleave("messages"):
             if kind != "messages":
                 continue
@@ -174,9 +211,18 @@ def stream_assistant_reply(
                     if not show_reasoning:
                         continue
                     reasoning_buffer += delta
-                else:
+                elif delta_kind == "text":
                     assistant_text_buffer += delta
-                live.update(_render_turn(reasoning_buffer, assistant_text_buffer))
+                elif delta_kind == "tool_call":
+                    index = delta.get("index", 0)
+                    buf = tool_call_buffers.setdefault(index, {"name": "", "args": ""})
+                    if delta.get("name"):
+                        buf["name"] = delta["name"]
+                    if delta.get("args") is not None:
+                        # `args` arrives as the accumulated-so-far string, not an
+                        # incremental fragment — replace rather than concatenate.
+                        buf["args"] = delta["args"]
+                live.update(_render_turn(reasoning_buffer, assistant_text_buffer, tool_call_buffers))
 
         stream.output  # Drive the run to completion
 
