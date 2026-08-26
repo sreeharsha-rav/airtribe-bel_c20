@@ -1,0 +1,26 @@
+Carol Diaz
+Growth Marketing Manager
+carol.diaz@example.com | Denver, CO
+
+SUMMARY
+Growth marketer who blends SEO, experimentation, and analytics to drive
+acquisition. Five years scaling signup funnels for B2B SaaS products.
+
+SKILLS
+SEO, A/B testing, Google Analytics, growth loops, SQL, HubSpot
+
+EXPERIENCE
+Growth Marketing Manager, Alderway SaaS (2021-Present)
+- Ran an SEO overhaul of the marketing site, growing organic traffic 3x in
+  12 months.
+- Built an A/B testing program using Google Analytics and Optimizely,
+  lifting trial signup rate by 18%.
+- Designed a referral growth loop that now drives 15% of new signups.
+
+Growth Marketer, Pinecrest Tools (2019-2021)
+- Owned keyword research and on-page SEO for the blog, doubling monthly
+  organic sessions.
+- Used SQL to build cohort dashboards tracking activation and retention.
+
+EDUCATION
+B.A. Marketing, University of Colorado Boulder

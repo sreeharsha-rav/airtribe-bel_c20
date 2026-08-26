@@ -1,0 +1,87 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 1220 >>
+stream
+BT
+/F1 10 Tf
+14 TL
+50 742 Td
+(Priya Nair) Tj
+T*
+(Frontend Software Engineer) Tj
+T*
+(priya.nair@example.com | Bengaluru, India) Tj
+T*
+() Tj
+T*
+(SUMMARY) Tj
+T*
+(Frontend engineer with a focus on accessible, well-tested user interfaces.) Tj
+T*
+(Six years building consumer-facing web applications.) Tj
+T*
+() Tj
+T*
+(SKILLS) Tj
+T*
+(React, TypeScript, Next.js, Jest, Playwright, CSS/Tailwind, Storybook) Tj
+T*
+() Tj
+T*
+(EXPERIENCE) Tj
+T*
+(Senior Frontend Engineer, Harborlight Media \(2021-Present\)) Tj
+T*
+(- Led the migration of the main web app from class components to React) Tj
+T*
+(  hooks and TypeScript, removing over 5,000 lines of legacy code.) Tj
+T*
+(- Introduced Playwright end-to-end tests, catching regressions before) Tj
+T*
+(  release for the first time in the product's history.) Tj
+T*
+(- Improved Lighthouse accessibility score from 68 to 96 across the app.) Tj
+T*
+() Tj
+T*
+(Frontend Engineer, Ridgeline Software \(2018-2021\)) Tj
+T*
+(- Built a component library in Storybook adopted by three product teams.) Tj
+T*
+(- Wrote Jest unit tests for critical checkout flows, reducing production) Tj
+T*
+(  bugs reported per release by 30%.) Tj
+T*
+() Tj
+T*
+(EDUCATION) Tj
+T*
+(B.Tech Computer Science, IIT Bombay) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000185 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1583
+%%EOF
