@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-if OPENROUTER_API_KEY := os.getenv("OPENROUTER_API_KEY", ""):
-        raise ValueError("OPENROUTER_API_KEY is not set. Please set it in the environment variables or in a .env file.")
+if not (OPENROUTER_API_KEY := os.getenv("OPENROUTER_API_KEY", "")):
+    raise ValueError("OPENROUTER_API_KEY is not set. Please set it in the environment variables or in a .env file.")
 
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY", "")
 LANGSMITH_TRACING = os.getenv("LANGSMITH_TRACING", "")
