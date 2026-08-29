@@ -8,7 +8,6 @@
       "sql",
       "tableau",
       "python",
-      "pandas",
       "ab testing",
       "data modeling"
     ],
@@ -51,7 +50,7 @@
     "candidate_name": "Neha Verma",
     "skills": [
       "python",
-      "apache spark",
+      "spark",
       "airflow",
       "sql",
       "aws",
@@ -103,8 +102,7 @@
       "pytorch",
       "machine learning",
       "docker",
-      "aws",
-      "s3"
+      "aws"
     ],
     "total_experience_years": 8.0,
     "education_level": "Masters",
@@ -146,11 +144,7 @@
       "adobe illustrator",
       "adobe photoshop",
       "typography",
-      "packaging design",
-      "logo design",
-      "brand guidelines",
-      "photography",
-      "print campaigns"
+      "packaging design"
     ],
     "total_experience_years": 9.0,
     "education_level": "Bachelors",
@@ -172,7 +166,10 @@
       "design leadership",
       "mentoring",
       "ux strategy",
-      "interaction design"
+      "interaction design",
+      "design process",
+      "design critique",
+      "design handoff"
     ],
     "total_experience_years": 10.0,
     "education_level": "Masters",
@@ -298,12 +295,13 @@
     "dept": "engineering",
     "candidate_name": "Sam Okafor",
     "skills": [
-      "nodejs",
+      "node.js",
       "express",
       "mongodb",
       "javascript",
       "rest api",
-      "git"
+      "git",
+      "jest"
     ],
     "total_experience_years": 4.0,
     "education_level": "Bachelors",
@@ -500,7 +498,6 @@
     "dept": "marketing",
     "candidate_name": "Ivan Petrov",
     "skills": [
-      "seo",
       "technical seo",
       "keyword research",
       "google search console",
@@ -530,8 +527,7 @@
       "tiktok",
       "instagram",
       "content calendars",
-      "twitter",
-      "short-form video strategy"
+      "twitter"
     ],
     "total_experience_years": 7.0,
     "education_level": "Bachelors",
@@ -553,7 +549,7 @@
       "postgresql",
       "docker",
       "git",
-      "rest apis",
+      "rest api",
       "django"
     ],
     "total_experience_years": 6.0,
@@ -656,13 +652,12 @@
     "dept": "sales",
     "candidate_name": "Victor Alvarez",
     "skills": [
-      "technical pre-sales",
       "api integrations",
-      "solution demos",
       "python",
       "salesforce",
-      "proof-of-concept delivery",
-      "rest api"
+      "technical pre-sales",
+      "solution demos",
+      "proof-of-concept delivery"
     ],
     "total_experience_years": 7.0,
     "education_level": "Bachelors",

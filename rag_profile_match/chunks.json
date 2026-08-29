@@ -7,11 +7,11 @@
       "dept": "data",
       "candidate_name": "Raj Patel",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "sql",
         "tableau",
         "python",
-        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -26,11 +26,11 @@
       "dept": "data",
       "candidate_name": "Raj Patel",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "sql",
         "tableau",
         "python",
-        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -45,11 +45,11 @@
       "dept": "data",
       "candidate_name": "Raj Patel",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "sql",
         "tableau",
         "python",
-        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -64,11 +64,11 @@
       "dept": "data",
       "candidate_name": "Raj Patel",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "sql",
         "tableau",
         "python",
-        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -83,6 +83,7 @@
       "dept": "data",
       "candidate_name": "Leo Rossi",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "sql",
         "tableau",
@@ -103,6 +104,7 @@
       "dept": "data",
       "candidate_name": "Leo Rossi",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "sql",
         "tableau",
@@ -123,6 +125,7 @@
       "dept": "data",
       "candidate_name": "Leo Rossi",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "sql",
         "tableau",
@@ -143,6 +146,7 @@
       "dept": "data",
       "candidate_name": "Leo Rossi",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "sql",
         "tableau",
@@ -163,9 +167,10 @@
       "dept": "data",
       "candidate_name": "Neha Verma",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
-        "apache spark",
+        "spark",
         "airflow",
         "sql",
         "aws",
@@ -186,9 +191,10 @@
       "dept": "data",
       "candidate_name": "Neha Verma",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
-        "apache spark",
+        "spark",
         "airflow",
         "sql",
         "aws",
@@ -209,9 +215,10 @@
       "dept": "data",
       "candidate_name": "Neha Verma",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
-        "apache spark",
+        "spark",
         "airflow",
         "sql",
         "aws",
@@ -232,9 +239,10 @@
       "dept": "data",
       "candidate_name": "Neha Verma",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
-        "apache spark",
+        "spark",
         "airflow",
         "sql",
         "aws",
@@ -255,6 +263,7 @@
       "dept": "data",
       "candidate_name": "Hana Suzuki",
       "education_level": "Masters",
+      "total_experience_years": 5.0,
       "skills": [
         "python",
         "scikit-learn",
@@ -274,6 +283,7 @@
       "dept": "data",
       "candidate_name": "Hana Suzuki",
       "education_level": "Masters",
+      "total_experience_years": 5.0,
       "skills": [
         "python",
         "scikit-learn",
@@ -293,6 +303,7 @@
       "dept": "data",
       "candidate_name": "Hana Suzuki",
       "education_level": "Masters",
+      "total_experience_years": 5.0,
       "skills": [
         "python",
         "scikit-learn",
@@ -312,6 +323,7 @@
       "dept": "data",
       "candidate_name": "Hana Suzuki",
       "education_level": "Masters",
+      "total_experience_years": 5.0,
       "skills": [
         "python",
         "scikit-learn",
@@ -331,14 +343,14 @@
       "dept": "data",
       "candidate_name": "Sara Kim",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "tensorflow",
         "pytorch",
         "machine learning",
         "docker",
-        "aws",
-        "s3"
+        "aws"
       ],
       "section": "header"
     }
@@ -351,14 +363,14 @@
       "dept": "data",
       "candidate_name": "Sara Kim",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "tensorflow",
         "pytorch",
         "machine learning",
         "docker",
-        "aws",
-        "s3"
+        "aws"
       ],
       "section": "skills"
     }
@@ -371,14 +383,14 @@
       "dept": "data",
       "candidate_name": "Sara Kim",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "tensorflow",
         "pytorch",
         "machine learning",
         "docker",
-        "aws",
-        "s3"
+        "aws"
       ],
       "section": "experience"
     }
@@ -391,14 +403,14 @@
       "dept": "data",
       "candidate_name": "Sara Kim",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "tensorflow",
         "pytorch",
         "machine learning",
         "docker",
-        "aws",
-        "s3"
+        "aws"
       ],
       "section": "education"
     }
@@ -411,6 +423,7 @@
       "dept": "data",
       "candidate_name": "Owen Fitzgerald",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "sql",
         "python",
@@ -429,6 +442,7 @@
       "dept": "data",
       "candidate_name": "Owen Fitzgerald",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "sql",
         "python",
@@ -447,6 +461,7 @@
       "dept": "data",
       "candidate_name": "Owen Fitzgerald",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "sql",
         "python",
@@ -465,6 +480,7 @@
       "dept": "data",
       "candidate_name": "Owen Fitzgerald",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "sql",
         "python",
@@ -483,16 +499,13 @@
       "dept": "design",
       "candidate_name": "Nina Kapoor",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "brand identity",
         "adobe illustrator",
         "adobe photoshop",
         "typography",
-        "packaging design",
-        "logo design",
-        "brand guidelines",
-        "photography",
-        "print campaigns"
+        "packaging design"
       ],
       "section": "header"
     }
@@ -505,16 +518,13 @@
       "dept": "design",
       "candidate_name": "Nina Kapoor",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "brand identity",
         "adobe illustrator",
         "adobe photoshop",
         "typography",
-        "packaging design",
-        "logo design",
-        "brand guidelines",
-        "photography",
-        "print campaigns"
+        "packaging design"
       ],
       "section": "skills"
     }
@@ -527,16 +537,13 @@
       "dept": "design",
       "candidate_name": "Nina Kapoor",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "brand identity",
         "adobe illustrator",
         "adobe photoshop",
         "typography",
-        "packaging design",
-        "logo design",
-        "brand guidelines",
-        "photography",
-        "print campaigns"
+        "packaging design"
       ],
       "section": "experience"
     }
@@ -549,16 +556,13 @@
       "dept": "design",
       "candidate_name": "Nina Kapoor",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "brand identity",
         "adobe illustrator",
         "adobe photoshop",
         "typography",
-        "packaging design",
-        "logo design",
-        "brand guidelines",
-        "photography",
-        "print campaigns"
+        "packaging design"
       ],
       "section": "education"
     }
@@ -571,13 +575,17 @@
       "dept": "design",
       "candidate_name": "Priyanka Rao",
       "education_level": "Masters",
+      "total_experience_years": 10.0,
       "skills": [
         "figma",
         "design systems",
         "design leadership",
         "mentoring",
         "ux strategy",
-        "interaction design"
+        "interaction design",
+        "design process",
+        "design critique",
+        "design handoff"
       ],
       "section": "header"
     }
@@ -590,13 +598,17 @@
       "dept": "design",
       "candidate_name": "Priyanka Rao",
       "education_level": "Masters",
+      "total_experience_years": 10.0,
       "skills": [
         "figma",
         "design systems",
         "design leadership",
         "mentoring",
         "ux strategy",
-        "interaction design"
+        "interaction design",
+        "design process",
+        "design critique",
+        "design handoff"
       ],
       "section": "skills"
     }
@@ -609,13 +621,17 @@
       "dept": "design",
       "candidate_name": "Priyanka Rao",
       "education_level": "Masters",
+      "total_experience_years": 10.0,
       "skills": [
         "figma",
         "design systems",
         "design leadership",
         "mentoring",
         "ux strategy",
-        "interaction design"
+        "interaction design",
+        "design process",
+        "design critique",
+        "design handoff"
       ],
       "section": "experience"
     }
@@ -628,13 +644,17 @@
       "dept": "design",
       "candidate_name": "Priyanka Rao",
       "education_level": "Masters",
+      "total_experience_years": 10.0,
       "skills": [
         "figma",
         "design systems",
         "design leadership",
         "mentoring",
         "ux strategy",
-        "interaction design"
+        "interaction design",
+        "design process",
+        "design critique",
+        "design handoff"
       ],
       "section": "education"
     }
@@ -647,6 +667,7 @@
       "dept": "design",
       "candidate_name": "Liam O'Connell",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "adobe illustrator",
         "adobe photoshop",
@@ -665,6 +686,7 @@
       "dept": "design",
       "candidate_name": "Liam O'Connell",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "adobe illustrator",
         "adobe photoshop",
@@ -683,6 +705,7 @@
       "dept": "design",
       "candidate_name": "Liam O'Connell",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "adobe illustrator",
         "adobe photoshop",
@@ -701,6 +724,7 @@
       "dept": "design",
       "candidate_name": "Liam O'Connell",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "adobe illustrator",
         "adobe photoshop",
@@ -719,6 +743,7 @@
       "dept": "design",
       "candidate_name": "Zoe Bennett",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "figma",
         "prototyping",
@@ -737,6 +762,7 @@
       "dept": "design",
       "candidate_name": "Zoe Bennett",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "figma",
         "prototyping",
@@ -755,6 +781,7 @@
       "dept": "design",
       "candidate_name": "Zoe Bennett",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "figma",
         "prototyping",
@@ -773,6 +800,7 @@
       "dept": "design",
       "candidate_name": "Zoe Bennett",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "figma",
         "prototyping",
@@ -791,6 +819,7 @@
       "dept": "design",
       "candidate_name": "Maya Lindqvist",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
         "figma",
         "ui design",
@@ -809,6 +838,7 @@
       "dept": "design",
       "candidate_name": "Maya Lindqvist",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
         "figma",
         "ui design",
@@ -827,6 +857,7 @@
       "dept": "design",
       "candidate_name": "Maya Lindqvist",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
         "figma",
         "ui design",
@@ -845,6 +876,7 @@
       "dept": "design",
       "candidate_name": "Maya Lindqvist",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
         "figma",
         "ui design",
@@ -863,6 +895,7 @@
       "dept": "design",
       "candidate_name": "Tom Fischer",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "user research",
         "usability testing",
@@ -882,6 +915,7 @@
       "dept": "design",
       "candidate_name": "Tom Fischer",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "user research",
         "usability testing",
@@ -901,6 +935,7 @@
       "dept": "design",
       "candidate_name": "Tom Fischer",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "user research",
         "usability testing",
@@ -920,6 +955,7 @@
       "dept": "design",
       "candidate_name": "Tom Fischer",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "user research",
         "usability testing",
@@ -939,6 +975,7 @@
       "dept": "engineering",
       "candidate_name": "Alice Chen",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "django",
@@ -960,6 +997,7 @@
       "dept": "engineering",
       "candidate_name": "Alice Chen",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "django",
@@ -981,6 +1019,7 @@
       "dept": "engineering",
       "candidate_name": "Alice Chen",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "django",
@@ -1002,6 +1041,7 @@
       "dept": "engineering",
       "candidate_name": "Alice Chen",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "python",
         "django",
@@ -1023,13 +1063,15 @@
       "dept": "engineering",
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
-        "nodejs",
+        "node.js",
         "express",
         "mongodb",
         "javascript",
         "rest api",
-        "git"
+        "git",
+        "jest"
       ],
       "section": "header"
     }
@@ -1042,13 +1084,15 @@
       "dept": "engineering",
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
-        "nodejs",
+        "node.js",
         "express",
         "mongodb",
         "javascript",
         "rest api",
-        "git"
+        "git",
+        "jest"
       ],
       "section": "skills"
     }
@@ -1061,13 +1105,15 @@
       "dept": "engineering",
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
-        "nodejs",
+        "node.js",
         "express",
         "mongodb",
         "javascript",
         "rest api",
-        "git"
+        "git",
+        "jest"
       ],
       "section": "experience"
     }
@@ -1080,13 +1126,15 @@
       "dept": "engineering",
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
+      "total_experience_years": 4.0,
       "skills": [
-        "nodejs",
+        "node.js",
         "express",
         "mongodb",
         "javascript",
         "rest api",
-        "git"
+        "git",
+        "jest"
       ],
       "section": "education"
     }
@@ -1099,6 +1147,7 @@
       "dept": "engineering",
       "candidate_name": "Bob Martinez",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "kubernetes",
         "terraform",
@@ -1119,6 +1168,7 @@
       "dept": "engineering",
       "candidate_name": "Bob Martinez",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "kubernetes",
         "terraform",
@@ -1139,6 +1189,7 @@
       "dept": "engineering",
       "candidate_name": "Bob Martinez",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "kubernetes",
         "terraform",
@@ -1159,6 +1210,7 @@
       "dept": "engineering",
       "candidate_name": "Bob Martinez",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "kubernetes",
         "terraform",
@@ -1179,6 +1231,7 @@
       "dept": "engineering",
       "candidate_name": "Priya Nair",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "react",
         "typescript",
@@ -1200,6 +1253,7 @@
       "dept": "engineering",
       "candidate_name": "Priya Nair",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "react",
         "typescript",
@@ -1221,6 +1275,7 @@
       "dept": "engineering",
       "candidate_name": "Priya Nair",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "react",
         "typescript",
@@ -1242,6 +1297,7 @@
       "dept": "engineering",
       "candidate_name": "Priya Nair",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "react",
         "typescript",
@@ -1263,6 +1319,7 @@
       "dept": "engineering",
       "candidate_name": "Wei Zhang",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
         "django",
@@ -1283,6 +1340,7 @@
       "dept": "engineering",
       "candidate_name": "Wei Zhang",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
         "django",
@@ -1303,6 +1361,7 @@
       "dept": "engineering",
       "candidate_name": "Wei Zhang",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
         "django",
@@ -1323,6 +1382,7 @@
       "dept": "engineering",
       "candidate_name": "Wei Zhang",
       "education_level": "Masters",
+      "total_experience_years": 9.0,
       "skills": [
         "python",
         "django",
@@ -1343,6 +1403,7 @@
       "dept": "engineering",
       "candidate_name": "Farah Aziz",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "python",
         "pytorch",
@@ -1362,6 +1423,7 @@
       "dept": "engineering",
       "candidate_name": "Farah Aziz",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "python",
         "pytorch",
@@ -1381,6 +1443,7 @@
       "dept": "engineering",
       "candidate_name": "Farah Aziz",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "python",
         "pytorch",
@@ -1400,6 +1463,7 @@
       "dept": "engineering",
       "candidate_name": "Farah Aziz",
       "education_level": "Masters",
+      "total_experience_years": 7.0,
       "skills": [
         "python",
         "pytorch",
@@ -1419,6 +1483,7 @@
       "dept": "marketing",
       "candidate_name": "Maria Silva",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "content strategy",
         "seo",
@@ -1438,6 +1503,7 @@
       "dept": "marketing",
       "candidate_name": "Maria Silva",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "content strategy",
         "seo",
@@ -1457,6 +1523,7 @@
       "dept": "marketing",
       "candidate_name": "Maria Silva",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "content strategy",
         "seo",
@@ -1476,6 +1543,7 @@
       "dept": "marketing",
       "candidate_name": "Maria Silva",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "content strategy",
         "seo",
@@ -1495,6 +1563,7 @@
       "dept": "marketing",
       "candidate_name": "Derek Thompson",
       "education_level": "Bachelors",
+      "total_experience_years": 5.0,
       "skills": [
         "email marketing",
         "klaviyo",
@@ -1513,6 +1582,7 @@
       "dept": "marketing",
       "candidate_name": "Derek Thompson",
       "education_level": "Bachelors",
+      "total_experience_years": 5.0,
       "skills": [
         "email marketing",
         "klaviyo",
@@ -1531,6 +1601,7 @@
       "dept": "marketing",
       "candidate_name": "Derek Thompson",
       "education_level": "Bachelors",
+      "total_experience_years": 5.0,
       "skills": [
         "email marketing",
         "klaviyo",
@@ -1549,6 +1620,7 @@
       "dept": "marketing",
       "candidate_name": "Derek Thompson",
       "education_level": "Bachelors",
+      "total_experience_years": 5.0,
       "skills": [
         "email marketing",
         "klaviyo",
@@ -1567,6 +1639,7 @@
       "dept": "marketing",
       "candidate_name": "Carol Diaz",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "seo",
         "ab testing",
@@ -1587,6 +1660,7 @@
       "dept": "marketing",
       "candidate_name": "Carol Diaz",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "seo",
         "ab testing",
@@ -1607,6 +1681,7 @@
       "dept": "marketing",
       "candidate_name": "Carol Diaz",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "seo",
         "ab testing",
@@ -1627,6 +1702,7 @@
       "dept": "marketing",
       "candidate_name": "Carol Diaz",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "seo",
         "ab testing",
@@ -1647,6 +1723,7 @@
       "dept": "marketing",
       "candidate_name": "Elena Moreau",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "go-to-market strategy",
         "positioning",
@@ -1666,6 +1743,7 @@
       "dept": "marketing",
       "candidate_name": "Elena Moreau",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "go-to-market strategy",
         "positioning",
@@ -1685,6 +1763,7 @@
       "dept": "marketing",
       "candidate_name": "Elena Moreau",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "go-to-market strategy",
         "positioning",
@@ -1704,6 +1783,7 @@
       "dept": "marketing",
       "candidate_name": "Elena Moreau",
       "education_level": "Masters",
+      "total_experience_years": 8.0,
       "skills": [
         "go-to-market strategy",
         "positioning",
@@ -1723,8 +1803,8 @@
       "dept": "marketing",
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
-        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1744,8 +1824,8 @@
       "dept": "marketing",
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
-        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1765,8 +1845,8 @@
       "dept": "marketing",
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
-        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1786,8 +1866,8 @@
       "dept": "marketing",
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
-        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1807,6 +1887,7 @@
       "dept": "marketing",
       "candidate_name": "Ken Watanabe",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "social media strategy",
         "community management",
@@ -1814,8 +1895,7 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter",
-        "short-form video strategy"
+        "twitter"
       ],
       "section": "header"
     }
@@ -1828,6 +1908,7 @@
       "dept": "marketing",
       "candidate_name": "Ken Watanabe",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "social media strategy",
         "community management",
@@ -1835,8 +1916,7 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter",
-        "short-form video strategy"
+        "twitter"
       ],
       "section": "skills"
     }
@@ -1849,6 +1929,7 @@
       "dept": "marketing",
       "candidate_name": "Ken Watanabe",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "social media strategy",
         "community management",
@@ -1856,8 +1937,7 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter",
-        "short-form video strategy"
+        "twitter"
       ],
       "section": "experience"
     }
@@ -1870,6 +1950,7 @@
       "dept": "marketing",
       "candidate_name": "Ken Watanabe",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
         "social media strategy",
         "community management",
@@ -1877,8 +1958,7 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter",
-        "short-form video strategy"
+        "twitter"
       ],
       "section": "education"
     }
@@ -1891,13 +1971,14 @@
       "dept": "general",
       "candidate_name": "John Doe",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "python",
         "flask",
         "postgresql",
         "docker",
         "git",
-        "rest apis",
+        "rest api",
         "django"
       ],
       "section": "header"
@@ -1911,13 +1992,14 @@
       "dept": "general",
       "candidate_name": "John Doe",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "python",
         "flask",
         "postgresql",
         "docker",
         "git",
-        "rest apis",
+        "rest api",
         "django"
       ],
       "section": "skills"
@@ -1931,13 +2013,14 @@
       "dept": "general",
       "candidate_name": "John Doe",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "python",
         "flask",
         "postgresql",
         "docker",
         "git",
-        "rest apis",
+        "rest api",
         "django"
       ],
       "section": "experience"
@@ -1951,13 +2034,14 @@
       "dept": "general",
       "candidate_name": "John Doe",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "python",
         "flask",
         "postgresql",
         "docker",
         "git",
-        "rest apis",
+        "rest api",
         "django"
       ],
       "section": "education"
@@ -1971,6 +2055,7 @@
       "dept": "sales",
       "candidate_name": "Marcus Bellamy",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -1989,6 +2074,7 @@
       "dept": "sales",
       "candidate_name": "Marcus Bellamy",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2007,6 +2093,7 @@
       "dept": "sales",
       "candidate_name": "Marcus Bellamy",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2025,6 +2112,7 @@
       "dept": "sales",
       "candidate_name": "Marcus Bellamy",
       "education_level": "Bachelors",
+      "total_experience_years": 9.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2043,6 +2131,7 @@
       "dept": "sales",
       "candidate_name": "Grace Okonkwo",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "onboarding",
         "renewals",
@@ -2062,6 +2151,7 @@
       "dept": "sales",
       "candidate_name": "Grace Okonkwo",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "onboarding",
         "renewals",
@@ -2081,6 +2171,7 @@
       "dept": "sales",
       "candidate_name": "Grace Okonkwo",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "onboarding",
         "renewals",
@@ -2100,6 +2191,7 @@
       "dept": "sales",
       "candidate_name": "Grace Okonkwo",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "onboarding",
         "renewals",
@@ -2119,6 +2211,7 @@
       "dept": "sales",
       "candidate_name": "Dan O'Brien",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2137,6 +2230,7 @@
       "dept": "sales",
       "candidate_name": "Dan O'Brien",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2155,6 +2249,7 @@
       "dept": "sales",
       "candidate_name": "Dan O'Brien",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2173,6 +2268,7 @@
       "dept": "sales",
       "candidate_name": "Dan O'Brien",
       "education_level": "Bachelors",
+      "total_experience_years": 10.0,
       "skills": [
         "salesforce",
         "enterprise negotiation",
@@ -2191,6 +2287,7 @@
       "dept": "sales",
       "candidate_name": "Omar Haddad",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "salesforce",
         "channel partnerships",
@@ -2209,6 +2306,7 @@
       "dept": "sales",
       "candidate_name": "Omar Haddad",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "salesforce",
         "channel partnerships",
@@ -2227,6 +2325,7 @@
       "dept": "sales",
       "candidate_name": "Omar Haddad",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "salesforce",
         "channel partnerships",
@@ -2245,6 +2344,7 @@
       "dept": "sales",
       "candidate_name": "Omar Haddad",
       "education_level": "Bachelors",
+      "total_experience_years": 8.0,
       "skills": [
         "salesforce",
         "channel partnerships",
@@ -2263,14 +2363,14 @@
       "dept": "sales",
       "candidate_name": "Victor Alvarez",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
-        "technical pre-sales",
         "api integrations",
-        "solution demos",
         "python",
         "salesforce",
-        "proof-of-concept delivery",
-        "rest api"
+        "technical pre-sales",
+        "solution demos",
+        "proof-of-concept delivery"
       ],
       "section": "header"
     }
@@ -2283,14 +2383,14 @@
       "dept": "sales",
       "candidate_name": "Victor Alvarez",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
-        "technical pre-sales",
         "api integrations",
-        "solution demos",
         "python",
         "salesforce",
-        "proof-of-concept delivery",
-        "rest api"
+        "technical pre-sales",
+        "solution demos",
+        "proof-of-concept delivery"
       ],
       "section": "skills"
     }
@@ -2303,14 +2403,14 @@
       "dept": "sales",
       "candidate_name": "Victor Alvarez",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
-        "technical pre-sales",
         "api integrations",
-        "solution demos",
         "python",
         "salesforce",
-        "proof-of-concept delivery",
-        "rest api"
+        "technical pre-sales",
+        "solution demos",
+        "proof-of-concept delivery"
       ],
       "section": "experience"
     }
@@ -2323,14 +2423,14 @@
       "dept": "sales",
       "candidate_name": "Victor Alvarez",
       "education_level": "Bachelors",
+      "total_experience_years": 7.0,
       "skills": [
-        "technical pre-sales",
         "api integrations",
-        "solution demos",
         "python",
         "salesforce",
-        "proof-of-concept delivery",
-        "rest api"
+        "technical pre-sales",
+        "solution demos",
+        "proof-of-concept delivery"
       ],
       "section": "education"
     }
@@ -2343,6 +2443,7 @@
       "dept": "sales",
       "candidate_name": "Lena Kowalski",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "hubspot",
         "outbound prospecting",
@@ -2361,6 +2462,7 @@
       "dept": "sales",
       "candidate_name": "Lena Kowalski",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "hubspot",
         "outbound prospecting",
@@ -2379,6 +2481,7 @@
       "dept": "sales",
       "candidate_name": "Lena Kowalski",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "hubspot",
         "outbound prospecting",
@@ -2397,6 +2500,7 @@
       "dept": "sales",
       "candidate_name": "Lena Kowalski",
       "education_level": "Bachelors",
+      "total_experience_years": 6.0,
       "skills": [
         "hubspot",
         "outbound prospecting",

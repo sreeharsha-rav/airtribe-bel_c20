@@ -349,6 +349,7 @@ def build_chunks(records: list[dict]) -> list[dict]:
             "dept": record["dept"],
             "candidate_name": record["candidate_name"],
             "education_level": record["education_level"],
+            "total_experience_years": record["total_experience_years"],
             "skills": record["skills"],
         }
         for section_name in ("header", "skills", "experience", "education"):
