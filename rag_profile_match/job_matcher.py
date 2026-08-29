@@ -130,7 +130,7 @@ def embed_job_description(
     )
 
     dense_vector = embedding_model.embed_query(query_text)
-    sparse_vector = next(sparse_model.embed([query_text]))
+    sparse_vector = list(sparse_model.embed([query_text]))[0]
 
     return {
         "dense": dense_vector,

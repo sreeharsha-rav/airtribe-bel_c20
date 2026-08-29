@@ -6,11 +6,13 @@ top-level execution — and **`rag_analysis.ipynb`** is the actual entry point:
 it imports from both modules and runs the pipeline cell by cell, with inline
 inspection of intermediate results.
 
-**Implementation status:** chunking, metadata extraction, and hybrid
-dense+sparse embedding/indexing are implemented and working; job matching and
-performance metrics are scaffolded (function signatures + docstrings only,
-each raising `NotImplementedError`) pending further implementation.
-`metrics.py` holds the retrieval-accuracy/latency evaluation scaffold.
+**Implementation status:** chunking, metadata extraction, hybrid
+dense+sparse embedding/indexing, job matching, and performance metrics are
+all implemented and working end-to-end.
+
+See **[DESIGN.md](DESIGN.md)** for the full pipeline design — chunking
+strategy, hybrid embedding/indexing, and the retrieval/filtering/ranking
+flow for job matching, with flow diagrams.
 
 ## Design
 
@@ -36,25 +38,32 @@ each raising `NotImplementedError`) pending further implementation.
   two named vectors (`"dense"`, `"sparse"`) plus its metadata payload;
   `ensure_qdrant_collection` also creates payload indexes on
   `metadata.dept`/`education_level`/`skills` for filtered search. Fusing the
-  two vectors with Reciprocal Rank Fusion (RRF) is a query-time concern,
-  deferred to `job_matcher.py`'s `semantic_search`.
+  two vectors with Reciprocal Rank Fusion (RRF) happens at query time, in
+  `job_matcher.py`'s `semantic_search`.
 
-### Job Matching (`job_matcher.py`) — *Scaffolded*
+### Job Matching (`job_matcher.py`) — *Implemented*
 
-- **Semantic search** — the job description is embedded and used to retrieve
-  the top-K (K=10) most similar resume chunks from Qdrant.
-- **Hybrid search** — semantic similarity is combined with keyword matching for
-  critical/must-have skills (e.g. required tools, "5+ years Python").
-- **Scoring & ranking** — matches are scored on a 0–100 scale, with reasoning
-  describing which resume sections drove the match, then filtered against any
-  must-have requirements.
+- **Semantic search** — the job description's descriptive prose is embedded
+  (hybrid dense+sparse) and used to retrieve the top-K most similar resume
+  chunks from Qdrant via a `query_points` hybrid search, fused with
+  Reciprocal Rank Fusion (RRF).
+- **Must-have filtering** — must-have bullets (e.g. "5+ years Python") are
+  checked algorithmically against each candidate's normalized skills and
+  `total_experience_years`; any candidate missing one is hard-excluded.
+- **Scoring & ranking** — surviving candidates' fused scores are normalized
+  to 0–100, with a templated reasoning string naming which skills/must-haves
+  drove the match.
 - **Output** — a `MatchResult` per candidate: `candidate_name`, `resume_path`,
   `match_score`, `matched_skills`, `relevant_excerpts`, and `reasoning`.
 
-### Performance Metrics (`metrics.py`) — *Scaffolded*
+See [DESIGN.md](DESIGN.md#phase-2-job-matching) for the full retrieval →
+filter → rank flow and known limitations of the keyword-matching heuristic.
 
-- **Retrieval accuracy** — precision@k/recall@k of `job_matcher.semantic_search`
-  against a hand-labeled ground-truth mapping of job → expected resumes.
+### Performance Metrics (`metrics.py`) — *Implemented*
+
+- **Retrieval accuracy** — precision@k/recall@k of `job_matcher.match_job`
+  against a hand-labeled ground-truth mapping of job → expected resumes (all
+  6 postings under `root_dir/jobs/` are labeled in `rag_analysis.ipynb`).
 - **Latency** — per-stage wall-clock timing (embedding, Qdrant query, scoring)
   to identify slow stages.
 
@@ -83,11 +92,20 @@ each raising `NotImplementedError`) pending further implementation.
    cp sample.env .env
    ```
    Edit `.env` and set `OPENROUTER_API_KEY` to your key.
-3. Start Qdrant:
+3. Start Qdrant (defined in `docker-compose.yml`, storage persisted in a
+   named Docker volume so re-running `docker compose up -d` doesn't lose
+   your indexed data):
    ```bash
    docker compose up -d
    ```
-   The REST API is available at `http://localhost:6333`.
+   Check it's healthy and see what's indexed so far:
+   ```bash
+   docker compose ps
+   curl http://localhost:6333/collections
+   ```
+   The REST API is available at `http://localhost:6333`; the [Qdrant web UI](http://localhost:6333/dashboard)
+   is useful for browsing collections/points directly. To stop it:
+   `docker compose down` (add `-v` to also delete the indexed data volume).
 
 ## Running the notebook
 
@@ -101,14 +119,19 @@ with no top-level execution — the pipeline itself runs from
    ```
    (Or, in VS Code, open `rag_analysis.ipynb` and select this workspace
    member's `.venv` as the kernel — no separate Jupyter server needed.)
-2. Open `rag_analysis.ipynb` and run cells top to bottom:
-   - **Sections 1–5** (discover resumes, batch-extract metadata, chunk,
+2. Open `rag_analysis.ipynb` and run cells top to bottom (all 7 sections are
+   implemented and will run end-to-end against `root_dir/resumes/` and
+   `root_dir/jobs/`, given Qdrant is running and `.env` is set):
+   - **Sections 1–5** — discover resumes, batch-extract metadata, chunk,
      write `extractions.json`/`chunks.json`, hybrid embed + upsert into
-     Qdrant) are implemented and will run end-to-end against
-     `root_dir/resumes/`. Section 5's first run downloads the `Qdrant/bm25`
-     sparse model from Hugging Face (a few seconds, one-time, cached
-     locally) — needs internet access the first time.
-   - **Sections 6–7** (job matching, performance metrics) are scaffolded —
-     the underlying functions in `job_matcher.py` and `metrics.py` raise
-     `NotImplementedError` until filled in; running those cells will stop at
-     that error until then.
+     Qdrant. Section 5's first run downloads the `Qdrant/bm25` sparse model
+     from Hugging Face (a few seconds, one-time, cached locally) — needs
+     internet access the first time.
+   - **Section 6** — matches a sample job description
+     (`jobs/senior_backend_engineer.txt`) against the indexed resumes, then
+     tries two more postings with different must-have shapes.
+   - **Section 7** — retrieval accuracy (precision@k/recall@k against a
+     hand-labeled ground truth for all 6 job postings) and latency.
+
+See [DESIGN.md](DESIGN.md) for what each section is actually doing under the
+hood, with flow diagrams.

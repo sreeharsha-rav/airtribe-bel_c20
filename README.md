@@ -26,6 +26,8 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 - [llm_file_assistant](./llm_file_assistant/): A terminal chat agent built with LangChain + LangGraph that manages files inside a sandboxed directory, demoed as a Resume Filing Clerk. The agent lists, reads, keyword-searches, and writes resume files (`.txt`, `.docx`, `.pdf`) through sandboxed tool calls, with reasoning and tool calls streamed live in the terminal.
 
+- [rag_profile_match](./rag_profile_match/): A RAG pipeline that matches candidate resumes to a job description. Resumes are section-aware chunked, LLM-extracted for metadata, and indexed into Qdrant with hybrid dense+sparse embeddings; job descriptions are matched via a hybrid RRF search with algorithmic must-have filtering and 0–100 ranked scoring. See [DESIGN.md](./rag_profile_match/DESIGN.md) for the full pipeline design with flow diagrams.
+
 ## Prerequisites
 
 - Python 3.12+
