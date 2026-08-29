@@ -1,0 +1,26 @@
+Senior Data Engineer
+Company: Logistics data platform | Location: Bangalore, India (hybrid)
+
+About the role
+We're looking for a Senior Data Engineer to build and operate the
+pipelines that power our analytics and reporting products.
+
+Responsibilities
+- Build and maintain batch and streaming data pipelines in Python.
+- Orchestrate pipelines with Airflow and process large datasets with
+  Spark.
+- Model data for a cloud data warehouse and support analyst self-service.
+- Partner with data scientists and analysts on data availability and
+  quality.
+
+Must-have requirements
+- 5+ years of data engineering experience.
+- 5+ years of hands-on Python development.
+- Experience with SQL and a cloud data warehouse (Redshift, Snowflake, or
+  BigQuery).
+- Experience with a workflow orchestration tool (Airflow or similar).
+
+Nice-to-have
+- Experience with Apache Spark.
+- Experience with dbt for data transformation.
+- Experience with streaming systems (Kafka or similar).

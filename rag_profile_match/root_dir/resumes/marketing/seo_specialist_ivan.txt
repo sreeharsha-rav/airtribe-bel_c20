@@ -1,0 +1,28 @@
+Ivan Petrov
+SEO Specialist
+ivan.petrov@example.com | Prague, Czech Republic
+
+SUMMARY
+SEO specialist with 4 years driving organic growth through technical SEO
+audits, content optimization, and link-building programs.
+
+SKILLS
+Technical SEO, keyword research, Google Search Console, Ahrefs, content
+optimization, site audits
+
+EXPERIENCE
+SEO Specialist, Vltava Digital (2022-Present)
+- Ran technical SEO audits across a 5,000-page site, fixing crawl and
+  indexation issues that lifted organic traffic 45% in six months.
+- Built a keyword research process using Ahrefs and Google Search Console
+  that now drives the content team's monthly topic calendar.
+- Led a link-building program that grew referring domains by 60% year
+  over year.
+
+SEO Associate, Karlin Media House (2020-2022)
+- Optimized on-page content (titles, meta descriptions, headers) for over
+  300 pages.
+- Monitored keyword rankings and produced monthly SEO performance reports.
+
+EDUCATION
+B.A. Marketing, Charles University

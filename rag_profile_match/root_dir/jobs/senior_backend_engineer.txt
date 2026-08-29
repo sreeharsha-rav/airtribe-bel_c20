@@ -1,0 +1,26 @@
+Senior Backend Engineer
+Company: Fintech scale-up | Location: Remote (US time zones)
+
+About the role
+We're hiring a Senior Backend Engineer to own core services on our payments
+platform. You'll design APIs, own data models, and help scale our
+infrastructure as transaction volume grows.
+
+Responsibilities
+- Design and build backend services and REST APIs in Python.
+- Own PostgreSQL schema design and query performance for high-throughput
+  services.
+- Deploy and operate services on AWS using Docker and Kubernetes.
+- Participate in on-call rotation and drive incident response for owned
+  services.
+
+Must-have requirements
+- 5+ years of professional software engineering experience.
+- 5+ years of hands-on Python development.
+- Experience with a Python web framework (Django or FastAPI).
+- Experience with PostgreSQL or another relational database.
+
+Nice-to-have
+- Experience with AWS, Docker, and Kubernetes.
+- Experience scaling a service handling high transaction volume.
+- Bachelor's degree in Computer Science or related field.

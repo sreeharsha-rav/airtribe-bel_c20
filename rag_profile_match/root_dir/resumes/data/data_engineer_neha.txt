@@ -1,0 +1,28 @@
+Neha Verma
+Senior Data Engineer
+neha.verma@example.com | Bangalore, India
+
+SUMMARY
+Data engineer with 7 years building and operating large-scale batch and
+streaming pipelines. Deep experience with Python-based orchestration and
+cloud data warehouses.
+
+SKILLS
+Python, Apache Spark, Airflow, SQL, AWS (Redshift, S3, EMR), dbt, Kafka
+
+EXPERIENCE
+Senior Data Engineer, Basalt Freight Systems (2020-Present)
+- Built Python/Airflow pipelines processing 200M+ shipment events daily
+  into a Redshift warehouse.
+- Migrated batch ETL jobs to Spark, cutting nightly processing time from
+  6 hours to 90 minutes.
+- Introduced dbt for transformation logic, giving analysts self-service
+  access to modeled tables.
+
+Data Engineer, Hollowreed Systems (2017-2020)
+- Wrote Python ETL scripts consolidating data from 8 source systems into
+  a central PostgreSQL warehouse.
+- Set up a Kafka-based ingestion pipeline for near-real-time order events.
+
+EDUCATION
+M.S. Computer Science, Indian Institute of Science

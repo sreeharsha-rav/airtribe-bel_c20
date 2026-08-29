@@ -1,0 +1,27 @@
+Raj Patel
+Data Analyst
+raj.patel@example.com | Toronto, Canada
+
+SUMMARY
+Data analyst with 5 years turning raw operational data into dashboards and
+recommendations for product and operations teams.
+
+SKILLS
+SQL, Tableau, Python (pandas), A/B test analysis, data modeling
+
+EXPERIENCE
+Senior Data Analyst, Millbrook Retail (2021-Present)
+- Built a suite of Tableau dashboards tracking inventory and sales velocity
+  across 60 stores, replacing a manual weekly spreadsheet process.
+- Wrote complex SQL queries against the data warehouse to support ad hoc
+  requests from finance and operations.
+- Analyzed A/B test results for the checkout redesign, recommending the
+  winning variant that lifted conversion by 6%.
+
+Data Analyst, Fairhaven Logistics (2019-2021)
+- Modeled delivery-time data in SQL to identify bottlenecks in the regional
+  distribution network.
+- Created Tableau reports used in weekly operations reviews.
+
+EDUCATION
+B.Sc. Statistics, University of Toronto

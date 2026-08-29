@@ -1,0 +1,23 @@
+Machine Learning Engineer
+Company: Health AI startup | Location: San Francisco, CA (hybrid)
+
+About the role
+We're hiring a Machine Learning Engineer to take models from research to
+reliable production deployment.
+
+Responsibilities
+- Build and deploy machine learning models as production services.
+- Set up and maintain training and inference infrastructure on
+  Kubernetes.
+- Track experiments and manage model versioning.
+- Monitor deployed models for performance and drift.
+
+Must-have requirements
+- 3+ years of hands-on Python development.
+- Experience with PyTorch or TensorFlow.
+- Experience deploying machine learning models to production.
+- Experience with Docker or Kubernetes.
+
+Nice-to-have
+- Experience with MLflow or a similar experiment-tracking tool.
+- Experience with cloud ML infrastructure (AWS SageMaker or similar).

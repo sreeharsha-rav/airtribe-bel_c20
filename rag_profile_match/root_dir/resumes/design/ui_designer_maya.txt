@@ -1,0 +1,28 @@
+Maya Lindqvist
+UI Designer
+maya.lindqvist@example.com | Stockholm, Sweden
+
+SUMMARY
+UI designer with 3 years crafting clean, consistent interfaces for web and
+mobile products, working closely with engineering to ship polished detail.
+
+SKILLS
+Figma, UI design, design systems, prototyping, Adobe XD
+
+EXPERIENCE
+UI Designer, Nordkap Software (2023-Present)
+- Designed UI screens and interactive prototypes in Figma for a mobile
+  banking app used by 50,000+ customers.
+- Contributed new components to the team's design system, reducing
+  duplicate UI patterns across screens.
+- Partnered with engineers during implementation to fix visual QA issues
+  before release.
+
+Junior Designer, Fjallgrund Studio (2022-2023)
+- Produced UI mockups and icon sets for client web projects in Figma and
+  Adobe XD.
+- Assisted with basic usability testing sessions for a client's onboarding
+  flow.
+
+EDUCATION
+B.A. Graphic Design, Konstfack University of Arts, Crafts and Design
