@@ -9,19 +9,24 @@
 - Extract key fields: Name, Skills, Experience Years, Education
 - Store metadata alongside embeddings for filtering
 
-This module defines the batch metadata extraction + section-aware chunking
-building blocks. It has no top-level execution — see rag_analysis.ipynb for
-the actual pipeline run.
+This module defines the batch metadata extraction, section-aware chunking,
+and hybrid dense+sparse embedding/indexing building blocks. It has no
+top-level execution — see rag_analysis.ipynb for the actual pipeline run.
 """
 
 import re
+import uuid
 from pathlib import Path
 from typing import Literal, cast
 
+from fastembed import SparseTextEmbedding
 from langchain.chat_models import init_chat_model
+from langchain_core.embeddings import Embeddings
 from langchain_core.language_models import LanguageModelInput
 from langchain_core.runnables import Runnable
-from pydantic import BaseModel, Field
+from langchain_openai import OpenAIEmbeddings
+from pydantic import BaseModel, Field, SecretStr
+from qdrant_client import models as qdrant_models
 
 import config
 from fs_tools import list_files, read_file
@@ -211,51 +216,127 @@ def extract_fields_batch(
     return records
 
 
-def build_embedding_model():
-    """Builds the embedding client for chunk/query embeddings.
-
-    SCAFFOLD -- not yet implemented. langchain-openrouter exports no
-    embeddings class (confirmed: it only has ChatOpenRouter). OpenRouter does
-    expose an OpenAI-compatible /embeddings endpoint
-    (config.OPENROUTER_BASE_URL), so this should return a
-    `langchain_openai.OpenAIEmbeddings(model=config.EMBEDDING_MODEL_NAME,
-    base_url=config.OPENROUTER_BASE_URL, api_key=config.OPENROUTER_API_KEY)`
-    once `langchain-openai` is added to pyproject.toml.
+def build_embedding_model() -> Embeddings:
+    """Builds the dense embedding client, via OpenRouter's OpenAI-compatible
+    /embeddings endpoint (langchain-openrouter itself exports no embeddings
+    class, only ChatOpenRouter).
     """
-    raise NotImplementedError
+    return OpenAIEmbeddings(
+        model=config.EMBEDDING_MODEL_NAME,
+        base_url=config.OPENROUTER_BASE_URL,
+        api_key=SecretStr(config.OPENROUTER_API_KEY),
+    )
 
 
-def embed_chunks(chunks: list[dict], embedding_model=None) -> list[dict]:
-    """Embeds each chunk's page_content and attaches the vector to the chunk.
+def build_sparse_embedding_model() -> SparseTextEmbedding:
+    """Builds the sparse (lexical/keyword) embedding model for hybrid search.
 
-    SCAFFOLD -- not yet implemented. Should batch-embed via
-    `embedding_model.embed_documents([c["page_content"] for c in chunks])`
-    rather than one call per chunk, and return chunks with an added
-    "embedding" key.
+    Uses fastembed's BM25 model ("Qdrant/bm25"): deterministic term-frequency
+    sparse vectors. Qdrant applies IDF weighting server-side (see the
+    Modifier.IDF sparse vector config in ensure_qdrant_collection), so no
+    corpus-wide document-frequency stats need to be computed here.
     """
-    raise NotImplementedError
+    return SparseTextEmbedding(model_name="Qdrant/bm25")
+
+
+def embed_chunks(
+    chunks: list[dict],
+    embedding_model: Embeddings | None = None,
+    sparse_model: SparseTextEmbedding | None = None,
+) -> list[dict]:
+    """Embeds each chunk's page_content with both a dense and a sparse model.
+
+    Batch-embeds once per model rather than one call per chunk: dense via
+    `embedding_model.embed_documents(...)`, sparse via
+    `sparse_model.embed(...)`. Returns chunks with "dense_embedding"
+    (list[float]) and "sparse_embedding" ({"indices": list[int], "values":
+    list[float]}) added, ready for upsert_chunks.
+    """
+    embedding_model = embedding_model or build_embedding_model()
+    sparse_model = sparse_model or build_sparse_embedding_model()
+
+    texts = [chunk["page_content"] for chunk in chunks]
+    dense_vectors = embedding_model.embed_documents(texts)
+    sparse_vectors = list(sparse_model.embed(texts))
+
+    embedded = []
+    for chunk, dense_vector, sparse_vector in zip(chunks, dense_vectors, sparse_vectors):
+        embedded.append(
+            {
+                **chunk,
+                "dense_embedding": dense_vector,
+                "sparse_embedding": {
+                    "indices": sparse_vector.indices.tolist(),
+                    "values": sparse_vector.values.tolist(),
+                },
+            }
+        )
+    return embedded
 
 
 def ensure_qdrant_collection(vector_size: int) -> None:
-    """Creates the Qdrant collection (config.QDRANT_COLLECTION_NAME) if it
-    doesn't already exist, sized for the embedding model's vector_size.
+    """Creates the hybrid (dense + sparse) Qdrant collection if it doesn't
+    already exist, and ensures payload indexes for metadata filtering.
 
-    SCAFFOLD -- not yet implemented. Should use config.client
-    (QdrantClient already initialized in config.py) and
-    `client.collection_exists` / `client.create_collection`.
+    Two named vectors per point: "dense" (size=vector_size, cosine distance)
+    and "sparse" (no fixed size; Modifier.IDF applies BM25-style IDF
+    weighting server-side over fastembed's raw term-frequency vectors).
+    Payload indexes on metadata.dept/education_level/skills let a later
+    hybrid query filter (e.g. "backend only") without a full scan.
     """
-    raise NotImplementedError
+    if not config.client.collection_exists(config.QDRANT_COLLECTION_NAME):
+        config.client.create_collection(
+            collection_name=config.QDRANT_COLLECTION_NAME,
+            vectors_config={
+                "dense": qdrant_models.VectorParams(
+                    size=vector_size, distance=qdrant_models.Distance.COSINE
+                ),
+            },
+            sparse_vectors_config={
+                "sparse": qdrant_models.SparseVectorParams(
+                    modifier=qdrant_models.Modifier.IDF
+                ),
+            },
+        )
+
+    for field_name in ("metadata.dept", "metadata.education_level", "metadata.skills"):
+        config.client.create_payload_index(
+            collection_name=config.QDRANT_COLLECTION_NAME,
+            field_name=field_name,
+            field_schema=qdrant_models.PayloadSchemaType.KEYWORD,
+        )
+
+
+def _stable_point_id(metadata: dict) -> str:
+    """Derives a deterministic point ID from a chunk's file_path + section,
+    so re-running the pipeline on the same resumes upserts in place instead
+    of creating duplicate points.
+    """
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{metadata['file_path']}::{metadata['section']}"))
 
 
 def upsert_chunks(embedded_chunks: list[dict]) -> None:
-    """Upserts embedded chunks into Qdrant.
+    """Upserts embedded chunks into Qdrant as hybrid dense+sparse points.
 
-    SCAFFOLD -- not yet implemented. Each chunk's "embedding" becomes the
-    point vector; "page_content" + "metadata" become the point payload. Point
-    IDs should be stable (e.g. hash of file_path + section) so re-running
-    this pipeline updates rather than duplicates points.
+    Each point's payload is {"page_content", "metadata"} -- the same shape
+    already used in chunks.json -- and its vector carries both the "dense"
+    and "sparse" named vectors for later RRF fusion at query time.
     """
-    raise NotImplementedError
+    points = [
+        qdrant_models.PointStruct(
+            id=_stable_point_id(chunk["metadata"]),
+            vector={
+                "dense": chunk["dense_embedding"],
+                "sparse": qdrant_models.SparseVector(
+                    indices=chunk["sparse_embedding"]["indices"],
+                    values=chunk["sparse_embedding"]["values"],
+                ),
+            },
+            payload={"page_content": chunk["page_content"], "metadata": chunk["metadata"]},
+        )
+        for chunk in embedded_chunks
+    ]
+    config.client.upsert(collection_name=config.QDRANT_COLLECTION_NAME, points=points)
 
 
 def build_chunks(records: list[dict]) -> list[dict]:

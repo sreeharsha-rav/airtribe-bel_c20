@@ -11,6 +11,7 @@
         "sql",
         "tableau",
         "python",
+        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -29,6 +30,7 @@
         "sql",
         "tableau",
         "python",
+        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -47,6 +49,7 @@
         "sql",
         "tableau",
         "python",
+        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -65,6 +68,7 @@
         "sql",
         "tableau",
         "python",
+        "pandas",
         "ab testing",
         "data modeling"
       ],
@@ -169,8 +173,7 @@
         "s3",
         "emr",
         "dbt",
-        "kafka",
-        "postgresql"
+        "kafka"
       ],
       "section": "header"
     }
@@ -193,8 +196,7 @@
         "s3",
         "emr",
         "dbt",
-        "kafka",
-        "postgresql"
+        "kafka"
       ],
       "section": "skills"
     }
@@ -217,8 +219,7 @@
         "s3",
         "emr",
         "dbt",
-        "kafka",
-        "postgresql"
+        "kafka"
       ],
       "section": "experience"
     }
@@ -241,8 +242,7 @@
         "s3",
         "emr",
         "dbt",
-        "kafka",
-        "postgresql"
+        "kafka"
       ],
       "section": "education"
     }
@@ -338,7 +338,6 @@
         "machine learning",
         "docker",
         "aws",
-        "sagemaker",
         "s3"
       ],
       "section": "header"
@@ -359,7 +358,6 @@
         "machine learning",
         "docker",
         "aws",
-        "sagemaker",
         "s3"
       ],
       "section": "skills"
@@ -380,7 +378,6 @@
         "machine learning",
         "docker",
         "aws",
-        "sagemaker",
         "s3"
       ],
       "section": "experience"
@@ -401,7 +398,6 @@
         "machine learning",
         "docker",
         "aws",
-        "sagemaker",
         "s3"
       ],
       "section": "education"
@@ -496,8 +492,7 @@
         "logo design",
         "brand guidelines",
         "photography",
-        "print campaigns",
-        "art direction"
+        "print campaigns"
       ],
       "section": "header"
     }
@@ -519,8 +514,7 @@
         "logo design",
         "brand guidelines",
         "photography",
-        "print campaigns",
-        "art direction"
+        "print campaigns"
       ],
       "section": "skills"
     }
@@ -542,8 +536,7 @@
         "logo design",
         "brand guidelines",
         "photography",
-        "print campaigns",
-        "art direction"
+        "print campaigns"
       ],
       "section": "experience"
     }
@@ -565,8 +558,7 @@
         "logo design",
         "brand guidelines",
         "photography",
-        "print campaigns",
-        "art direction"
+        "print campaigns"
       ],
       "section": "education"
     }
@@ -1032,7 +1024,7 @@
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
       "skills": [
-        "node.js",
+        "nodejs",
         "express",
         "mongodb",
         "javascript",
@@ -1051,7 +1043,7 @@
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
       "skills": [
-        "node.js",
+        "nodejs",
         "express",
         "mongodb",
         "javascript",
@@ -1070,7 +1062,7 @@
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
       "skills": [
-        "node.js",
+        "nodejs",
         "express",
         "mongodb",
         "javascript",
@@ -1089,7 +1081,7 @@
       "candidate_name": "Sam Okafor",
       "education_level": "Bachelors",
       "skills": [
-        "node.js",
+        "nodejs",
         "express",
         "mongodb",
         "javascript",
@@ -1433,8 +1425,7 @@
         "editorial calendar",
         "copywriting",
         "wordpress",
-        "semrush",
-        "keyword gap analysis"
+        "semrush"
       ],
       "section": "header"
     }
@@ -1453,8 +1444,7 @@
         "editorial calendar",
         "copywriting",
         "wordpress",
-        "semrush",
-        "keyword gap analysis"
+        "semrush"
       ],
       "section": "skills"
     }
@@ -1473,8 +1463,7 @@
         "editorial calendar",
         "copywriting",
         "wordpress",
-        "semrush",
-        "keyword gap analysis"
+        "semrush"
       ],
       "section": "experience"
     }
@@ -1493,8 +1482,7 @@
         "editorial calendar",
         "copywriting",
         "wordpress",
-        "semrush",
-        "keyword gap analysis"
+        "semrush"
       ],
       "section": "education"
     }
@@ -1736,6 +1724,7 @@
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
       "skills": [
+        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1756,6 +1745,7 @@
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
       "skills": [
+        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1776,6 +1766,7 @@
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
       "skills": [
+        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1796,6 +1787,7 @@
       "candidate_name": "Ivan Petrov",
       "education_level": "Bachelors",
       "skills": [
+        "seo",
         "technical seo",
         "keyword research",
         "google search console",
@@ -1822,7 +1814,8 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter"
+        "twitter",
+        "short-form video strategy"
       ],
       "section": "header"
     }
@@ -1842,7 +1835,8 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter"
+        "twitter",
+        "short-form video strategy"
       ],
       "section": "skills"
     }
@@ -1862,7 +1856,8 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter"
+        "twitter",
+        "short-form video strategy"
       ],
       "section": "experience"
     }
@@ -1882,7 +1877,8 @@
         "tiktok",
         "instagram",
         "content calendars",
-        "twitter"
+        "twitter",
+        "short-form video strategy"
       ],
       "section": "education"
     }
@@ -2273,7 +2269,7 @@
         "solution demos",
         "python",
         "salesforce",
-        "proof of concept delivery",
+        "proof-of-concept delivery",
         "rest api"
       ],
       "section": "header"
@@ -2293,7 +2289,7 @@
         "solution demos",
         "python",
         "salesforce",
-        "proof of concept delivery",
+        "proof-of-concept delivery",
         "rest api"
       ],
       "section": "skills"
@@ -2313,7 +2309,7 @@
         "solution demos",
         "python",
         "salesforce",
-        "proof of concept delivery",
+        "proof-of-concept delivery",
         "rest api"
       ],
       "section": "experience"
@@ -2333,7 +2329,7 @@
         "solution demos",
         "python",
         "salesforce",
-        "proof of concept delivery",
+        "proof-of-concept delivery",
         "rest api"
       ],
       "section": "education"

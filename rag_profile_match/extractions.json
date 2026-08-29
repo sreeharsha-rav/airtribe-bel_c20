@@ -8,6 +8,7 @@
       "sql",
       "tableau",
       "python",
+      "pandas",
       "ab testing",
       "data modeling"
     ],
@@ -58,8 +59,7 @@
       "s3",
       "emr",
       "dbt",
-      "kafka",
-      "postgresql"
+      "kafka"
     ],
     "total_experience_years": 9.0,
     "education_level": "Masters",
@@ -104,7 +104,6 @@
       "machine learning",
       "docker",
       "aws",
-      "sagemaker",
       "s3"
     ],
     "total_experience_years": 8.0,
@@ -151,8 +150,7 @@
       "logo design",
       "brand guidelines",
       "photography",
-      "print campaigns",
-      "art direction"
+      "print campaigns"
     ],
     "total_experience_years": 9.0,
     "education_level": "Bachelors",
@@ -300,7 +298,7 @@
     "dept": "engineering",
     "candidate_name": "Sam Okafor",
     "skills": [
-      "node.js",
+      "nodejs",
       "express",
       "mongodb",
       "javascript",
@@ -419,8 +417,7 @@
       "editorial calendar",
       "copywriting",
       "wordpress",
-      "semrush",
-      "keyword gap analysis"
+      "semrush"
     ],
     "total_experience_years": 10.0,
     "education_level": "Bachelors",
@@ -503,6 +500,7 @@
     "dept": "marketing",
     "candidate_name": "Ivan Petrov",
     "skills": [
+      "seo",
       "technical seo",
       "keyword research",
       "google search console",
@@ -532,7 +530,8 @@
       "tiktok",
       "instagram",
       "content calendars",
-      "twitter"
+      "twitter",
+      "short-form video strategy"
     ],
     "total_experience_years": 7.0,
     "education_level": "Bachelors",
@@ -662,7 +661,7 @@
       "solution demos",
       "python",
       "salesforce",
-      "proof of concept delivery",
+      "proof-of-concept delivery",
       "rest api"
     ],
     "total_experience_years": 7.0,

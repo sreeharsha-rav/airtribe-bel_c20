@@ -6,9 +6,9 @@ services:
       # - "6334:6334"   # gRPC (optional but useful)
     volumes:
       - qdrant_storage:/qdrant/storage
-    environment:
-      # Optional: if you want to set an API key for local dev
-      # QDRANT__SERVICE__API_KEY: "dev-api-key"
+    # Optional: if you want to set an API key for local dev
+    # environment:
+    #   QDRANT__SERVICE__API_KEY: "dev-api-key"
     restart: on-failure:5
 
 volumes:

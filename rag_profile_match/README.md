@@ -6,11 +6,11 @@ top-level execution — and **`rag_analysis.ipynb`** is the actual entry point:
 it imports from both modules and runs the pipeline cell by cell, with inline
 inspection of intermediate results.
 
-**Implementation status:** chunking + metadata extraction are implemented and
-working; embeddings, vector storage, job matching, and performance metrics
-are scaffolded (function signatures + docstrings only, each raising
-`NotImplementedError`) pending further implementation. `metrics.py` holds the
-retrieval-accuracy/latency evaluation scaffold.
+**Implementation status:** chunking, metadata extraction, and hybrid
+dense+sparse embedding/indexing are implemented and working; job matching and
+performance metrics are scaffolded (function signatures + docstrings only,
+each raising `NotImplementedError`) pending further implementation.
+`metrics.py` holds the retrieval-accuracy/latency evaluation scaffold.
 
 ## Design
 
@@ -25,13 +25,19 @@ retrieval-accuracy/latency evaluation scaffold.
 - **Metadata extraction** — Name, Skills, Experience (years), and Education are
   extracted per resume via a structured-output OpenRouter chat model, batched
   with `.batch()` for concurrency. *Implemented.*
-- **Embeddings** — *Scaffolded.* `langchain-openrouter` has no embeddings
-  class, so this will use OpenRouter's OpenAI-compatible `/embeddings`
-  endpoint via `langchain-openai`'s `OpenAIEmbeddings` (not yet a dependency).
-- **Vector store** — *Scaffolded.* [Qdrant](https://qdrant.tech/), run locally
-  via `docker-compose.yml`; `config.py` already constructs a `QdrantClient`.
-  Each chunk will be stored with metadata for filtering once
-  `ensure_qdrant_collection`/`upsert_chunks` are implemented.
+- **Embeddings** — *Implemented.* Hybrid dense + sparse. Dense vectors come
+  from OpenRouter's OpenAI-compatible `/embeddings` endpoint
+  (`openai/text-embedding-3-small`) via `langchain-openai`'s
+  `OpenAIEmbeddings`; sparse (lexical/keyword) vectors come from
+  `fastembed`'s BM25 model (`Qdrant/bm25`), which catches exact skill/tool
+  matches dense embeddings can blur.
+- **Vector store** — *Implemented.* [Qdrant](https://qdrant.tech/), run
+  locally via `docker-compose.yml`. Each chunk is stored as one point with
+  two named vectors (`"dense"`, `"sparse"`) plus its metadata payload;
+  `ensure_qdrant_collection` also creates payload indexes on
+  `metadata.dept`/`education_level`/`skills` for filtered search. Fusing the
+  two vectors with Reciprocal Rank Fusion (RRF) is a query-time concern,
+  deferred to `job_matcher.py`'s `semantic_search`.
 
 ### Job Matching (`job_matcher.py`) — *Scaffolded*
 
@@ -96,10 +102,13 @@ with no top-level execution — the pipeline itself runs from
    (Or, in VS Code, open `rag_analysis.ipynb` and select this workspace
    member's `.venv` as the kernel — no separate Jupyter server needed.)
 2. Open `rag_analysis.ipynb` and run cells top to bottom:
-   - **Sections 1–4** (discover resumes, batch-extract metadata, chunk,
-     write `extractions.json`/`chunks.json`) are implemented and will run
-     end-to-end against `root_dir/resumes/`.
-   - **Sections 5–7** (embeddings + Qdrant upsert, job matching, performance
-     metrics) are scaffolded — the underlying functions in `resume_rag.py`,
-     `job_matcher.py`, and `metrics.py` raise `NotImplementedError` until
-     filled in; running those cells will stop at that error until then.
+   - **Sections 1–5** (discover resumes, batch-extract metadata, chunk,
+     write `extractions.json`/`chunks.json`, hybrid embed + upsert into
+     Qdrant) are implemented and will run end-to-end against
+     `root_dir/resumes/`. Section 5's first run downloads the `Qdrant/bm25`
+     sparse model from Hugging Face (a few seconds, one-time, cached
+     locally) — needs internet access the first time.
+   - **Sections 6–7** (job matching, performance metrics) are scaffolded —
+     the underlying functions in `job_matcher.py` and `metrics.py` raise
+     `NotImplementedError` until filled in; running those cells will stop at
+     that error until then.
