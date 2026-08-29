@@ -1,0 +1,698 @@
+[
+  {
+    "file_path": "resumes\\data\\analytics_raj.txt",
+    "file_name": "analytics_raj.txt",
+    "dept": "data",
+    "candidate_name": "Raj Patel",
+    "skills": [
+      "sql",
+      "tableau",
+      "python",
+      "ab testing",
+      "data modeling"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Raj Patel\nData Analyst\nraj.patel@example.com | Toronto, Canada\n\nData analyst with 5 years turning raw operational data into dashboards and\nrecommendations for product and operations teams.",
+      "skills": "SQL, Tableau, Python (pandas), A/B test analysis, data modeling",
+      "experience": "Senior Data Analyst, Millbrook Retail (2021-Present)\n- Built a suite of Tableau dashboards tracking inventory and sales velocity\n  across 60 stores, replacing a manual weekly spreadsheet process.\n- Wrote complex SQL queries against the data warehouse to support ad hoc\n  requests from finance and operations.\n- Analyzed A/B test results for the checkout redesign, recommending the\n  winning variant that lifted conversion by 6%.\n\nData Analyst, Fairhaven Logistics (2019-2021)\n- Modeled delivery-time data in SQL to identify bottlenecks in the regional\n  distribution network.\n- Created Tableau reports used in weekly operations reviews.",
+      "education": "B.Sc. Statistics, University of Toronto"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\bi_leo.pdf",
+    "file_name": "bi_leo.pdf",
+    "dept": "data",
+    "candidate_name": "Leo Rossi",
+    "skills": [
+      "sql",
+      "tableau",
+      "power bi",
+      "data pipelines",
+      "dbt",
+      "data warehousing",
+      "snowflake"
+    ],
+    "total_experience_years": 9.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Leo Rossi\nBusiness Intelligence Engineer\nleo.rossi@example.com | Milan, Italy\n\nBI engineer with 6 years designing data pipelines and reporting\ninfrastructure for finance and operations stakeholders.",
+      "skills": "SQL, Tableau, Power BI, data pipelines, dbt, data warehousing",
+      "experience": "BI Engineer, Torretta Financial Group (2020-Present)\n- Built dbt-based data pipelines feeding a Snowflake warehouse, cutting\n  nightly reporting refresh time from 4 hours to 40 minutes.\n- Migrated legacy Power BI reports to Tableau, standardizing the company’s\n  reporting stack on a single platform.\n- Wrote and optimized SQL transformations used across finance and\n  operations dashboards.\nReporting Analyst, Vallesecca Group (2017-2020)\n- Maintained Power BI dashboards for regional sales reporting.\n- Wrote SQL queries to reconcile discrepancies between source systems and\n  the reporting warehouse.",
+      "education": "B.Sc. Management Engineering, Politecnico di Milano"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\data_engineer_neha.txt",
+    "file_name": "data_engineer_neha.txt",
+    "dept": "data",
+    "candidate_name": "Neha Verma",
+    "skills": [
+      "python",
+      "apache spark",
+      "airflow",
+      "sql",
+      "aws",
+      "redshift",
+      "s3",
+      "emr",
+      "dbt",
+      "kafka",
+      "postgresql"
+    ],
+    "total_experience_years": 9.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Neha Verma\nSenior Data Engineer\nneha.verma@example.com | Bangalore, India\n\nData engineer with 7 years building and operating large-scale batch and\nstreaming pipelines. Deep experience with Python-based orchestration and\ncloud data warehouses.",
+      "skills": "Python, Apache Spark, Airflow, SQL, AWS (Redshift, S3, EMR), dbt, Kafka",
+      "experience": "Senior Data Engineer, Basalt Freight Systems (2020-Present)\n- Built Python/Airflow pipelines processing 200M+ shipment events daily\n  into a Redshift warehouse.\n- Migrated batch ETL jobs to Spark, cutting nightly processing time from\n  6 hours to 90 minutes.\n- Introduced dbt for transformation logic, giving analysts self-service\n  access to modeled tables.\n\nData Engineer, Hollowreed Systems (2017-2020)\n- Wrote Python ETL scripts consolidating data from 8 source systems into\n  a central PostgreSQL warehouse.\n- Set up a Kafka-based ingestion pipeline for near-real-time order events.",
+      "education": "M.S. Computer Science, Indian Institute of Science"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\data_scientist_hana.docx",
+    "file_name": "data_scientist_hana.docx",
+    "dept": "data",
+    "candidate_name": "Hana Suzuki",
+    "skills": [
+      "python",
+      "scikit-learn",
+      "pandas",
+      "nlp",
+      "statistics",
+      "sql"
+    ],
+    "total_experience_years": 5.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Hana Suzuki\nData Scientist\nhana.suzuki@example.com | Tokyo, Japan\n\nData scientist with 3 years building predictive models and running\nexperiments to support product and marketing decisions.",
+      "skills": "Python, scikit-learn, pandas, NLP, statistics, SQL",
+      "experience": "Data Scientist, Kirin Retail Analytics (2022-Present)\n- Built a churn-prediction model in scikit-learn that identified\n  at-risk customers, informing a retention campaign that cut churn 8%.\n- Ran A/B test analysis in Python for pricing experiments across three\n  product lines.\n- Prototyped an NLP classifier for support ticket triage using pandas and\n  scikit-learn.\n\nJunior Data Scientist, Sakura Insights (2021-2022)\n- Cleaned and analyzed survey data in Python/pandas to support quarterly\n  customer research reports.\n- Built SQL queries to pull training data for early model experiments.",
+      "education": "M.S. Statistics, University of Tokyo"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\ml_sara.docx",
+    "file_name": "ml_sara.docx",
+    "dept": "data",
+    "candidate_name": "Sara Kim",
+    "skills": [
+      "python",
+      "tensorflow",
+      "pytorch",
+      "machine learning",
+      "docker",
+      "aws",
+      "sagemaker",
+      "s3"
+    ],
+    "total_experience_years": 8.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Sara Kim\nMachine Learning Engineer\nsara.kim@example.com | San Francisco, CA\n\nMachine learning engineer with 6 years taking models from research\nnotebooks to production, including deployment on containerized cloud\ninfrastructure.",
+      "skills": "Python, TensorFlow, PyTorch, machine learning, Docker, AWS (SageMaker, S3)",
+      "experience": "Senior ML Engineer, Lantern Health AI (2021-Present)\n- Built and deployed a TensorFlow model for patient-risk scoring, served via\n  a Dockerized inference API on AWS SageMaker.\n- Reduced model training time by 3x by optimizing the PyTorch data pipeline.\n- Set up an automated retraining pipeline that keeps the production model\n  refreshed weekly with minimal manual intervention.\n\nMachine Learning Engineer, Ironwood Analytics (2018-2021)\n- Developed a fraud-detection model in Python/TensorFlow deployed as a\n  Docker container behind an internal API.\n- Collaborated with data engineering to build feature pipelines feeding\n  the model on AWS.",
+      "education": "M.S. Machine Learning, Carnegie Mellon University"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\product_analyst_owen.pdf",
+    "file_name": "product_analyst_owen.pdf",
+    "dept": "data",
+    "candidate_name": "Owen Fitzgerald",
+    "skills": [
+      "sql",
+      "python",
+      "looker",
+      "experimentation",
+      "statistics"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Owen Fitzgerald\nProduct Analyst\nowen.fitzgerald@example.com | Dublin, Ireland\n\nProduct analyst with 4 years turning usage data and experiment results\ninto product decisions for consumer SaaS teams.",
+      "skills": "SQL, Python (analytics scripting), Looker, experimentation, statistics",
+      "experience": "Product Analyst, Larkspur Software (2022-Present)\n- Built Looker dashboards tracking activation and retention metrics used\n  in weekly product reviews.\n- Designed and analyzed A/B tests in Python, informing the redesign of the\n  onboarding flow that lifted activation 12%.\n- Wrote complex SQL queries against the event warehouse to answer ad hoc\n  questions from product managers.\nJunior Product Analyst, Hollybourne Digital (2020-2022)\n- Maintained SQL-based reporting for core product usage metrics.\n- Supported experiment design and analysis for the growth team.",
+      "education": "B.Sc. Economics, Trinity College Dublin"
+    }
+  },
+  {
+    "file_path": "resumes\\design\\brand_nina.pdf",
+    "file_name": "brand_nina.pdf",
+    "dept": "design",
+    "candidate_name": "Nina Kapoor",
+    "skills": [
+      "brand identity",
+      "adobe illustrator",
+      "adobe photoshop",
+      "typography",
+      "packaging design",
+      "logo design",
+      "brand guidelines",
+      "photography",
+      "print campaigns",
+      "art direction"
+    ],
+    "total_experience_years": 9.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Nina Kapoor\nBrand Designer\nnina.kapoor@example.com | Mumbai, India\n\nBrand designer with 6 years building visual identity systems for consumer\nand hospitality brands, from logo design through full brand guidelines.",
+      "skills": "Brand identity, Adobe Illustrator, Adobe Photoshop, typography, packaging\ndesign",
+      "experience": "Senior Brand Designer, Copperleaf Hospitality Group (2020-Present)\n- Led the visual identity redesign for a 12-property hotel chain, including\n  logo, typography, and full brand guidelines in Illustrator.\n- Designed packaging and in-room collateral rolled out across all\n  properties.\n- Art-directed photography and print campaigns for seasonal marketing\n  launches.\nBrand Designer, Marigold Foods (2017-2020)\n- Created packaging designs in Illustrator and Photoshop for a product\n  line spanning 30+ SKUs.\n- Developed the brand style guide used by all external marketing agencies.",
+      "education": "B.Des. Visual Communication, National Institute of Design"
+    }
+  },
+  {
+    "file_path": "resumes\\design\\design_lead_priyanka.pdf",
+    "file_name": "design_lead_priyanka.pdf",
+    "dept": "design",
+    "candidate_name": "Priyanka Rao",
+    "skills": [
+      "figma",
+      "design systems",
+      "design leadership",
+      "mentoring",
+      "ux strategy",
+      "interaction design"
+    ],
+    "total_experience_years": 10.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Priyanka Rao\nLead Product Designer\npriyanka.rao@example.com | Bangalore, India\n\nDesign leader with 9 years shipping product design and building design\nsystems, now leading a team of product designers across two product lines.",
+      "skills": "Figma, design systems, design leadership, mentoring, UX strategy, interaction design",
+      "experience": "Lead Product Designer, Marigold Fintech (2020-Present)\n- Lead a team of five product designers across the payments and lending\n  product lines.\n- Built and scaled the company-wide design system in Figma, adopted by\n  all eight product squads.\n- Set design process and critique rituals that cut design-to-dev handoff\n  time by 30%.\nSenior Product Designer, Kavalon Software (2016-2020)\n- Owned end-to-end design for the core dashboard, from research through\n  shipped UI in Figma.\n- Mentored two junior designers, both promoted to mid-level within a year.",
+      "education": "M.Des. Interaction Design, Indian Institute of Technology, Bombay"
+    }
+  },
+  {
+    "file_path": "resumes\\design\\graphic_designer_liam.docx",
+    "file_name": "graphic_designer_liam.docx",
+    "dept": "design",
+    "candidate_name": "Liam O'Connell",
+    "skills": [
+      "adobe illustrator",
+      "adobe photoshop",
+      "adobe indesign",
+      "branding",
+      "print design"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Liam O'Connell\nGraphic Designer\nliam.oconnell@example.com | Dublin, Ireland\n\nGraphic designer with 5 years producing branding, print, and digital\nassets for consumer brands.",
+      "skills": "Adobe Illustrator, Adobe Photoshop, Adobe InDesign, branding, print design",
+      "experience": "Graphic Designer, Emerhaven Creative (2021-Present)\n- Designed print and digital campaign assets in Illustrator and Photoshop\n  for six consumer product launches.\n- Laid out a 40-page brand lookbook in InDesign used by the sales team.\n- Refreshed packaging design for a product line of 15 SKUs.\n\nJunior Graphic Designer, Thornbury Studio (2019-2021)\n- Produced social media and print ad variants in Photoshop for client\n  campaigns.\n- Assisted senior designers with brand guideline documentation.",
+      "education": "B.A. Visual Communication, National College of Art and Design"
+    }
+  },
+  {
+    "file_path": "resumes\\design\\product_design_zoe.txt",
+    "file_name": "product_design_zoe.txt",
+    "dept": "design",
+    "candidate_name": "Zoe Bennett",
+    "skills": [
+      "figma",
+      "prototyping",
+      "design systems",
+      "interaction design",
+      "usability testing"
+    ],
+    "total_experience_years": 8.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Zoe Bennett\nSenior Product Designer\nzoe.bennett@example.com | Portland, OR\n\nProduct designer with 7 years shipping end-to-end flows for B2B and B2C\nproducts, from early prototypes to polished design systems.",
+      "skills": "Figma, prototyping, design systems, interaction design, usability testing",
+      "experience": "Senior Product Designer, Willowmere Health (2021-Present)\n- Designed and prototyped the onboarding flow in Figma, lifting activation\n  rate by 24% after launch.\n- Built and maintain the company's design system, now used across 5 product\n  squads.\n- Ran usability testing sessions that informed a redesign of the core\n  dashboard.\n\nProduct Designer, Talus Robotics (2018-2021)\n- Owned end-to-end design for the operator console, from low-fidelity\n  Figma wireframes to production-ready specs.\n- Partnered closely with engineering to ship a component library that cut\n  design-to-dev handoff time in half.",
+      "education": "B.F.A. Interaction Design, Rhode Island School of Design"
+    }
+  },
+  {
+    "file_path": "resumes\\design\\ui_designer_maya.txt",
+    "file_name": "ui_designer_maya.txt",
+    "dept": "design",
+    "candidate_name": "Maya Lindqvist",
+    "skills": [
+      "figma",
+      "ui design",
+      "design systems",
+      "prototyping",
+      "adobe xd"
+    ],
+    "total_experience_years": 4.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Maya Lindqvist\nUI Designer\nmaya.lindqvist@example.com | Stockholm, Sweden\n\nUI designer with 3 years crafting clean, consistent interfaces for web and\nmobile products, working closely with engineering to ship polished detail.",
+      "skills": "Figma, UI design, design systems, prototyping, Adobe XD",
+      "experience": "UI Designer, Nordkap Software (2023-Present)\n- Designed UI screens and interactive prototypes in Figma for a mobile\n  banking app used by 50,000+ customers.\n- Contributed new components to the team's design system, reducing\n  duplicate UI patterns across screens.\n- Partnered with engineers during implementation to fix visual QA issues\n  before release.\n\nJunior Designer, Fjallgrund Studio (2022-2023)\n- Produced UI mockups and icon sets for client web projects in Figma and\n  Adobe XD.\n- Assisted with basic usability testing sessions for a client's onboarding\n  flow.",
+      "education": "B.A. Graphic Design, Konstfack University of Arts, Crafts and Design"
+    }
+  },
+  {
+    "file_path": "resumes\\design\\ux_research_tom.docx",
+    "file_name": "ux_research_tom.docx",
+    "dept": "design",
+    "candidate_name": "Tom Fischer",
+    "skills": [
+      "user research",
+      "usability testing",
+      "survey design",
+      "interview facilitation",
+      "figma",
+      "affinity mapping"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Tom Fischer\nUX Researcher\ntom.fischer@example.com | Berlin, Germany\n\nUX researcher with 5 years running qualitative and quantitative studies to\nguide product decisions for fintech and productivity tools.",
+      "skills": "User research, usability testing, survey design, interview facilitation,\nFigma, affinity mapping",
+      "experience": "UX Researcher, Kettlebrook Finance (2021-Present)\n- Ran 40+ moderated usability tests on Figma prototypes, directly shaping\n  three major feature launches.\n- Designed and fielded quarterly satisfaction surveys, establishing the\n  team's first NPS benchmark.\n- Facilitated cross-functional research reviews that shifted the roadmap\n  away from a low-value feature before it shipped.\n\nJunior UX Researcher, Alderbrook Software (2019-2021)\n- Conducted user interviews and synthesized findings via affinity mapping\n  for the onboarding redesign project.\n- Supported usability testing logistics and note-taking for senior\n  researchers.",
+      "education": "M.Sc. Human-Computer Interaction, Technical University of Berlin"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\backend_alice.txt",
+    "file_name": "backend_alice.txt",
+    "dept": "engineering",
+    "candidate_name": "Alice Chen",
+    "skills": [
+      "python",
+      "django",
+      "fastapi",
+      "postgresql",
+      "redis",
+      "docker",
+      "kubernetes",
+      "aws"
+    ],
+    "total_experience_years": 8.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Alice Chen\nBackend Software Engineer\nalice.chen@example.com | Seattle, WA\n\nBackend engineer with 6 years of experience building high-throughput APIs and\ndistributed services. Comfortable owning a service from design through\nproduction operations.",
+      "skills": "Python, Django, FastAPI, PostgreSQL, Redis, Docker, Kubernetes, AWS (ECS, RDS, S3)",
+      "experience": "Senior Backend Engineer, Northwind Logistics (2021-Present)\n- Rebuilt the order-processing service in FastAPI, cutting p99 latency by 40%.\n- Migrated the deployment pipeline to Kubernetes on AWS, reducing rollout time\n  from 20 minutes to under 3.\n- Introduced PostgreSQL read replicas to handle reporting load without\n  impacting transactional throughput.\n\nBackend Engineer, Fernwood Retail (2018-2021)\n- Built the inventory-sync API (Django + PostgreSQL) connecting 40+ store\n  locations to a central warehouse system.\n- Containerized all internal services with Docker, standardizing local dev\n  environments across the team.",
+      "education": "B.S. Computer Science, University of Washington"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\backend_junior_sam.txt",
+    "file_name": "backend_junior_sam.txt",
+    "dept": "engineering",
+    "candidate_name": "Sam Okafor",
+    "skills": [
+      "node.js",
+      "express",
+      "mongodb",
+      "javascript",
+      "rest api",
+      "git"
+    ],
+    "total_experience_years": 4.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Sam Okafor\nBackend Software Engineer\nsam.okafor@example.com | Atlanta, GA\n\nBackend engineer with 2 years of experience building REST APIs and\nservices for early-stage products. Comfortable moving fast in a small team.",
+      "skills": "Node.js, Express, MongoDB, JavaScript, REST APIs, Git",
+      "experience": "Backend Engineer, Kindleworth Labs (2023-Present)\n- Built and maintained REST APIs in Node.js/Express powering the company's\n  mobile app, serving around 10,000 daily active users.\n- Designed MongoDB schemas for the user and order data used across three\n  internal services.\n- Wrote integration tests with Jest, catching two production-impacting bugs\n  before release.\n\nJunior Developer, Fernglade Apps (2022-2023)\n- Fixed bugs and added small features to an Express.js backend under\n  senior engineer supervision.\n- Wrote documentation for internal API endpoints used by the frontend team.",
+      "education": "B.S. Computer Science, Georgia State University"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\devops_bob.docx",
+    "file_name": "devops_bob.docx",
+    "dept": "engineering",
+    "candidate_name": "Bob Martinez",
+    "skills": [
+      "kubernetes",
+      "terraform",
+      "aws",
+      "docker",
+      "github actions",
+      "prometheus",
+      "grafana"
+    ],
+    "total_experience_years": 9.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Bob Martinez\nDevOps / Platform Engineer\nbob.martinez@example.com | Austin, TX\n\nPlatform engineer focused on Kubernetes infrastructure, CI/CD, and reliability.\nEnjoys turning manual deploys into one-click pipelines.",
+      "skills": "Kubernetes, Terraform, AWS, Docker, GitHub Actions, Prometheus, Grafana",
+      "experience": "Platform Engineer, Cascade Analytics (2020-Present)\n- Designed and operate a multi-tenant Kubernetes cluster on AWS EKS serving\n  30+ internal microservices.\n- Wrote Terraform modules for all cloud infrastructure, enabling repeatable\n  environment creation in under 10 minutes.\n- Built CI/CD pipelines in GitHub Actions with automated canary rollouts on\n  Kubernetes.\n- Set up Prometheus/Grafana monitoring, cutting incident detection time by\n  half.\n\nSite Reliability Engineer, Bramblewood Systems (2017-2020)\n- On-call rotation owner for a Docker-based fleet of 200+ containers.\n- Automated infrastructure provisioning with Terraform, replacing manual AWS\n  console setup.",
+      "education": "B.S. Information Systems, University of Texas at Austin"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\frontend_priya.pdf",
+    "file_name": "frontend_priya.pdf",
+    "dept": "engineering",
+    "candidate_name": "Priya Nair",
+    "skills": [
+      "react",
+      "typescript",
+      "next.js",
+      "jest",
+      "playwright",
+      "css",
+      "tailwind",
+      "storybook"
+    ],
+    "total_experience_years": 8.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Priya Nair\nFrontend Software Engineer\npriya.nair@example.com | Bengaluru, India\n\nFrontend engineer with a focus on accessible, well-tested user interfaces.\nSix years building consumer-facing web applications.",
+      "skills": "React, TypeScript, Next.js, Jest, Playwright, CSS/Tailwind, Storybook",
+      "experience": "Senior Frontend Engineer, Harborlight Media (2021-Present)\n- Led the migration of the main web app from class components to React\n  hooks and TypeScript, removing over 5,000 lines of legacy code.\n- Introduced Playwright end-to-end tests, catching regressions before\n  release for the first time in the product’s history.\n- Improved Lighthouse accessibility score from 68 to 96 across the app.\nFrontend Engineer, Ridgeline Software (2018-2021)\n- Built a component library in Storybook adopted by three product teams.\n- Wrote Jest unit tests for critical checkout flows, reducing production\n  bugs reported per release by 30%.",
+      "education": "B.Tech Computer Science, IIT Bombay"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\fullstack_wei.docx",
+    "file_name": "fullstack_wei.docx",
+    "dept": "engineering",
+    "candidate_name": "Wei Zhang",
+    "skills": [
+      "python",
+      "django",
+      "fastapi",
+      "react",
+      "postgresql",
+      "aws",
+      "docker"
+    ],
+    "total_experience_years": 9.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Wei Zhang\nSenior Fullstack Engineer\nwei.zhang@example.com | Toronto, Canada\n\nFullstack engineer with 8 years shipping Python backends and React\nfrontends for high-growth SaaS products.",
+      "skills": "Python, Django, FastAPI, React, PostgreSQL, AWS, Docker",
+      "experience": "Senior Fullstack Engineer, Rivermark SaaS (2020-Present)\n- Designed and built a Django + FastAPI backend serving the company's core\n  billing platform, processing 50,000+ transactions daily.\n- Built the customer-facing dashboard in React, cutting page load time by\n  half through code-splitting and caching.\n- Led migration of deployment infrastructure to Docker containers on AWS\n  ECS, reducing deploy time from 25 minutes to 4.\n\nFullstack Engineer, Cobblestone Analytics (2017-2020)\n- Built internal analytics tools in Django and React used by the customer\n  success team.\n- Owned the PostgreSQL schema design for a multi-tenant reporting system.",
+      "education": "M.S. Computer Science, University of Toronto"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\mlops_farah.pdf",
+    "file_name": "mlops_farah.pdf",
+    "dept": "engineering",
+    "candidate_name": "Farah Aziz",
+    "skills": [
+      "python",
+      "pytorch",
+      "kubernetes",
+      "mlflow",
+      "docker",
+      "aws"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Farah Aziz\nMLOps Engineer\nfarah.aziz@example.com | Cairo, Egypt\n\nMLOps engineer with 5 years taking machine learning models from\nexperimentation to reliable production deployment on Kubernetes.",
+      "skills": "Python, PyTorch, Kubernetes, MLflow, Docker, AWS",
+      "experience": "Senior MLOps Engineer, Nileflow AI (2021-Present)\n- Built a Kubernetes-based model-serving platform running 20+ PyTorch\n  models in production for internal data science teams.\n- Set up MLflow for experiment tracking and model versioning, replacing\n  ad hoc notebook-based tracking.\n- Automated model deployment pipelines in Python, cutting time from\n  trained model to production endpoint from days to hours.\nMachine Learning Infrastructure Engineer, Delta Compute (2019-2021)\n- Containerized existing ML training jobs in Docker, standardizing the\n  team's training environment across AWS EC2 instances.\n- Built monitoring for model prediction drift, alerting the data science\n  team to two significant model degradations.",
+      "education": "M.S. Computer Science, Cairo University"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\content_maria.docx",
+    "file_name": "content_maria.docx",
+    "dept": "marketing",
+    "candidate_name": "Maria Silva",
+    "skills": [
+      "content strategy",
+      "seo",
+      "editorial calendar",
+      "copywriting",
+      "wordpress",
+      "semrush",
+      "keyword gap analysis"
+    ],
+    "total_experience_years": 10.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Maria Silva\nContent Marketing Lead\nmaria.silva@example.com | Lisbon, Portugal\n\nContent marketer specializing in editorial strategy and organic search\ngrowth. Seven years writing and managing content teams for tech brands.",
+      "skills": "Content strategy, SEO, editorial calendars, copywriting, WordPress, SEMrush",
+      "experience": "Content Marketing Lead, Solano Health Tech (2020-Present)\n- Built an editorial calendar and SEO content strategy that grew organic\n  blog traffic from 5k to 60k monthly visitors.\n- Managed a team of four freelance writers producing SEO-optimized long-form\n  guides.\n- Used SEMrush for keyword gap analysis to prioritize new content topics.\n\nContent Marketing Manager, Ferndale Media (2016-2020)\n- Wrote and edited over 200 blog posts and case studies.\n- Partnered with the design team to launch a resource library that became\n  the top organic traffic source on the site.",
+      "education": "B.A. Journalism, University of Lisbon"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\email_marketing_derek.pdf",
+    "file_name": "email_marketing_derek.pdf",
+    "dept": "marketing",
+    "candidate_name": "Derek Thompson",
+    "skills": [
+      "email marketing",
+      "klaviyo",
+      "marketing automation",
+      "segmentation",
+      "a/b testing"
+    ],
+    "total_experience_years": 5.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Derek Thompson\nEmail Marketing Manager\nderek.thompson@example.com | Toronto, Canada\n\nLifecycle marketer with 3 years building email and automation programs\nthat drive activation, retention, and revenue for e-commerce brands.",
+      "skills": "Email marketing, Klaviyo, marketing automation, segmentation, A/B testing",
+      "experience": "Email Marketing Manager, Thistledown Goods (2022-Present)\n- Built lifecycle email flows in Klaviyo (welcome, abandoned cart,\n  post-purchase) that now drive 22% of monthly revenue.\n- Segmented the customer list by purchase behavior, lifting email\n  campaign click-through rate by 35%.\n- Ran A/B tests on subject lines and send times across weekly campaigns.\nEmail Marketing Coordinator, Willowbrook Apparel (2021-2022)\n- Built and scheduled weekly promotional email campaigns in Klaviyo.\n- Maintained list hygiene and segmentation for a 200,000-subscriber list.",
+      "education": "B.A. Marketing, Toronto Metropolitan University"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\growth_carol.txt",
+    "file_name": "growth_carol.txt",
+    "dept": "marketing",
+    "candidate_name": "Carol Diaz",
+    "skills": [
+      "seo",
+      "ab testing",
+      "google analytics",
+      "growth loops",
+      "sql",
+      "hubspot",
+      "optimizely"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Carol Diaz\nGrowth Marketing Manager\ncarol.diaz@example.com | Denver, CO\n\nGrowth marketer who blends SEO, experimentation, and analytics to drive\nacquisition. Five years scaling signup funnels for B2B SaaS products.",
+      "skills": "SEO, A/B testing, Google Analytics, growth loops, SQL, HubSpot",
+      "experience": "Growth Marketing Manager, Alderway SaaS (2021-Present)\n- Ran an SEO overhaul of the marketing site, growing organic traffic 3x in\n  12 months.\n- Built an A/B testing program using Google Analytics and Optimizely,\n  lifting trial signup rate by 18%.\n- Designed a referral growth loop that now drives 15% of new signups.\n\nGrowth Marketer, Pinecrest Tools (2019-2021)\n- Owned keyword research and on-page SEO for the blog, doubling monthly\n  organic sessions.\n- Used SQL to build cohort dashboards tracking activation and retention.",
+      "education": "B.A. Marketing, University of Colorado Boulder"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\product_marketing_elena.docx",
+    "file_name": "product_marketing_elena.docx",
+    "dept": "marketing",
+    "candidate_name": "Elena Moreau",
+    "skills": [
+      "go-to-market strategy",
+      "positioning",
+      "competitive analysis",
+      "saas",
+      "sales enablement",
+      "messaging"
+    ],
+    "total_experience_years": 8.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Elena Moreau\nProduct Marketing Manager\nelena.moreau@example.com | Paris, France\n\nProduct marketing manager with 6 years leading go-to-market strategy and\npositioning for B2B SaaS products.",
+      "skills": "Go-to-market strategy, positioning, competitive analysis, SaaS, sales enablement, messaging",
+      "experience": "Senior Product Marketing Manager, Cerulean Cloud (2021-Present)\n- Led go-to-market strategy for three major product launches, each\n  exceeding first-quarter adoption targets.\n- Developed positioning and messaging that sales enablement materials\n  across the 40-person sales team adopted company-wide.\n- Ran competitive analysis that shaped the roadmap's differentiation\n  strategy against two main competitors.\n\nProduct Marketing Manager, Belmoro Software (2018-2021)\n- Owned launch planning and sales enablement content for the platform's\n  self-serve tier.\n- Partnered with product management to translate feature roadmaps into\n  customer-facing messaging.",
+      "education": "M.S. Marketing, HEC Paris"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\seo_specialist_ivan.txt",
+    "file_name": "seo_specialist_ivan.txt",
+    "dept": "marketing",
+    "candidate_name": "Ivan Petrov",
+    "skills": [
+      "technical seo",
+      "keyword research",
+      "google search console",
+      "ahrefs",
+      "content optimization",
+      "site audits",
+      "link building"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Ivan Petrov\nSEO Specialist\nivan.petrov@example.com | Prague, Czech Republic\n\nSEO specialist with 4 years driving organic growth through technical SEO\naudits, content optimization, and link-building programs.",
+      "skills": "Technical SEO, keyword research, Google Search Console, Ahrefs, content\noptimization, site audits",
+      "experience": "SEO Specialist, Vltava Digital (2022-Present)\n- Ran technical SEO audits across a 5,000-page site, fixing crawl and\n  indexation issues that lifted organic traffic 45% in six months.\n- Built a keyword research process using Ahrefs and Google Search Console\n  that now drives the content team's monthly topic calendar.\n- Led a link-building program that grew referring domains by 60% year\n  over year.\n\nSEO Associate, Karlin Media House (2020-2022)\n- Optimized on-page content (titles, meta descriptions, headers) for over\n  300 pages.\n- Monitored keyword rankings and produced monthly SEO performance reports.",
+      "education": "B.A. Marketing, Charles University"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\social_ken.pdf",
+    "file_name": "social_ken.pdf",
+    "dept": "marketing",
+    "candidate_name": "Ken Watanabe",
+    "skills": [
+      "social media strategy",
+      "community management",
+      "influencer partnerships",
+      "tiktok",
+      "instagram",
+      "content calendars",
+      "twitter"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Ken Watanabe\nSocial Media Marketing Manager\nken.watanabe@example.com | Osaka, Japan\n\nSocial media marketer focused on community building and influencer\npartnerships. Five years growing brand presence across short-form video\nplatforms.",
+      "skills": "Social media strategy, community management, influencer partnerships,\nTikTok, Instagram, content calendars",
+      "experience": "Social Media Manager, Kurogane Apparel (2021-Present)\n- Grew the brand’s TikTok following from 2,000 to 400,000 through a\n  consistent short-form video strategy.\n- Negotiated and managed partnerships with 20+ micro-influencers per\n  quarter.\n- Built a community management playbook that cut response time to comments\n  and DMs from a day to under two hours.\nSocial Media Coordinator, Umeda Coffee Co. (2019-2021)\n- Ran the day-to-day Instagram and Twitter presence, doubling engagement\n  rate over two years.\n- Coordinated influencer seeding campaigns for new product launches.",
+      "education": "B.A. Communications, Osaka University"
+    }
+  },
+  {
+    "file_path": "resumes\\resume_john_doe.pdf",
+    "file_name": "resume_john_doe.pdf",
+    "dept": "general",
+    "candidate_name": "John Doe",
+    "skills": [
+      "python",
+      "flask",
+      "postgresql",
+      "docker",
+      "git",
+      "rest apis",
+      "django"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "John Doe\nSoftware Engineer\njohn.doe@example.com | Remote\n\nGeneralist software engineer with 4 years of experience across backend\nservices and internal tooling, with strong Python experience.",
+      "skills": "Python, Flask, PostgreSQL, Docker, Git, REST APIs",
+      "experience": "Software Engineer, Briarcliff Systems (2022-Present)\n- Built internal tooling in Python (Flask) used by three teams daily.\n- Wrote a Python migration script that moved 2M records between\n  PostgreSQL databases with zero downtime.\nJunior Developer, Oakhollow Software (2020-2022)\n- Maintained a Python/Django billing service.\n- Wrote automated tests in Python, raising coverage from 40% to 85%.",
+      "education": "B.S. Computer Science, Arizona State University"
+    }
+  },
+  {
+    "file_path": "resumes\\sales\\account_exec_marcus.pdf",
+    "file_name": "account_exec_marcus.pdf",
+    "dept": "sales",
+    "candidate_name": "Marcus Bellamy",
+    "skills": [
+      "salesforce",
+      "enterprise negotiation",
+      "solution selling",
+      "forecasting",
+      "quota attainment"
+    ],
+    "total_experience_years": 9.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Marcus Bellamy\nSenior Enterprise Account Executive\nmarcus.bellamy@example.com | New York, NY\n\nEnterprise account executive with 7 years closing complex B2B SaaS deals\nand building trusted relationships with C-level buyers.",
+      "skills": "Salesforce, enterprise negotiation, solution selling, forecasting, quota attainment",
+      "experience": "Senior Enterprise Account Executive, Harborstone Cloud (2020-Present)\n- Closed $5.1M in new annual recurring revenue in FY2024, at 145% of\n  quota.\n- Managed a pipeline of 20+ enterprise accounts in Salesforce with\n  9-12 month sales cycles.\n- Negotiated the company's largest renewal to date, a $1.2M three-year\n  contract.\nEnterprise Account Executive, Windermere Software (2017-2020)\n- Carried and exceeded a $1.8M annual quota for three consecutive years.\n- Built forecasting models in Salesforce with under 5% variance from\n  actuals.",
+      "education": "B.S. Business Administration, New York University"
+    }
+  },
+  {
+    "file_path": "resumes\\sales\\customer_success_grace.docx",
+    "file_name": "customer_success_grace.docx",
+    "dept": "sales",
+    "candidate_name": "Grace Okonkwo",
+    "skills": [
+      "onboarding",
+      "renewals",
+      "account management",
+      "gainsight",
+      "upselling",
+      "customer health scoring"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Grace Okonkwo\nCustomer Success Manager\ngrace.okonkwo@example.com | Lagos, Nigeria\n\nCustomer success manager with 4 years driving onboarding, adoption, and\nrenewals for B2B SaaS accounts.",
+      "skills": "Onboarding, renewals, account management, Gainsight, upselling, customer health scoring",
+      "experience": "Customer Success Manager, Palmgrove SaaS (2022-Present)\n- Owned onboarding and adoption for a portfolio of 60 mid-market accounts,\n  achieving a 96% renewal rate.\n- Used Gainsight health scores to identify at-risk accounts, running\n  save plays that recovered 80% of flagged renewals.\n- Identified upsell opportunities that grew net revenue retention to 118%\n  across the portfolio.\n\nAssociate Customer Success Manager, Brookvale Tech (2020-2022)\n- Ran onboarding calls and training sessions for new SMB customers.\n- Tracked account health and renewal risk in Gainsight, escalating churn\n  risks to the CSM team.",
+      "education": "B.S. Business Administration, University of Lagos"
+    }
+  },
+  {
+    "file_path": "resumes\\sales\\enterprise_dan.txt",
+    "file_name": "enterprise_dan.txt",
+    "dept": "sales",
+    "candidate_name": "Dan O'Brien",
+    "skills": [
+      "salesforce",
+      "enterprise negotiation",
+      "solution selling",
+      "forecasting",
+      "quota attainment"
+    ],
+    "total_experience_years": 10.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Dan O'Brien\nEnterprise Account Executive\ndan.obrien@example.com | Chicago, IL\n\nEnterprise sales executive with 8 years closing complex, multi-stakeholder\ndeals for B2B software. Consistent quota over-achiever.",
+      "skills": "Salesforce, enterprise negotiation, solution selling, forecasting, quota\nattainment",
+      "experience": "Senior Enterprise Account Executive, Meridian Cloud Systems (2020-Present)\n- Closed $4.2M in new annual recurring revenue in FY2024, at 138% of quota.\n- Managed a pipeline of 25+ enterprise accounts in Salesforce, each with\n  6-12 month sales cycles.\n- Led contract negotiation for the company's largest deal to date, a\n  $900K multi-year agreement.\n\nEnterprise Account Executive, Castlewood Data (2016-2020)\n- Carried and exceeded a $1.5M annual quota for three consecutive years.\n- Built and maintained forecasting accuracy within 5% using Salesforce\n  pipeline reporting.",
+      "education": "B.S. Business Administration, University of Illinois"
+    }
+  },
+  {
+    "file_path": "resumes\\sales\\partnerships_omar.pdf",
+    "file_name": "partnerships_omar.pdf",
+    "dept": "sales",
+    "candidate_name": "Omar Haddad",
+    "skills": [
+      "salesforce",
+      "channel partnerships",
+      "contract negotiation",
+      "co-selling",
+      "partner enablement"
+    ],
+    "total_experience_years": 8.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Omar Haddad\nPartnerships & Channel Sales Manager\nomar.haddad@example.com | Dubai, UAE\n\nChannel sales manager building and negotiating reseller and technology\npartnerships across the Middle East and North Africa.",
+      "skills": "Salesforce, channel partnerships, contract negotiation, co-selling,\npartner enablement",
+      "experience": "Channel Sales Manager, Falconpeak Technologies (2021-Present)\n- Recruited and onboarded 12 new reseller partners across MENA, tracked\n  through a dedicated Salesforce partner pipeline.\n- Negotiated revenue-share agreements that grew channel-sourced revenue\n  to 25% of regional bookings.\n- Built partner enablement materials adopted by all regional resellers.\nPartnerships Associate, Sandstone Ventures (2018-2021)\n- Supported negotiation of three strategic technology integration\n  partnerships.\n- Managed partner relationship data and reporting in Salesforce.",
+      "education": "B.A. International Business, American University of Sharjah"
+    }
+  },
+  {
+    "file_path": "resumes\\sales\\sales_engineer_victor.txt",
+    "file_name": "sales_engineer_victor.txt",
+    "dept": "sales",
+    "candidate_name": "Victor Alvarez",
+    "skills": [
+      "technical pre-sales",
+      "api integrations",
+      "solution demos",
+      "python",
+      "salesforce",
+      "proof of concept delivery",
+      "rest api"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Victor Alvarez\nSales Engineer\nvictor.alvarez@example.com | Austin, TX\n\nTechnical pre-sales engineer with 5 years bridging sales and engineering,\nrunning product demos and technical evaluations for enterprise buyers.",
+      "skills": "Technical pre-sales, API integrations, solution demos, Python (scripting),\nSalesforce, proof-of-concept delivery",
+      "experience": "Senior Sales Engineer, Ferrostack Cloud (2021-Present)\n- Ran technical discovery and live product demos for enterprise deals\n  averaging $250K ACV, supporting a $6M+ closed pipeline in FY2024.\n- Built custom Python scripts to demonstrate API integrations during\n  proof-of-concept evaluations.\n- Partnered with account executives to answer security and architecture\n  questionnaires for enterprise procurement.\n\nSales Engineer, Quarrywood Systems (2019-2021)\n- Delivered proof-of-concept implementations for prospective customers\n  evaluating the platform's REST API.\n- Logged and tracked technical objections in Salesforce, feeding a\n  quarterly win/loss analysis.",
+      "education": "B.S. Computer Engineering, University of Texas at Austin"
+    }
+  },
+  {
+    "file_path": "resumes\\sales\\smb_lena.docx",
+    "file_name": "smb_lena.docx",
+    "dept": "sales",
+    "candidate_name": "Lena Kowalski",
+    "skills": [
+      "hubspot",
+      "outbound prospecting",
+      "cold calling",
+      "quota attainment",
+      "upselling"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Lena Kowalski\nSMB Account Executive\nlena.kowalski@example.com | Warsaw, Poland\n\nHigh-volume SMB sales rep with 4 years of experience running fast, efficient\nsales cycles for small and mid-sized businesses.",
+      "skills": "HubSpot, outbound prospecting, cold calling, quota attainment, upselling",
+      "experience": "SMB Account Executive, Brightloop Software (2022-Present)\n- Managed a book of 150+ SMB accounts through HubSpot, closing 30+ new\n  deals per quarter.\n- Exceeded quota in 7 of the last 8 quarters, averaging 112% attainment.\n- Built an outbound cold-calling cadence that improved lead-to-meeting\n  conversion by 22%.\n\nSales Development Representative, Ashgrove Software (2020-2022)\n- Booked qualified meetings for the AE team via cold outbound, consistently\n  hitting 40+ meetings per month.\n- Used HubSpot sequences to run structured, multi-touch outbound campaigns.",
+      "education": "B.A. Economics, University of Warsaw"
+    }
+  }
+]
