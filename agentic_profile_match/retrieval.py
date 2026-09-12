@@ -40,6 +40,32 @@ def build_sparse_embedding_model() -> SparseTextEmbedding:
     return SparseTextEmbedding(model_name="Qdrant/bm25")
 
 
+def embed_text(
+    text: str,
+    embedding_model: Embeddings | None = None,
+    sparse_model: SparseTextEmbedding | None = None,
+) -> dict:
+    """Embeds arbitrary query text with the same dense+sparse models used for
+    resume chunks, so vectors are directly comparable. Shared by
+    embed_job_description (JD descriptive prose) and tools.search_resumes
+    (loose NL queries) -- the only difference between the two callers is
+    what text they hand in.
+    """
+    embedding_model = embedding_model or build_embedding_model()
+    sparse_model = sparse_model or build_sparse_embedding_model()
+
+    dense_vector = embedding_model.embed_query(text)
+    sparse_vector = list(sparse_model.embed([text]))[0]
+
+    return {
+        "dense": dense_vector,
+        "sparse": {
+            "indices": sparse_vector.indices.tolist(),
+            "values": sparse_vector.values.tolist(),
+        },
+    }
+
+
 def embed_job_description(
     jd_sections: dict[str, str],
     embedding_model: Embeddings | None = None,
@@ -51,23 +77,10 @@ def embed_job_description(
     bullets are deliberately excluded here -- they're matched via
     ranking.keyword_match_score instead of semantic similarity.
     """
-    embedding_model = embedding_model or build_embedding_model()
-    sparse_model = sparse_model or build_sparse_embedding_model()
-
     query_text = "\n\n".join(
         jd_sections[key] for key in ("header", "about_the_role", "responsibilities") if jd_sections.get(key)
     )
-
-    dense_vector = embedding_model.embed_query(query_text)
-    sparse_vector = list(sparse_model.embed([query_text]))[0]
-
-    return {
-        "dense": dense_vector,
-        "sparse": {
-            "indices": sparse_vector.indices.tolist(),
-            "values": sparse_vector.values.tolist(),
-        },
-    }
+    return embed_text(query_text, embedding_model, sparse_model)
 
 
 def semantic_search(jd_vectors: dict, top_k: int = config.MATCH_TOP_K) -> list[dict]:

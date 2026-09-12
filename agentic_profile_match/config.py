@@ -29,3 +29,8 @@ QDRANT_COLLECTION_NAME = "resume_chunks"
 
 # Job matching (ranking.py / matching_agent.py)
 MATCH_TOP_K = 10
+
+# Chat model (tools.py's generate_interview_questions, matching_agent's
+# conversational agent) -- same model llm_file_assistant/rag_profile_match use.
+MODEL_NAME = "openai/gpt-oss-120b"
+MODEL_PROVIDER = "openrouter"
