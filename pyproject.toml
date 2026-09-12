@@ -28,4 +28,5 @@ dependencies = [
 members = [
     "llm_file_assistant",
     "rag_profile_match",
+    "agentic_profile_match",
 ]
