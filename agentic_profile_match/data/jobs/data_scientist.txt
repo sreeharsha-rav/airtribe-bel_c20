@@ -1,0 +1,27 @@
+Data Scientist
+Company: Northlight Health | Location: Seattle, WA (Hybrid)
+
+About the role
+We're looking for a Data Scientist to build and ship machine learning
+models that improve patient outcomes. You'll work across the full
+lifecycle, from feature engineering through production deployment.
+
+Responsibilities
+- Build and evaluate machine learning models in Python for clinical and
+  operational use cases.
+- Write SQL pipelines to extract and engineer features from large claims
+  and clinical datasets.
+- Deploy models to production and monitor their performance over time.
+- Design and analyze experiments (A/B tests) to validate model impact.
+
+Must-have requirements
+- 4+ years of professional data science experience.
+- 3+ years of hands-on Python development for statistical modeling or
+  machine learning.
+- Experience with SQL for data extraction.
+- Experience deploying models to production.
+
+Nice-to-have
+- Experience with cloud ML platforms such as AWS SageMaker or GCP Vertex AI.
+- Experience with deep learning frameworks (PyTorch or TensorFlow).
+- Master's or PhD in a quantitative field.

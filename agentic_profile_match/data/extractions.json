@@ -1,0 +1,271 @@
+[
+  {
+    "file_path": "resumes\\data\\data_analyst_junior_finn.txt",
+    "file_name": "data_analyst_junior_finn.txt",
+    "dept": "data",
+    "candidate_name": "Finn O'Sullivan",
+    "skills": [
+      "sql",
+      "excel",
+      "tableau",
+      "python"
+    ],
+    "total_experience_years": 2.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Finn O'Sullivan\nData Analyst\nfinn.osullivan@example.com | Boston, MA\n\nData analyst with 2 years of experience building dashboards and running\nad-hoc SQL analyses.",
+      "skills": "SQL, Excel, Tableau, Python (pandas)",
+      "experience": "Data Analyst, Harborview Retail (2022-Present)\n- Built weekly sales dashboards in Tableau for the merchandising team.\n- Wrote SQL queries against the retail data warehouse to answer ad-hoc\n  leadership requests.\n- Used Python and pandas for lightweight data cleaning tasks.",
+      "education": "B.A. in Economics, Boston College (2022)"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\data_engineer_layla.txt",
+    "file_name": "data_engineer_layla.txt",
+    "dept": "data",
+    "candidate_name": "Layla Farouk",
+    "skills": [
+      "python",
+      "sql",
+      "airflow",
+      "spark",
+      "aws redshift",
+      "dbt"
+    ],
+    "total_experience_years": 4.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Layla Farouk\nData Engineer\nlayla.farouk@example.com | Atlanta, GA\n\nData engineer with 5 years of experience building Python-based ETL\npipelines and SQL data warehouses.",
+      "skills": "Python, SQL, Airflow, Spark, AWS Redshift, dbt",
+      "experience": "Senior Data Engineer, Ironbridge Logistics (2020-Present)\n- Built Python/Airflow pipelines processing 150M+ shipment events daily\n  into an AWS Redshift warehouse.\n- Migrated legacy batch ETL jobs to Spark, cutting nightly processing\n  time from 5 hours to 45 minutes.\n- Modeled the analytics warehouse schema in dbt for the BI team's\n  dashboards.",
+      "education": "B.S. in Computer Science, Georgia Institute of Technology (2019)"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\data_scientist_priya.txt",
+    "file_name": "data_scientist_priya.txt",
+    "dept": "data",
+    "candidate_name": "Priya Chandrasekaran",
+    "skills": [
+      "python",
+      "sql",
+      "scikit-learn",
+      "pytorch",
+      "pandas",
+      "aws sagemaker",
+      "mlflow",
+      "ab testing"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Priya Chandrasekaran\nSenior Data Scientist\npriya.c@example.com | Seattle, WA\n\nData scientist with 6 years of experience building and deploying machine\nlearning models in Python, from experimentation through production.",
+      "skills": "Python, SQL, scikit-learn, PyTorch, pandas, AWS SageMaker, MLflow, A/B\ntesting",
+      "experience": "Senior Data Scientist, Northlight Health (2020-Present)\n- Built and deployed a patient no-show prediction model in PyTorch,\n  reducing missed appointments by 18%.\n- Wrote SQL pipelines extracting features from a 200M-row claims\n  warehouse.\n- Deployed models to production via AWS SageMaker endpoints, serving\n  real-time predictions.\n\nData Scientist, Northlight Health (2018-2020)\n- Built churn-prediction models in scikit-learn for the member-retention\n  team.\n- Designed and analyzed A/B tests for a care-navigation feature, informing\n  a company-wide rollout.",
+      "education": "M.S. in Statistics, University of Washington (2018)"
+    }
+  },
+  {
+    "file_path": "resumes\\data\\ml_engineer_omar.md",
+    "file_name": "ml_engineer_omar.md",
+    "dept": "data",
+    "candidate_name": "Omar Haddad",
+    "skills": [
+      "python",
+      "sql",
+      "tensorflow",
+      "docker",
+      "aws",
+      "airflow",
+      "feature engineering"
+    ],
+    "total_experience_years": 5.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Omar Haddad\nMachine Learning Engineer\nomar.haddad@example.com | Chicago, IL\n\nMachine learning engineer with 5 years of experience productionizing\nmodels and building training pipelines in Python.",
+      "skills": "Python, SQL, TensorFlow, Docker, AWS, Airflow, feature engineering",
+      "experience": "Machine Learning Engineer, Fieldstone Insurance (2019-Present)\n- Built and deployed a fraud-detection model in TensorFlow, served via a\n  Dockerized inference service on AWS.\n- Wrote SQL-based feature pipelines orchestrated with Airflow, feeding\n  daily model retraining.\n- Partnered with the data science team to productionize research models\n  into scalable services.",
+      "education": "B.S. in Computer Science, University of Illinois at Chicago (2019)"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\backend_junior_kavya.txt",
+    "file_name": "backend_junior_kavya.txt",
+    "dept": "engineering",
+    "candidate_name": "Kavya Reddy",
+    "skills": [
+      "python",
+      "flask",
+      "sqlite",
+      "git",
+      "linux"
+    ],
+    "total_experience_years": 1.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Kavya Reddy\nJunior Backend Developer\nkavya.reddy@example.com | Remote\n\nJunior backend developer with 1.5 years of experience building internal\ntools in Python and Flask.",
+      "skills": "Python, Flask, SQLite, Git, Linux",
+      "experience": "Junior Backend Developer, Brightloop Studio (2023-Present)\n- Built and maintained internal Flask tools for the design team's asset\n  pipeline.\n- Wrote Python scripts to automate manual QA checks, reducing review time\n  by 20%.",
+      "education": "B.S. in Information Technology, Kakatiya University (2023)"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\backend_maria.txt",
+    "file_name": "backend_maria.txt",
+    "dept": "engineering",
+    "candidate_name": "Maria Kowalski",
+    "skills": [
+      "python",
+      "django",
+      "fastapi",
+      "postgresql",
+      "aws",
+      "docker",
+      "kubernetes",
+      "redis",
+      "rest apis",
+      "ci/cd"
+    ],
+    "total_experience_years": 6.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Maria Kowalski\nSenior Backend Engineer\nmaria.kowalski@example.com | Portland, OR\n\nBackend engineer with 7 years building and operating high-throughput\nservices in Python. Deep experience with Django and FastAPI, PostgreSQL\nschema design, and running production systems on AWS.",
+      "skills": "Python, Django, FastAPI, PostgreSQL, AWS, Docker, Kubernetes, Redis, REST\nAPIs, CI/CD",
+      "experience": "Senior Backend Engineer, Cascadia Freight (2021-Present)\n- Owned the core shipment-tracking API, built in FastAPI, serving 2M+\n  requests/day.\n- Redesigned the PostgreSQL schema for the routing service, cutting query\n  latency by 55%.\n- Migrated deployment from bare EC2 instances to Kubernetes on AWS,\n  reducing rollout time from 25 minutes to 4 minutes.\n- Led on-call rotation for the platform team and drove incident response\n  for owned services.\n\nBackend Engineer, Cascadia Freight (2018-2021)\n- Built internal billing service in Django, processing 50,000+ invoices\n  monthly.\n- Introduced a Docker-based local dev environment, cutting new-hire\n  onboarding time in half.",
+      "education": "B.S. in Computer Science, Oregon State University (2018)"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\devops_samuel.md",
+    "file_name": "devops_samuel.md",
+    "dept": "engineering",
+    "candidate_name": "Samuel Kim",
+    "skills": [
+      "python",
+      "django",
+      "postgresql",
+      "aws",
+      "docker",
+      "kubernetes",
+      "terraform"
+    ],
+    "total_experience_years": 3.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Samuel Kim\nDevOps / Backend Engineer\nsamuel.kim@example.com | Denver, CO\n\nDevOps-leaning backend engineer with 4 years of experience running Python\nservices in Django on AWS with PostgreSQL.",
+      "skills": "Python, Django, PostgreSQL, AWS, Docker, Kubernetes, Terraform",
+      "experience": "Backend Engineer, Alpenglow Analytics (2021-Present)\n- Maintained a Django-based reporting API backed by PostgreSQL, serving\n  internal analytics dashboards.\n- Automated infrastructure provisioning with Terraform across AWS\n  accounts.\n- Operated Kubernetes clusters for the platform team, including on-call\n  rotation.",
+      "education": "B.S. in Computer Engineering, Colorado School of Mines (2020)"
+    }
+  },
+  {
+    "file_path": "resumes\\engineering\\fullstack_devon.md",
+    "file_name": "fullstack_devon.md",
+    "dept": "engineering",
+    "candidate_name": "Devon Okafor",
+    "skills": [
+      "python",
+      "fastapi",
+      "django",
+      "postgresql",
+      "react",
+      "typescript",
+      "aws",
+      "docker"
+    ],
+    "total_experience_years": 7.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Devon Okafor\nSenior Fullstack Engineer\ndevon.okafor@example.com | Austin, TX\n\nFullstack engineer with 6 years of experience, specializing in Python\nbackends (FastAPI, Django) and React frontends. Led the backend rebuild of\na billing platform now processing 40,000+ transactions daily.",
+      "skills": "Python, FastAPI, Django, PostgreSQL, React, TypeScript, AWS, Docker",
+      "experience": "Senior Fullstack Engineer, Ledgerline (2020-Present)\n- Designed and built a FastAPI backend for the company's core billing\n  platform, processing 40,000+ transactions daily.\n- Owned PostgreSQL schema design and query performance tuning for the\n  billing service.\n- Deployed and operated services on AWS using Docker; participated in\n  on-call rotation.\n\nFullstack Engineer, Northbound Retail (2017-2020)\n- Built customer-facing dashboards in Django + React for a multi-tenant\n  inventory system.\n- Implemented a Python ETL pipeline syncing nightly inventory counts\n  across 40 stores.",
+      "education": "B.S. in Computer Science, University of Texas at Austin (2017)"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\content_strategist_ava.txt",
+    "file_name": "content_strategist_ava.txt",
+    "dept": "marketing",
+    "candidate_name": "Ava Whitfield",
+    "skills": [
+      "content strategy",
+      "b2b saas product launches",
+      "messaging",
+      "product marketing collaboration",
+      "seo",
+      "editorial planning"
+    ],
+    "total_experience_years": 4.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Ava Whitfield\nContent Marketing Lead\nava.whitfield@example.com | Chicago, IL\n\nContent marketing lead with 5 years of experience writing product\nmessaging and collaborating with product and sales teams on launch\ncontent.",
+      "skills": "Content strategy, B2B SaaS product launches, messaging, product marketing\ncollaboration, SEO, editorial planning",
+      "experience": "Content Marketing Lead, Pinehollow SaaS (2020-Present)\n- Wrote positioning and messaging documents for two major product\n  launches, in partnership with the product marketing team.\n- Collaborated with sales enablement to produce launch collateral for a\n  B2B SaaS platform.\n- Managed the company blog and editorial calendar, driving a 3x increase\n  in organic traffic.",
+      "education": "B.A. in English, University of Chicago (2018)"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\growth_marketer_noah.txt",
+    "file_name": "growth_marketer_noah.txt",
+    "dept": "marketing",
+    "candidate_name": "Noah Bergstrom",
+    "skills": [
+      "paid acquisition",
+      "google ads",
+      "email marketing",
+      "seo",
+      "marketing analytics"
+    ],
+    "total_experience_years": 3.0,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Noah Bergstrom\nGrowth Marketing Manager\nnoah.bergstrom@example.com | New York, NY\n\nGrowth marketer with 4 years of experience running paid acquisition and\nlifecycle email campaigns.",
+      "skills": "Paid acquisition, Google Ads, email marketing, SEO, marketing analytics",
+      "experience": "Growth Marketing Manager, Fable & Finch (2021-Present)\n- Managed a $2M annual paid acquisition budget across Google and Meta ads.\n- Built lifecycle email campaigns that lifted trial-to-paid conversion by\n  12%.\n- Ran SEO experiments that doubled organic landing page traffic in 9\n  months.",
+      "education": "B.A. in Marketing, NYU Stern (2020)"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\pmm_coordinator_liam.txt",
+    "file_name": "pmm_coordinator_liam.txt",
+    "dept": "marketing",
+    "candidate_name": "Liam Fitzgerald",
+    "skills": [
+      "product marketing",
+      "sales enablement",
+      "messaging",
+      "launch coordination"
+    ],
+    "total_experience_years": 2.5,
+    "education_level": "Bachelors",
+    "sections": {
+      "header": "Liam Fitzgerald\nProduct Marketing Coordinator\nliam.fitzgerald@example.com | Denver, CO\n\nProduct marketing coordinator with 2.5 years of experience supporting\nproduct launches and writing sales enablement content.",
+      "skills": "Product marketing, sales enablement, messaging, launch coordination",
+      "experience": "Product Marketing Coordinator, Aldergate Systems (2022-Present)\n- Supported go-to-market for two B2B SaaS feature launches, drafting first\n  versions of messaging documents reviewed by senior PMMs.\n- Built sales enablement one-pagers used by the account executive team.\n- Coordinated launch timelines across product, design, and marketing\n  teams.",
+      "education": "B.A. in Business Administration, University of Denver (2021)"
+    }
+  },
+  {
+    "file_path": "resumes\\marketing\\pmm_isabella.md",
+    "file_name": "pmm_isabella.md",
+    "dept": "marketing",
+    "candidate_name": "Isabella Torres",
+    "skills": [
+      "product marketing",
+      "b2b saas product launches",
+      "positioning",
+      "messaging",
+      "go-to-market strategy",
+      "sales enablement",
+      "competitive research"
+    ],
+    "total_experience_years": 4.0,
+    "education_level": "Masters",
+    "sections": {
+      "header": "Isabella Torres\nSenior Product Marketing Manager\nisabella.torres@example.com | San Francisco, CA\n\nProduct marketing manager with 6 years of experience launching B2B SaaS\nproducts and partnering closely with sales and product teams.",
+      "skills": "Product marketing, B2B SaaS product launches, positioning, messaging,\ngo-to-market strategy, sales enablement, competitive research",
+      "experience": "Senior Product Marketing Manager, Fernwood Software (2021-Present)\n- Led go-to-market for three B2B SaaS product launches, writing\n  positioning and messaging documents used across sales and marketing.\n- Partnered with sales leadership to build enablement materials,\n  contributing to a 30% increase in qualified pipeline.\n- Ran competitive research programs informing quarterly roadmap and\n  pricing decisions.\n\nProduct Marketing Manager, Fernwood Software (2019-2021)\n- Owned messaging for the platform's core analytics product, collaborating\n  weekly with product management.\n- Built customer case studies and launch campaigns for two feature\n  releases.",
+      "education": "MBA, Haas School of Business, UC Berkeley (2019)\nB.A. in Communications, UCLA (2015)"
+    }
+  }
+]

@@ -1,0 +1,12 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6350:6333"   # REST API -- a different host port than rag_profile_match's
+                       # (6333), so both projects' Qdrant instances can run at once.
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: on-failure:5
+
+volumes:
+  qdrant_storage:

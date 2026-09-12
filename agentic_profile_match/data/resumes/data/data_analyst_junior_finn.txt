@@ -1,0 +1,20 @@
+Finn O'Sullivan
+Data Analyst
+finn.osullivan@example.com | Boston, MA
+
+SUMMARY
+Data analyst with 2 years of experience building dashboards and running
+ad-hoc SQL analyses.
+
+SKILLS
+SQL, Excel, Tableau, Python (pandas)
+
+EXPERIENCE
+Data Analyst, Harborview Retail (2022-Present)
+- Built weekly sales dashboards in Tableau for the merchandising team.
+- Wrote SQL queries against the retail data warehouse to answer ad-hoc
+  leadership requests.
+- Used Python and pandas for lightweight data cleaning tasks.
+
+EDUCATION
+B.A. in Economics, Boston College (2022)

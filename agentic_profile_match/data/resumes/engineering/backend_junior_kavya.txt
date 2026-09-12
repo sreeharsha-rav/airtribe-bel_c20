@@ -1,0 +1,20 @@
+Kavya Reddy
+Junior Backend Developer
+kavya.reddy@example.com | Remote
+
+SUMMARY
+Junior backend developer with 1.5 years of experience building internal
+tools in Python and Flask.
+
+SKILLS
+Python, Flask, SQLite, Git, Linux
+
+EXPERIENCE
+Junior Backend Developer, Brightloop Studio (2023-Present)
+- Built and maintained internal Flask tools for the design team's asset
+  pipeline.
+- Wrote Python scripts to automate manual QA checks, reducing review time
+  by 20%.
+
+EDUCATION
+B.S. in Information Technology, Kakatiya University (2023)

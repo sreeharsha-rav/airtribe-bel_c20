@@ -1,0 +1,22 @@
+Layla Farouk
+Data Engineer
+layla.farouk@example.com | Atlanta, GA
+
+SUMMARY
+Data engineer with 5 years of experience building Python-based ETL
+pipelines and SQL data warehouses.
+
+SKILLS
+Python, SQL, Airflow, Spark, AWS Redshift, dbt
+
+EXPERIENCE
+Senior Data Engineer, Ironbridge Logistics (2020-Present)
+- Built Python/Airflow pipelines processing 150M+ shipment events daily
+  into an AWS Redshift warehouse.
+- Migrated legacy batch ETL jobs to Spark, cutting nightly processing
+  time from 5 hours to 45 minutes.
+- Modeled the analytics warehouse schema in dbt for the BI team's
+  dashboards.
+
+EDUCATION
+B.S. in Computer Science, Georgia Institute of Technology (2019)
