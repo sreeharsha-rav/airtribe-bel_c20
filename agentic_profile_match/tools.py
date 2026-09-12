@@ -22,6 +22,9 @@ from fs_tools import read_file
 from jd_parser import extract_must_have_requirements, extract_nice_to_have_requirements, split_job_sections
 from ranking import MatchResult, score_and_rank
 from retrieval import embed_text, semantic_search
+from screening import DeepAnalysisResult, Recommendation
+from screening import deep_analyze_candidates as run_deep_analysis
+from screening import generate_recommendations as run_generate_recommendations
 
 
 @dataclass
@@ -37,6 +40,8 @@ class Session:
     jd_text: str = ""
     jd_sections: dict[str, str] = field(default_factory=dict)
     candidate_pool: list[dict] = field(default_factory=list)
+    deep_analysis: list[DeepAnalysisResult] = field(default_factory=list)
+    recommendations: list[Recommendation] = field(default_factory=list)
 
 
 session = Session()
@@ -242,4 +247,88 @@ def generate_interview_questions(candidate_identifier: str) -> dict:
         "found": True,
         "candidate_name": result.candidate_name,
         "questions": questions.questions,
+    }
+
+
+# --- deep_analyze_candidates (Phase 3) ---------------------------------------------
+
+class DeepAnalyzeCandidatesInput(BaseModel):
+    """Input for an on-demand deep analysis of specific shortlisted candidates."""
+
+    candidate_identifiers: list[str] = Field(
+        description="Candidate names or resume paths from the current shortlist to deep-analyze.",
+    )
+
+
+@tool("deep_analyze_candidates", args_schema=DeepAnalyzeCandidatesInput)
+def deep_analyze_candidates(candidate_identifiers: list[str]) -> dict:
+    """On-demand full-resume-grounded deep analysis (strengths/gaps/nice-to-have coverage/
+    must-have discrepancy) for specific shortlisted candidates -- the same logic the outer
+    graph's Deep Analysis node runs, callable conversationally without re-running the whole
+    pipeline. Results are stored in the session so a later generate_recommendation call for
+    the same candidate can find them.
+    """
+    resolved: list[MatchResult] = []
+    not_found = []
+    for identifier in candidate_identifiers:
+        result, error = _resolve_candidate(identifier, session.match_results)
+        if result is None:
+            not_found.append({"identifier": identifier, "error": error})
+        else:
+            resolved.append(result)
+
+    analyses = run_deep_analysis(resolved, session.must_haves, session.nice_to_haves) if resolved else []
+
+    analysis_by_path = {analysis.resume_path: analysis for analysis in session.deep_analysis}
+    for analysis in analyses:
+        analysis_by_path[analysis.resume_path] = analysis
+    session.deep_analysis = list(analysis_by_path.values())
+
+    return {"analyses": [analysis.model_dump() for analysis in analyses], "not_found": not_found}
+
+
+# --- generate_recommendation (Phase 3) ----------------------------------------------
+
+class GenerateRecommendationInput(BaseModel):
+    """Input for an on-demand hire/no-hire recommendation for specific shortlisted candidates."""
+
+    candidate_identifiers: list[str] = Field(
+        description="Candidate names or resume paths to recommend on. Each must already have a "
+        "deep analysis in this session -- call deep_analyze_candidates first if not.",
+    )
+
+
+@tool("generate_recommendation", args_schema=GenerateRecommendationInput)
+def generate_recommendation(candidate_identifiers: list[str]) -> dict:
+    """On-demand hire/no-hire recommendation (deterministic verdict + LLM justification, plus
+    improvement suggestions for a Borderline verdict) for specific shortlisted candidates --
+    the same logic the outer graph's Recommendation node runs. Requires each candidate to
+    already have a deep analysis in this session; candidates missing one are reported back
+    rather than silently skipped.
+    """
+    analysis_by_path = {analysis.resume_path: analysis for analysis in session.deep_analysis}
+
+    resolved: list[MatchResult] = []
+    not_found = []
+    missing_deep_analysis = []
+    for identifier in candidate_identifiers:
+        result, error = _resolve_candidate(identifier, session.match_results)
+        if result is None:
+            not_found.append({"identifier": identifier, "error": error})
+        elif result.resume_path not in analysis_by_path:
+            missing_deep_analysis.append({"identifier": identifier, "candidate_name": result.candidate_name})
+        else:
+            resolved.append(result)
+
+    recommendations = run_generate_recommendations(resolved, session.deep_analysis) if resolved else []
+
+    recommendation_by_path = {rec.resume_path: rec for rec in session.recommendations}
+    for rec in recommendations:
+        recommendation_by_path[rec.resume_path] = rec
+    session.recommendations = list(recommendation_by_path.values())
+
+    return {
+        "recommendations": [rec.model_dump() for rec in recommendations],
+        "not_found": not_found,
+        "missing_deep_analysis": missing_deep_analysis,
     }

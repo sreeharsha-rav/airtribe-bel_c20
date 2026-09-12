@@ -1,8 +1,9 @@
 """Phase 1 pipeline (Parse JD -> Extract Requirements -> Search Resumes ->
-Rank Candidates -> Generate Report) plus Phase 2's Human Feedback Loop: a
-single graph node, re-entered via a self-loop edge, that hands each
-conversational turn to a stateless tool-calling helper. See DESIGN.md's
-Phase 1/2 node-by-node specs and AGENT_ARCHITECTURE.md for the full design
+Rank Candidates -> Generate Report), Phase 2's Human Feedback Loop (a single
+graph node, re-entered via a self-loop edge, that hands each conversational
+turn to a stateless tool-calling helper), and Phase 3's opt-in Deep
+Analysis/Recommendation nodes (multi-round screening). See DESIGN.md's
+Phase 1/2/3 node-by-node specs and AGENT_ARCHITECTURE.md for the full design
 this implements.
 """
 
@@ -28,8 +29,13 @@ from fs_tools import list_files, read_file, search_in_file, write_file
 from jd_parser import extract_must_have_requirements, extract_nice_to_have_requirements, split_job_sections
 from ranking import MatchResult, score_and_rank
 from retrieval import embed_job_description, semantic_search
-from tools import compare_candidates, extract_requirements as extract_requirements_tool
-from tools import generate_interview_questions, search_resumes as search_resumes_tool
+from screening import DeepAnalysisResult, Recommendation
+from screening import deep_analyze_candidates as run_deep_analysis
+from screening import generate_recommendations as run_generate_recommendations
+from tools import compare_candidates, deep_analyze_candidates as deep_analyze_candidates_tool
+from tools import extract_requirements as extract_requirements_tool
+from tools import generate_interview_questions, generate_recommendation as generate_recommendation_tool
+from tools import search_resumes as search_resumes_tool
 from tools import session as tool_session
 
 console = Console(record=True)
@@ -51,6 +57,10 @@ CONVERSATION_SYSTEM_PROMPT = (
     "candidates already in the current shortlist (by name or resume_path).\n"
     "- generate_interview_questions(candidate_identifier): drafts interview questions grounded "
     "in a candidate's full resume text.\n"
+    "- deep_analyze_candidates(candidate_identifiers): full-resume-grounded strengths/gaps/"
+    "nice-to-have-coverage/must-have-discrepancy analysis for specific candidates.\n"
+    "- generate_recommendation(candidate_identifiers): a hire/no-hire verdict + justification "
+    "for specific candidates -- call deep_analyze_candidates on them first if you haven't.\n"
     "- list_files/read_file/search_in_file/write_file: sandboxed filesystem access under "
     "root_dir/ (jobs/ and resumes/), e.g. to save a shortlist to a file on request.\n\n"
     "Always ground your answers in tool results -- if something isn't in a result you've seen, "
@@ -66,6 +76,8 @@ TOOLS = [
     extract_requirements_tool,
     compare_candidates,
     generate_interview_questions,
+    deep_analyze_candidates_tool,
+    generate_recommendation_tool,
 ]
 
 _conversational_agent = None
@@ -87,12 +99,16 @@ def get_conversational_agent():
 class AgentState(TypedDict, total=False):
     thread_id: str
     jd_source_path: str
+    deep_screening_requested: bool
     jd_text: str
     jd_sections: dict[str, str]
     must_haves: list[str]
     nice_to_haves: list[str]
     candidate_pool: list[dict]
     match_results: list[MatchResult]
+    round: Literal["broad", "shortlist", "deep_dive", "recommendation"]
+    deep_analysis: list[DeepAnalysisResult]
+    recommendations: list[Recommendation]
     report: str
     messages: Annotated[list[AnyMessage], add_messages]
     session_ended: bool
@@ -140,7 +156,7 @@ def search_resumes(state: AgentState) -> dict:
     jd_vectors = embed_job_description(state["jd_sections"])
     pool_size = max(config.MATCH_TOP_K * 3, 15)
     candidate_pool = semantic_search(jd_vectors, top_k=pool_size)
-    return {"candidate_pool": candidate_pool}
+    return {"candidate_pool": candidate_pool, "round": "broad"}
 
 
 def rank_candidates(state: AgentState) -> dict:
@@ -152,13 +168,58 @@ def rank_candidates(state: AgentState) -> dict:
         state["must_haves"],
         state["nice_to_haves"],
     )
-    return {"match_results": match_results[: config.MATCH_TOP_K]}
+    return {"match_results": match_results[: config.MATCH_TOP_K], "round": "shortlist"}
 
 
-def _render_report(match_results: list[MatchResult], jd_source_path: str) -> str:
+def route_after_rank_candidates(state: AgentState) -> Literal["deep_analysis", "generate_report"]:
+    return "deep_analysis" if state.get("deep_screening_requested") else "generate_report"
+
+
+def deep_analysis(state: AgentState) -> dict:
+    """Phase 3, opt-in only: re-reads each shortlisted candidate's FULL resume
+    text and makes one structured-output LLM call per candidate (batched,
+    per-item error isolation -- see screening.deep_analyze_candidates).
+    """
+    analyses = run_deep_analysis(state["match_results"], state["must_haves"], state["nice_to_haves"])
+    return {"deep_analysis": analyses, "round": "deep_dive"}
+
+
+def recommendation(state: AgentState) -> dict:
+    """Phase 3, opt-in only: deterministic verdict (screening.compute_verdict)
+    plus one LLM justification call per candidate.
+    """
+    recommendations = run_generate_recommendations(state["match_results"], state["deep_analysis"])
+    return {"recommendations": recommendations, "round": "recommendation"}
+
+
+def _render_deep_screening_panel(
+    result: MatchResult, analysis: DeepAnalysisResult | None, rec: Recommendation | None
+) -> Panel | None:
+    if analysis is None and rec is None:
+        return None
+
+    lines = []
+    if analysis is not None:
+        lines.append(f"[bold]Strengths:[/bold] {', '.join(analysis.strengths) or '—'}")
+        lines.append(f"[bold]Gaps:[/bold] {', '.join(analysis.gaps) or '—'}")
+        lines.append(f"[bold]Nice-to-have coverage:[/bold] {', '.join(analysis.nice_to_have_coverage) or '—'}")
+        if analysis.must_have_discrepancy:
+            lines.append(f"[bold red]Must-have discrepancy:[/bold red] {analysis.must_have_discrepancy}")
+    if rec is not None:
+        lines.append(f"[bold]Verdict:[/bold] {rec.verdict}")
+        lines.append(f"[bold]Justification:[/bold] {rec.justification}")
+        if rec.improvement_suggestions:
+            lines.append(f"[bold]Improvement suggestions:[/bold] {', '.join(rec.improvement_suggestions)}")
+
+    return Panel("\n".join(lines), title=result.candidate_name or result.resume_path, border_style="magenta")
+
+
+def _render_report(state: AgentState) -> str:
+    match_results = state["match_results"]
+    jd_source_path = state["jd_source_path"]
+
     if not match_results:
-        table_or_message = "[yellow]No candidates satisfied every must-have requirement.[/yellow]"
-        console.print(table_or_message)
+        console.print("[yellow]No candidates satisfied every must-have requirement.[/yellow]")
         return console.export_text(clear=True)
 
     table = Table(title=f"Candidate Shortlist — {jd_source_path}")
@@ -185,15 +246,27 @@ def _render_report(match_results: list[MatchResult], jd_source_path: str) -> str
         )
 
     console.print(table)
+
+    # Phase 3, only present when deep_screening_requested was True upfront.
+    analysis_by_path = {analysis.resume_path: analysis for analysis in state.get("deep_analysis", [])}
+    recommendation_by_path = {rec.resume_path: rec for rec in state.get("recommendations", [])}
+    for result in match_results:
+        panel = _render_deep_screening_panel(
+            result, analysis_by_path.get(result.resume_path), recommendation_by_path.get(result.resume_path)
+        )
+        if panel is not None:
+            console.print(panel)
+
     return console.export_text(clear=True)
 
 
 def generate_report(state: AgentState) -> dict:
-    """Deterministic rich-rendered table -- no LLM call. Report text is kept
-    in state and seeded as the first message so Human Feedback Loop's first
-    turn already has the shortlist in context, no tool round-trip needed.
+    """Deterministic rich-rendered table -- no LLM call, regardless of
+    deep_screening_requested. Report text is kept in state and seeded as the
+    first message so Human Feedback Loop's first turn already has the
+    shortlist (and, if present, deep analysis/recommendations) in context.
     """
-    report = _render_report(state["match_results"], state["jd_source_path"])
+    report = _render_report(state)
     return {"report": report, "messages": [AIMessage(content=report)]}
 
 
@@ -219,6 +292,8 @@ def human_feedback_loop(state: AgentState) -> dict:
     tool_session.jd_text = state.get("jd_text", "")
     tool_session.jd_sections = state.get("jd_sections", {})
     tool_session.candidate_pool = state.get("candidate_pool", [])
+    tool_session.deep_analysis = state.get("deep_analysis", [])
+    tool_session.recommendations = state.get("recommendations", [])
 
     prior_messages = state.get("messages", [])
     result = get_conversational_agent().invoke({"messages": prior_messages + [HumanMessage(content=user_text)]})
@@ -232,6 +307,8 @@ def human_feedback_loop(state: AgentState) -> dict:
         "jd_text": tool_session.jd_text,
         "jd_sections": tool_session.jd_sections,
         "candidate_pool": tool_session.candidate_pool,
+        "deep_analysis": tool_session.deep_analysis,
+        "recommendations": tool_session.recommendations,
         "session_ended": False,
     }
 
@@ -248,6 +325,8 @@ def build_graph():
     builder.add_node("extract_requirements", extract_requirements)
     builder.add_node("search_resumes", search_resumes)
     builder.add_node("rank_candidates", rank_candidates)
+    builder.add_node("deep_analysis", deep_analysis)
+    builder.add_node("recommendation", recommendation)
     builder.add_node("generate_report", generate_report)
     builder.add_node("human_feedback_loop", human_feedback_loop)
 
@@ -255,15 +334,24 @@ def build_graph():
     builder.add_conditional_edges("parse_jd", route_after_parse_jd)
     builder.add_edge("extract_requirements", "search_resumes")
     builder.add_edge("search_resumes", "rank_candidates")
-    builder.add_edge("rank_candidates", "generate_report")
+    builder.add_conditional_edges("rank_candidates", route_after_rank_candidates)
+    builder.add_edge("deep_analysis", "recommendation")
+    builder.add_edge("recommendation", "generate_report")
     builder.add_edge("generate_report", "human_feedback_loop")
     builder.add_conditional_edges("human_feedback_loop", route_after_human_feedback_loop)
 
-    # MatchResult (a plain pydantic model, not a LangChain/LangGraph type) needs
-    # to be explicitly allow-listed for msgpack (de)serialization -- otherwise
-    # every checkpoint write triggers an "unregistered type" warning that will
-    # become a hard error in a future langgraph version.
-    serde = JsonPlusSerializer(allowed_msgpack_modules=[("ranking", "MatchResult")])
+    # MatchResult/DeepAnalysisResult/Recommendation are plain pydantic models,
+    # not LangChain/LangGraph types, so they need to be explicitly allow-listed
+    # for msgpack (de)serialization -- otherwise every checkpoint write
+    # triggers an "unregistered type" warning that will become a hard error in
+    # a future langgraph version.
+    serde = JsonPlusSerializer(
+        allowed_msgpack_modules=[
+            ("ranking", "MatchResult"),
+            ("screening", "DeepAnalysisResult"),
+            ("screening", "Recommendation"),
+        ]
+    )
     return builder.compile(checkpointer=InMemorySaver(serde=serde))
 
 
@@ -321,10 +409,18 @@ def main() -> None:
     graph = build_graph()
 
     jd_source_path = console.input("[bold blue]JD path[/bold blue] (relative to root_dir/, e.g. jobs/senior_backend_engineer.txt): ").strip()
+    deep_screening_answer = console.input(
+        "[bold blue]Run full 3-round screening (deep analysis + recommendation)?[/bold blue] [y/N]: "
+    ).strip().lower()
+    deep_screening_requested = deep_screening_answer in {"y", "yes"}
 
     thread_id = str(uuid.uuid4())
     thread_config = {"configurable": {"thread_id": thread_id}}
-    initial_state: AgentState = {"thread_id": thread_id, "jd_source_path": jd_source_path}
+    initial_state: AgentState = {
+        "thread_id": thread_id,
+        "jd_source_path": jd_source_path,
+        "deep_screening_requested": deep_screening_requested,
+    }
 
     state = graph.invoke(initial_state, thread_config)
 

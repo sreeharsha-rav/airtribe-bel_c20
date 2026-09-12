@@ -31,6 +31,15 @@ QDRANT_COLLECTION_NAME = "resume_chunks"
 MATCH_TOP_K = 10
 
 # Chat model (tools.py's generate_interview_questions, matching_agent's
-# conversational agent) -- same model llm_file_assistant/rag_profile_match use.
+# conversational agent, screening.py's Deep Analysis/Recommendation) -- same
+# model llm_file_assistant/rag_profile_match use.
 MODEL_NAME = "openai/gpt-oss-120b"
 MODEL_PROVIDER = "openrouter"
+
+# Multi-round screening (screening.py) -- one structured-output LLM call per
+# shortlisted candidate, per node; bounded by MATCH_TOP_K (default 10), so a
+# single un-chunked .batch() call is fine (see rag_profile_match's
+# EXTRACTION_BATCH_SIZE for why a much larger corpus needs chunking and this
+# doesn't).
+SCREENING_MAX_CONCURRENCY = 10
+SCREENING_MAX_RETRIES = 2
