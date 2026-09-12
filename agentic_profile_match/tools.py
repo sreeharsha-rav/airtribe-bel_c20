@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 import config
 from fs_tools import read_file
 from jd_parser import extract_must_have_requirements, extract_nice_to_have_requirements, split_job_sections
+from prompts.interview_questions import INTERVIEW_QUESTIONS_INSTRUCTIONS
 from ranking import MatchResult, score_and_rank
 from retrieval import embed_text, semantic_search
 from screening import DeepAnalysisResult, Recommendation
@@ -236,9 +237,7 @@ def generate_interview_questions(candidate_identifier: str) -> dict:
         f"Full resume text:\n{read_result['content']}\n\n"
         "Job must-have requirements:\n" + "\n".join(f"- {bullet}" for bullet in session.must_haves) + "\n\n"
         f"Skills already confirmed to match: {', '.join(result.matched_skills) or 'none recorded'}\n\n"
-        "Draft 4-6 targeted interview questions that probe this candidate's gaps against the "
-        "must-have requirements and verify specific claims in their resume. Ground every question "
-        "in a detail from the resume text above -- do not ask generic questions."
+        + INTERVIEW_QUESTIONS_INSTRUCTIONS
     )
     questions = _build_interview_question_model().invoke(prompt)
 

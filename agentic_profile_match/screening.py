@@ -18,31 +18,37 @@ from langchain.chat_models import init_chat_model
 
 import config
 from fs_tools import read_file
+from prompts.deep_screening import DEEP_ANALYSIS_SYSTEM_PROMPT, RECOMMENDATION_SYSTEM_PROMPT
 from ranking import MatchResult
 
-DEEP_ANALYSIS_SYSTEM_PROMPT = (
-    "You perform a deep, full-resume review of one candidate against a job's requirements. "
-    "You are given the candidate's COMPLETE resume text (not just a short excerpt) plus the "
-    "job's must-have and nice-to-have requirements. Identify concrete strengths and gaps, "
-    "grounded in specific details from the resume text -- never invent anything not present in "
-    "it. Check nice_to_have_coverage against the full resume, not just an initial keyword guess. "
-    "Set must_have_discrepancy only if the full resume text actually CONTRADICTS an earlier "
-    "must-have match (e.g. the stated experience is thinner or different than assumed) -- leave "
-    "it null if the full resume confirms or is silent on a must-have."
-)
 
-RECOMMENDATION_SYSTEM_PROMPT = (
-    "You write a concise hiring-committee justification for an already-decided hire/no-hire "
-    "verdict. You do not choose the verdict -- it is given to you; your only job is to explain "
-    "it, grounded in the candidate's strengths, gaps, and any must-have discrepancy already "
-    "identified. If, and only if, the verdict is 'Borderline', also suggest 2-4 concrete, "
-    "specific improvements that would move this candidate to a clear Hire; for any other "
-    "verdict, leave improvement_suggestions empty."
-)
+class DeepAnalysisOutput(BaseModel):
+    """What the LLM actually produces for one candidate's deep analysis --
+    candidate_name/resume_path are deliberately NOT part of this schema.
+    Early testing found the model would otherwise invent a plausible-looking
+    but wrong path/name (e.g. "alice_chen_resume.txt" instead of the real
+    "resumes/engineering/backend_alice.txt") instead of echoing back the
+    identifiers given in the prompt -- which then silently broke
+    generate_recommendations' resume_path-keyed lookup. DeepAnalysisResult
+    sets those fields programmatically from the MatchResult instead.
+    """
+
+    strengths: list[str] = Field(default_factory=list, description="Concrete strengths, grounded in the full resume text")
+    gaps: list[str] = Field(default_factory=list, description="Concrete gaps against the job's requirements")
+    nice_to_have_coverage: list[str] = Field(
+        default_factory=list, description="Nice-to-have bullets the full resume actually supports"
+    )
+    must_have_discrepancy: str | None = Field(
+        default=None,
+        description="Set only if the full resume contradicts an earlier chunk-based must-have match; null otherwise",
+    )
 
 
 class DeepAnalysisResult(BaseModel):
-    """One candidate's full-resume-grounded strengths/gaps analysis."""
+    """One candidate's full-resume-grounded strengths/gaps analysis.
+    candidate_name/resume_path are always set from the originating
+    MatchResult, never from the LLM (see DeepAnalysisOutput).
+    """
 
     candidate_name: str | None = Field(default=None, description="Candidate's name")
     resume_path: str = Field(description="Path (relative to root_dir/) of the analyzed resume")
@@ -82,17 +88,17 @@ class Recommendation(BaseModel):
     )
 
 
-def build_deep_analysis_model() -> Runnable[LanguageModelInput, DeepAnalysisResult]:
+def build_deep_analysis_model() -> Runnable[LanguageModelInput, DeepAnalysisOutput]:
     """`with_structured_output` is typed as returning `Runnable[LanguageModelInput,
     dict[str, Any] | BaseModel]` regardless of the schema passed in -- passing the
-    DeepAnalysisResult class (not include_raw=True) always yields a DeepAnalysisResult
+    DeepAnalysisOutput class (not include_raw=True) always yields a DeepAnalysisOutput
     instance at runtime, so the cast narrows that back to the real type.
     """
     model = init_chat_model(model=config.MODEL_NAME, model_provider=config.MODEL_PROVIDER)
-    structured_model = model.with_structured_output(DeepAnalysisResult).with_retry(
+    structured_model = model.with_structured_output(DeepAnalysisOutput).with_retry(
         stop_after_attempt=config.SCREENING_MAX_RETRIES
     )
-    return cast(Runnable[LanguageModelInput, DeepAnalysisResult], structured_model)
+    return cast(Runnable[LanguageModelInput, DeepAnalysisOutput], structured_model)
 
 
 def build_recommendation_model() -> Runnable[LanguageModelInput, RecommendationOutput]:
@@ -123,7 +129,7 @@ def deep_analyze_candidates(
     match_results: list[MatchResult],
     must_haves: list[str],
     nice_to_haves: list[str],
-    model: Runnable[LanguageModelInput, DeepAnalysisResult] | None = None,
+    model: Runnable[LanguageModelInput, DeepAnalysisOutput] | None = None,
 ) -> list[DeepAnalysisResult]:
     """Re-reads each candidate's FULL resume text (not just relevant_excerpts'
     1-2 stored chunks) and makes one batched structured-output LLM call per
@@ -163,7 +169,14 @@ def deep_analyze_candidates(
                 gaps=[f"Deep analysis failed: {output}"],
             )
         else:
-            output_by_path[result.resume_path] = output
+            output_by_path[result.resume_path] = DeepAnalysisResult(
+                candidate_name=result.candidate_name,
+                resume_path=result.resume_path,
+                strengths=output.strengths,
+                gaps=output.gaps,
+                nice_to_have_coverage=output.nice_to_have_coverage,
+                must_have_discrepancy=output.must_have_discrepancy,
+            )
 
     analyses = []
     for result, resume_text in readable:

@@ -9,8 +9,9 @@ projects' *data and logic* (duplicated, not cross-imported — see
 This document is the full architecture (Part A deliverable): the complete
 `AgentState` schema and the target graph shape, phase-annotated so it's clear
 what Phase 1 actually builds versus what later phases add on top of the same
-shape. **Phase 1**, **Phase 2**, and **Phase 3** are designed down to the
-node level; **Phase 4** gets its own detailed design pass when we get there.
+shape. **Phase 1**, **Phase 2**, **Phase 3**, and **Phase 4** are all now
+designed *and* implemented — see each phase's section below, and
+[File map](#file-map) for the Phase 4 folder reorganization.
 
 ## Architecture shape: hybrid graph
 
@@ -135,10 +136,11 @@ siblings would be fragile. Instead:
   - `ranking.py` — `keyword_match_score`, `score_and_rank`, `MatchResult`
     (copied from `job_matcher.py`).
   - `matching_agent.py` stays graph/state/node wiring only — `AgentState`,
-    the `StateGraph` build, each node function (a thin call into the
-    modules above), the checkpointer, and the CLI entrypoint. It imports
-    from the sibling modules the same way `llm_file_assistant/main.py`
-    imports from `fs_tools.py`.
+    the `StateGraph` build, and each node function (a thin call into the
+    modules above). It imports from the sibling modules the same way
+    `llm_file_assistant/main.py` imports from `fs_tools.py`. The CLI
+    entrypoint itself lives in `cli/main.py` (Phase 4 reorganization — see
+    [File map](#file-map)), not in `matching_agent.py`.
 - **No `docker-compose.yml` of its own.** The one currently scaffolded in
   `agentic_profile_match/` is byte-identical to `rag_profile_match`'s except
   for its named volume — running it would either fail to bind port `6333`
@@ -149,6 +151,15 @@ siblings would be fragile. Instead:
 
 ## File map
 
+Reorganized during Phase 4 into topic folders (docs/prompts/cli/scripts),
+with the core pipeline/tooling modules staying flat at the package root —
+matching the reasoning in [Reuse strategy](#reuse-strategy): these modules
+are still run with `agentic_profile_match/` as the working directory /
+`sys.path[0]`, via bare cwd-relative imports, the same convention
+`llm_file_assistant`/`rag_profile_match` use. `cli/` and `prompts/` are
+plain (namespace) packages, not `pip install -e`'d — no `[build-system]`
+was added, to avoid diverging from that shared convention.
+
 | File | Responsibility | Phase |
 |---|---|---|
 | `config.py` | Env vars, model names, Qdrant client pointed at the shared instance | 1 |
@@ -156,10 +167,21 @@ siblings would be fragile. Instead:
 | `jd_parser.py` | JD section splitting, must-have/nice-to-have bullet extraction (algorithmic) | 1 |
 | `retrieval.py` | JD embedding (dense+sparse) + hybrid RRF search against `resume_chunks` | 1 |
 | `ranking.py` | Must-have hard filtering, score normalization, `MatchResult` | 1 |
-| `matching_agent.py` | `AgentState`, `StateGraph` nodes/edges, checkpointer, CLI entrypoint | 1 (extended in 2, 3) |
+| `matching_agent.py` | `AgentState`, `StateGraph` nodes/edges, checkpointer | 1 (extended in 2, 3) |
 | `tools.py` | `search_resumes`, `extract_requirements`, `compare_candidates`, `generate_interview_questions`, `deep_analyze_candidates`, `generate_recommendation` — the inner tool-calling helper's tool belt, plus the shared mutable session container they close over | 2 (+3) |
 | `screening.py` | `DeepAnalysisResult`/`Recommendation` schemas, batched full-resume-grounded LLM analysis, deterministic verdict thresholds | 3 |
 | `utils.py` | `CustomLogger` (already scaffolded) | 1 |
+| `cli/main.py` | The actual CLI entrypoint: upfront JD-path/deep-screening prompts, the interrupt()/`Command(resume=...)` chat loop, message rendering | 1 (extended in 2, 3) |
+| `prompts/conversation.py` | `CONVERSATION_SYSTEM_PROMPT` (Human Feedback Loop's tool-calling agent) | 2 |
+| `prompts/deep_screening.py` | `DEEP_ANALYSIS_SYSTEM_PROMPT`, `RECOMMENDATION_SYSTEM_PROMPT` | 3 |
+| `prompts/interview_questions.py` | `INTERVIEW_QUESTIONS_INSTRUCTIONS` (the static tail of `generate_interview_questions`'s per-call prompt) | 2 |
+| `scripts/smoke_test.py` | Mocked plumbing/regression checks (no live API) across all three phases — see [Phase 4](#phase-4--polish) | 4 |
+| `docs/DESIGN.md`, `docs/AGENT_ARCHITECTURE.md`, `docs/TEST_SCENARIOS.md` | This document, the execution-focused reference, and the manual conversation-flow specs | 1-4 |
+
+Not introduced: a `utils/` folder (`utils.py` is one small `CustomLogger`
+class — turning it into a package would be pure ceremony) or a `data/`
+folder (there is no project-local data to hold; `root_dir/` is deliberately
+shared with `rag_profile_match`, not duplicated, per this section above).
 
 ## Phase 1 — node-by-node spec
 
@@ -485,6 +507,18 @@ design pass.
   more resumes now feeding a per-candidate LLM call each, per-run cost/latency
   scales with shortlist size — still bounded by `top_k` (default 10), so this
   stays bounded even as the underlying corpus grows.
+- **Fixed via live testing (Phase 4):** `DeepAnalysisResult`'s structured-
+  output schema originally asked the LLM to also produce `candidate_name`/
+  `resume_path`. A real run found the model would invent a plausible but
+  wrong path (e.g. `alice_chen_resume.txt` instead of the real
+  `resumes/engineering/backend_alice.txt`) instead of echoing the identifiers
+  given in the prompt — silently emptying `Recommendation` entirely, since
+  `generate_recommendations` looks up each candidate's analysis by
+  `resume_path`. Fixed by splitting the LLM-facing schema
+  (`DeepAnalysisOutput`, no identity fields at all) from the public
+  `DeepAnalysisResult`, whose `candidate_name`/`resume_path` are always set
+  programmatically from the originating `MatchResult` — mirroring the
+  pattern `Recommendation`/`RecommendationOutput` already used.
 
 ## Phase 4 — Polish
 
@@ -513,6 +547,13 @@ deliverables actually contain.
   grilling round, covering the happy path, every Phase 2 tool, the full
   Phase 3 escalation, and the error/edge cases (bad JD path, ambiguous
   candidate identifier, `exit`/`clear`).
+- **Folder reorganization**: docs moved to `docs/`, the CLI entrypoint to
+  `cli/main.py`, system prompt strings to `prompts/`, and a new
+  `scripts/smoke_test.py` — see [File map](#file-map). This does *not*
+  contradict Q5 above: `smoke_test.py` mocks retrieval/LLM calls to check
+  graph wiring, routing, and deterministic logic (verdict thresholds,
+  must-have filtering, error isolation) — it never exercises real model
+  behavior, which stays `TEST_SCENARIOS.md`'s job.
 
 ### Known limitations / backlog
 

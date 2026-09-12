@@ -6,6 +6,11 @@ tool. Where `DESIGN.md` records *why* each choice was made, this document
 describes *what actually runs*, in execution order. See `DESIGN.md` for
 rationale and `TEST_SCENARIOS.md` for worked example conversations.
 
+Since Phase 4's folder reorganization, `matching_agent.py` holds only the
+graph/state/node wiring described here; the CLI entrypoint that actually
+invokes it lives in `cli/main.py`, and the system prompt strings referenced
+in §6 live under `prompts/` (see `DESIGN.md`'s [File map](DESIGN.md#file-map)).
+
 ## 1. Overview
 
 One `StateGraph`, one checkpointer, one thread per screening session. It
@@ -145,7 +150,12 @@ as the initial state.
   `strengths: list[str]`, `gaps: list[str]`,
   `nice_to_have_coverage: list[str]`, `must_have_discrepancy: str | None`
   (set only when the full-resume read contradicts the original
-  chunk-based must-have check).
+  chunk-based must-have check). The LLM call itself targets a narrower
+  `DeepAnalysisOutput` schema (everything above except `candidate_name`/
+  `resume_path`) — those two are always set programmatically from the
+  `MatchResult` being analyzed, never trusted from the model's output (a
+  live run once found the model inventing a wrong path instead of echoing
+  the real one — see `DESIGN.md`'s Phase 3 [Known limitations](DESIGN.md#known-limitations--backlog-2)).
 - **Writes:** `deep_analysis`, `round = "deep_dive"`.
 
 ### `Recommendation` *(Phase 3 — only if `deep_screening_requested`)*

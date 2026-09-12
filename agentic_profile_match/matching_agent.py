@@ -2,31 +2,31 @@
 Rank Candidates -> Generate Report), Phase 2's Human Feedback Loop (a single
 graph node, re-entered via a self-loop edge, that hands each conversational
 turn to a stateless tool-calling helper), and Phase 3's opt-in Deep
-Analysis/Recommendation nodes (multi-round screening). See DESIGN.md's
-Phase 1/2/3 node-by-node specs and AGENT_ARCHITECTURE.md for the full design
-this implements.
+Analysis/Recommendation nodes (multi-round screening). See docs/DESIGN.md's
+Phase 1/2/3 node-by-node specs and docs/AGENT_ARCHITECTURE.md for the full
+design this implements.
+
+Graph/state/node wiring only -- the CLI entrypoint lives in cli/main.py.
 """
 
-import uuid
 from typing import Annotated, Literal, TypedDict
 
-from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
-from langchain.messages import AIMessage, AnyMessage, HumanMessage, RemoveMessage, ToolMessage
+from langchain.messages import AIMessage, AnyMessage, HumanMessage, RemoveMessage
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import REMOVE_ALL_MESSAGES, add_messages
-from langgraph.types import Command, interrupt
+from langgraph.types import interrupt
 from rich.console import Console
-from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
 
 import config
 from fs_tools import list_files, read_file, search_in_file, write_file
 from jd_parser import extract_must_have_requirements, extract_nice_to_have_requirements, split_job_sections
+from prompts.conversation import CONVERSATION_SYSTEM_PROMPT
 from ranking import MatchResult, score_and_rank
 from retrieval import embed_job_description, semantic_search
 from screening import DeepAnalysisResult, Recommendation
@@ -39,33 +39,6 @@ from tools import search_resumes as search_resumes_tool
 from tools import session as tool_session
 
 console = Console(record=True)
-
-CONVERSATION_SYSTEM_PROMPT = (
-    "You are a hiring-team assistant helping screen candidates for a job opening. A pipeline "
-    "has already run once and produced an initial ranked shortlist, shown to you as your own "
-    "first message in this conversation. From here, the human may ask you to explain the "
-    "ranking, compare specific candidates, refine the search criteria, draft interview "
-    "questions, or screen an entirely different job description -- all via tools, never by "
-    "inventing detail you haven't retrieved.\n\n"
-    "Tools:\n"
-    "- search_resumes(query, must_have_keywords=[], min_experience_years=None): loose "
-    "natural-language search that REPLACES the active shortlist. Use it for any refinement "
-    "('also require AWS'), a fresh ad-hoc search, or a criteria-changing follow-up.\n"
-    "- extract_requirements(jd_text): call this first when the human pastes a whole new job "
-    "description, then call search_resumes to shortlist against it.\n"
-    "- compare_candidates(candidate_identifiers): read-only side-by-side comparison of "
-    "candidates already in the current shortlist (by name or resume_path).\n"
-    "- generate_interview_questions(candidate_identifier): drafts interview questions grounded "
-    "in a candidate's full resume text.\n"
-    "- deep_analyze_candidates(candidate_identifiers): full-resume-grounded strengths/gaps/"
-    "nice-to-have-coverage/must-have-discrepancy analysis for specific candidates.\n"
-    "- generate_recommendation(candidate_identifiers): a hire/no-hire verdict + justification "
-    "for specific candidates -- call deep_analyze_candidates on them first if you haven't.\n"
-    "- list_files/read_file/search_in_file/write_file: sandboxed filesystem access under "
-    "root_dir/ (jobs/ and resumes/), e.g. to save a shortlist to a file on request.\n\n"
-    "Always ground your answers in tool results -- if something isn't in a result you've seen, "
-    "say you don't know rather than guessing. Be concise and specific."
-)
 
 TOOLS = [
     list_files,
@@ -353,83 +326,3 @@ def build_graph():
         ]
     )
     return builder.compile(checkpointer=InMemorySaver(serde=serde))
-
-
-# --- CLI entrypoint --------------------------------------------------------------
-
-def _render_new_messages(messages: list[AnyMessage]) -> None:
-    """Renders the Human Feedback Loop's newly-appended messages for one turn
-    (the human's own turn is skipped -- it's already visible as the "You:"
-    prompt the human just typed).
-    """
-    for message in messages:
-        if isinstance(message, HumanMessage):
-            continue
-        if isinstance(message, AIMessage):
-            text = message.content if isinstance(message.content, str) else "".join(
-                block.get("text", "") for block in message.content if isinstance(block, dict) and block.get("type") == "text"
-            )
-            if text:
-                console.print(Panel(Markdown(text), title="Assistant", border_style="green"))
-            for tool_call in message.tool_calls or []:
-                console.print(f"[dim]Tool call: {tool_call['name']}({tool_call['args']})[/dim]")
-        elif isinstance(message, ToolMessage):
-            content = message.content if isinstance(message.content, str) else str(message.content)
-            console.print(f"[dim]Tool result ({message.name}): {content}[/dim]")
-
-
-def run_chat_loop(graph, thread_config: dict, state: dict) -> None:
-    console.print(Panel(
-        "[bold green]Screening complete.[/bold green] Chat with the agent about the shortlist above.\n"
-        "[yellow]Type 'exit'/'quit' to end, 'clear' to wipe chat history.[/yellow]",
-        title="Human Feedback Loop", border_style="cyan",
-    ))
-
-    while True:
-        user_text = console.input("\n[bold blue]You:[/bold blue] ").strip()
-        if not user_text:
-            continue
-
-        seen = len(state.get("messages", []))
-        state = graph.invoke(Command(resume=user_text), thread_config)
-
-        if state.get("session_ended"):
-            console.print(Panel("[yellow]Session ended.[/yellow]", border_style="yellow"))
-            break
-
-        if user_text.lower() == "clear":
-            console.print(Panel("[bold yellow]Chat history cleared.[/bold yellow]", border_style="yellow"))
-            continue
-
-        _render_new_messages(state.get("messages", [])[seen:])
-
-
-def main() -> None:
-    load_dotenv()
-    graph = build_graph()
-
-    jd_source_path = console.input("[bold blue]JD path[/bold blue] (relative to root_dir/, e.g. jobs/senior_backend_engineer.txt): ").strip()
-    deep_screening_answer = console.input(
-        "[bold blue]Run full 3-round screening (deep analysis + recommendation)?[/bold blue] [y/N]: "
-    ).strip().lower()
-    deep_screening_requested = deep_screening_answer in {"y", "yes"}
-
-    thread_id = str(uuid.uuid4())
-    thread_config = {"configurable": {"thread_id": thread_id}}
-    initial_state: AgentState = {
-        "thread_id": thread_id,
-        "jd_source_path": jd_source_path,
-        "deep_screening_requested": deep_screening_requested,
-    }
-
-    state = graph.invoke(initial_state, thread_config)
-
-    if state.get("error"):
-        console.print(f"[bold red]Error:[/bold red] {state['error']}")
-        return
-
-    run_chat_loop(graph, thread_config, state)
-
-
-if __name__ == "__main__":
-    main()
