@@ -3,10 +3,14 @@
 Eight conversation flows covering every phase's design decisions, as
 documented behavioral specs (not automated tests — see
 [`DESIGN.md`'s Phase 4](DESIGN.md#phase-4--polish) for why). Each is meant
-to be run manually against the real implementation once it exists, checking
-the "Expect" line against actual behavior. All reference the same running
-example: `jobs/senior_backend_engineer.txt` against the shared
-`rag_profile_match` resume corpus, unless noted otherwise.
+to be run manually against the real implementation, checking the "Expect"
+line against actual behavior. All reference the same running example:
+`jobs/senior_backend_engineer.txt` against this project's own `data/`
+resume corpus (see `DESIGN.md`'s [Reuse strategy](DESIGN.md#reuse-strategy)),
+unless noted otherwise. Candidate names below (Alice, Bob, ...) are
+illustrative placeholders — swap in real names from the current shortlist
+when actually running a scenario (e.g. Maria Kowalski/Devon Okafor for the
+backend posting).
 
 ## 1. Happy path — single-shot screen, no deep screening
 
@@ -86,7 +90,7 @@ already visible.
 ## 6. A brand-new JD pasted mid-conversation
 
 **Turn:** *"Actually, let's screen for this role instead:"* followed by the
-full text of `jobs/product_marketing_manager.txt` pasted directly into the
+full text of `jobs/product_marketing_manager.md` pasted directly into the
 chat.
 
 **Expect:** the helper calls `extract_requirements(jd_text=<pasted text>)`

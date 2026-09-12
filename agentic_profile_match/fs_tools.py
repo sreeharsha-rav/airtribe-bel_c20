@@ -1,24 +1,22 @@
 """Filesystem tools for the Agentic Profile Matcher.
 
 Duplicated from llm_file_assistant/fs_tools.py (DESIGN.md's Reuse strategy,
-Q1) with one change: ROOT_DIR points at rag_profile_match's root_dir/ (the
-shared jobs/ and resumes/ tree), not a project-local one. All tools are
-sandboxed to ROOT_DIR. Resume/job files may be .txt, .docx, or .pdf;
-read_file/search_in_file transparently extract text from whichever format
-the file is in.
+Q1), narrowed to this project's own local data/ directory (jobs/ and
+resumes/), not a shared one, and to only .txt/.md files -- this project's
+mock corpus is deliberately plain text/markdown only, so the .docx/.pdf
+extraction paths (and their pypdf/python-docx dependencies) the sibling
+projects need aren't carried over. All tools are sandboxed to ROOT_DIR.
 """
 
 from datetime import datetime, timezone
 from pathlib import Path
 
-from docx import Document
 from langchain.tools import tool
 from pydantic import BaseModel, Field
-from pypdf import PdfReader
 
 from utils import logger
 
-ROOT_DIR = (Path(__file__).parent.parent / "rag_profile_match" / "root_dir").resolve()
+ROOT_DIR = (Path(__file__).parent / "data").resolve()
 
 
 def _resolve_within_root(relative_path: str) -> Path:
@@ -39,17 +37,11 @@ def _resolve_within_root(relative_path: str) -> Path:
 
 
 def _extract_text(path: Path) -> str:
-    """Extracts plain text content from a .txt, .docx, or .pdf file."""
+    """Extracts plain text content from a .txt or .md file."""
     suffix = path.suffix.lower()
-    if suffix == ".txt":
+    if suffix in (".txt", ".md"):
         return path.read_text(encoding="utf-8")
-    if suffix == ".docx":
-        document = Document(str(path))
-        return "\n".join(paragraph.text for paragraph in document.paragraphs)
-    if suffix == ".pdf":
-        reader = PdfReader(str(path))
-        return "\n".join(page.extract_text() or "" for page in reader.pages)
-    raise ValueError(f"Unsupported file type '{suffix}'. Supported types: .txt, .docx, .pdf")
+    raise ValueError(f"Unsupported file type '{suffix}'. Supported types: .txt, .md")
 
 
 def _file_metadata(path: Path) -> dict:
@@ -69,14 +61,14 @@ class ReadFileInput(BaseModel):
     filepath: str = Field(
         description=(
             "Path relative to root_dir/ of the file to read, e.g. "
-            "'jobs/senior_backend_engineer.txt'. Supports .txt, .docx, and .pdf files."
+            "'jobs/senior_backend_engineer.txt'. Supports .txt and .md files."
         ),
     )
 
 
 @tool("read_file", args_schema=ReadFileInput)
 def read_file(filepath: str) -> dict:
-    """Read a job or resume file (.txt, .docx, or .pdf), extract its text content, and return it with file metadata."""
+    """Read a job or resume file (.txt or .md), extract its text content, and return it with file metadata."""
     logger.info(f"read_file(filepath={filepath!r})")
     try:
         target = _resolve_within_root(filepath)
@@ -121,7 +113,7 @@ class ListFilesInput(BaseModel):
     )
     extension: str | None = Field(
         default=None,
-        description="Optional file extension filter, e.g. '.pdf' or 'txt'. If omitted, files of every type are returned.",
+        description="Optional file extension filter, e.g. '.md' or 'txt'. If omitted, files of every type are returned.",
     )
 
 
@@ -198,7 +190,7 @@ class SearchInFileInput(BaseModel):
     filepath: str = Field(
         description=(
             "Path relative to root_dir/ of the file to search, e.g. "
-            "'resumes/engineering/backend_alice.txt'. Supports .txt, .docx, and .pdf files."
+            "'resumes/engineering/backend_alice.txt'. Supports .txt and .md files."
         ),
     )
     keyword: str = Field(description="The keyword or phrase to search for, case-insensitive.")
@@ -206,7 +198,7 @@ class SearchInFileInput(BaseModel):
 
 @tool("search_in_file", args_schema=SearchInFileInput)
 def search_in_file(filepath: str, keyword: str) -> dict:
-    """Search for a keyword or phrase inside one job/resume file (.txt, .docx, or .pdf), returning every match with surrounding context. Case-insensitive."""
+    """Search for a keyword or phrase inside one job/resume file (.txt or .md), returning every match with surrounding context. Case-insensitive."""
     logger.info(f"search_in_file(filepath={filepath!r}, keyword={keyword!r})")
     empty_result = {"success": False, "filepath": filepath, "keyword": keyword, "matches": [], "match_count": 0}
 

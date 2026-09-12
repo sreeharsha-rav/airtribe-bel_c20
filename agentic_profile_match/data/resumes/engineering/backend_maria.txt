@@ -1,0 +1,32 @@
+Maria Kowalski
+Senior Backend Engineer
+maria.kowalski@example.com | Portland, OR
+
+SUMMARY
+Backend engineer with 7 years building and operating high-throughput
+services in Python. Deep experience with Django and FastAPI, PostgreSQL
+schema design, and running production systems on AWS.
+
+SKILLS
+Python, Django, FastAPI, PostgreSQL, AWS, Docker, Kubernetes, Redis, REST
+APIs, CI/CD
+
+EXPERIENCE
+Senior Backend Engineer, Cascadia Freight (2021-Present)
+- Owned the core shipment-tracking API, built in FastAPI, serving 2M+
+  requests/day.
+- Redesigned the PostgreSQL schema for the routing service, cutting query
+  latency by 55%.
+- Migrated deployment from bare EC2 instances to Kubernetes on AWS,
+  reducing rollout time from 25 minutes to 4 minutes.
+- Led on-call rotation for the platform team and drove incident response
+  for owned services.
+
+Backend Engineer, Cascadia Freight (2018-2021)
+- Built internal billing service in Django, processing 50,000+ invoices
+  monthly.
+- Introduced a Docker-based local dev environment, cutting new-hire
+  onboarding time in half.
+
+EDUCATION
+B.S. in Computer Science, Oregon State University (2018)

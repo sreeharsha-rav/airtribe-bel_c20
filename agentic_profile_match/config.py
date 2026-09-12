@@ -17,18 +17,26 @@ if LANGSMITH_TRACING == "true":
 else:
     warn("LANGSMITH_TRACING is not set. Tracing will be disabled. If you want to enable tracing, please set LANGSMITH_TRACING to \"true\" in the environment variables or in a .env file.")
 
-# Shared Qdrant instance -- rag_profile_match's, not a project-owned one. This
-# project has no docker-compose.yml of its own; start rag_profile_match's
-# Qdrant first (see DESIGN.md's Reuse strategy).
-client = QdrantClient("http://localhost:6333")
+# This project's own Qdrant instance (docker-compose.yml), independent of
+# rag_profile_match's -- a different host port (6350) so both can run at the
+# same time without conflict. See DESIGN.md's Reuse strategy.
+client = QdrantClient("http://localhost:6350")
 
-# Embeddings (retrieval.py) -- same models/collection rag_profile_match indexed with.
+# Embeddings (retrieval.py, indexing.py)
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 EMBEDDING_MODEL_NAME = "openai/text-embedding-3-small"
 QDRANT_COLLECTION_NAME = "resume_chunks"
 
 # Job matching (ranking.py / matching_agent.py)
 MATCH_TOP_K = 10
+
+# Batch metadata extraction (indexing.py) -- same pattern as
+# rag_profile_match/resume_rag.py's extract_fields_batch.
+EXTRACTION_MODEL_NAME = "openai/gpt-oss-120b"
+EXTRACTION_MODEL_PROVIDER = "openrouter"
+EXTRACTION_BATCH_SIZE = 10
+EXTRACTION_MAX_CONCURRENCY = 10
+EXTRACTION_MAX_RETRIES = 2
 
 # Chat model (tools.py's generate_interview_questions, matching_agent's
 # conversational agent, screening.py's Deep Analysis/Recommendation) -- same

@@ -40,22 +40,22 @@ def check(label: str, condition: bool) -> None:
         FAILURES.append(label)
 
 
-ALICE_HIT = {
-    "file_path": "resumes/engineering/backend_alice.txt",
+MARIA_HIT = {
+    "file_path": "resumes/engineering/backend_maria.txt",
     "metadata": {
-        "file_path": "resumes/engineering/backend_alice.txt",
-        "candidate_name": "Alice Chen",
+        "file_path": "resumes/engineering/backend_maria.txt",
+        "candidate_name": "Maria Kowalski",
         "skills": ["python", "django", "postgresql", "aws", "docker", "kubernetes"],
         "total_experience_years": 7.0,
     },
     "score": 0.9,
     "excerpts": ["7 years of backend engineering with Python and Django."],
 }
-SAM_HIT = {
-    "file_path": "resumes/engineering/backend_junior_sam.txt",
+KAVYA_HIT = {
+    "file_path": "resumes/engineering/backend_junior_kavya.txt",
     "metadata": {
-        "file_path": "resumes/engineering/backend_junior_sam.txt",
-        "candidate_name": "Sam Lee",
+        "file_path": "resumes/engineering/backend_junior_kavya.txt",
+        "candidate_name": "Kavya Reddy",
         "skills": ["python", "flask"],
         "total_experience_years": 1.5,
     },
@@ -72,22 +72,22 @@ class FakeConversationalAgent:
 
     def invoke(self, payload):
         messages = payload["messages"]
-        return {"messages": messages + [AIMessage(content="Alice ranked highest on RRF score and satisfied every must-have.")]}
+        return {"messages": messages + [AIMessage(content="Maria ranked highest on RRF score and satisfied every must-have.")]}
 
 
 def test_phase1_happy_path() -> None:
     print("\n=== Phase 1: happy path ===")
     graph = matching_agent.build_graph()
     with patch("matching_agent.embed_job_description", return_value={"dense": [], "sparse": {"indices": [], "values": []}}), \
-         patch("matching_agent.semantic_search", return_value=[ALICE_HIT, SAM_HIT]):
+         patch("matching_agent.semantic_search", return_value=[MARIA_HIT, KAVYA_HIT]):
         thread_id = str(uuid.uuid4())
         state = graph.invoke(
             {"thread_id": thread_id, "jd_source_path": "jobs/senior_backend_engineer.txt", "deep_screening_requested": False},
             {"configurable": {"thread_id": thread_id}},
         )
     check("no error", state.get("error") is None)
-    check("Sam filtered out by must-have hard filter", len(state["match_results"]) == 1)
-    check("Alice is the survivor", state["match_results"][0].candidate_name == "Alice Chen")
+    check("Kavya filtered out by must-have hard filter", len(state["match_results"]) == 1)
+    check("Maria is the survivor", state["match_results"][0].candidate_name == "Maria Kowalski")
     check("round == 'shortlist' (deep screening not requested)", state.get("round") == "shortlist")
     check("report rendered", "Candidate Shortlist" in state["report"])
     check("paused at human_feedback_loop's interrupt()", "__interrupt__" in state)
@@ -114,7 +114,7 @@ def test_phase1_error_paths() -> None:
     check("sandbox-escaping path rejected", bool(state2.get("error")))
 
     with patch("matching_agent.embed_job_description", return_value={"dense": [], "sparse": {"indices": [], "values": []}}), \
-         patch("matching_agent.semantic_search", return_value=[SAM_HIT]):
+         patch("matching_agent.semantic_search", return_value=[KAVYA_HIT]):
         thread_id3 = str(uuid.uuid4())
         state3 = graph.invoke(
             {"thread_id": thread_id3, "jd_source_path": "jobs/senior_backend_engineer.txt"},
@@ -128,7 +128,7 @@ def test_phase2_conversation_turns() -> None:
     print("\n=== Phase 2: Human Feedback Loop turns ===")
     graph = matching_agent.build_graph()
     with patch("matching_agent.embed_job_description", return_value={"dense": [], "sparse": {"indices": [], "values": []}}), \
-         patch("matching_agent.semantic_search", return_value=[ALICE_HIT]), \
+         patch("matching_agent.semantic_search", return_value=[MARIA_HIT]), \
          patch("matching_agent.get_conversational_agent", return_value=FakeConversationalAgent()):
 
         thread_id = str(uuid.uuid4())
@@ -156,13 +156,13 @@ def test_phase2_conversation_turns() -> None:
 def test_phase2_tools() -> None:
     print("\n=== Phase 2: conversational tools ===")
     tools.session.match_results = [
-        MatchResult(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", match_score=100.0, matched_skills=["python"], reasoning="..."),
-        MatchResult(candidate_name="Wei Zhang", resume_path="resumes/engineering/fullstack_wei.docx", match_score=90.0, matched_skills=["python"], reasoning="..."),
+        MatchResult(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", match_score=100.0, matched_skills=["python"], reasoning="..."),
+        MatchResult(candidate_name="Devon Okafor", resume_path="resumes/engineering/fullstack_devon.md", match_score=90.0, matched_skills=["python"], reasoning="..."),
     ]
 
-    result = tools.compare_candidates.invoke({"candidate_identifiers": ["Alice Chen", "Bob Nobody", "Wei"]})
+    result = tools.compare_candidates.invoke({"candidate_identifiers": ["Maria Kowalski", "Bob Nobody", "Devon"]})
     comparisons = {c["identifier"]: c for c in result["comparisons"]}
-    check("exact/substring match resolves", comparisons["Alice Chen"]["found"] and comparisons["Wei"]["found"])
+    check("exact/substring match resolves", comparisons["Maria Kowalski"]["found"] and comparisons["Devon"]["found"])
     check("unresolvable identifier reports not-found, doesn't raise", comparisons["Bob Nobody"]["found"] is False)
 
     gq = tools.generate_interview_questions.invoke({"candidate_identifier": "Nobody"})
@@ -182,7 +182,9 @@ def test_phase3_verdict_thresholds() -> None:
 def test_phase3_batching_error_isolation() -> None:
     print("\n=== Phase 3: batched analysis/recommendation, per-item error isolation ===")
     match_results = [
-        MatchResult(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", match_score=95.0, reasoning="..."),
+        # A real file (needed here -- unlike the other tests, this one calls
+        # the actual deep_analyze_candidates, which really reads the resume).
+        MatchResult(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", match_score=95.0, reasoning="..."),
         MatchResult(candidate_name="Ghost Candidate", resume_path="resumes/does_not_exist.txt", match_score=50.0, reasoning="..."),
     ]
 
@@ -204,7 +206,7 @@ def test_phase3_batching_error_isolation() -> None:
         "DeepAnalysisResult.resume_path always comes from MatchResult, never the LLM output "
         "(regression: a live run once got an empty recommendations list because the model "
         "invented its own resume_path, breaking generate_recommendations' lookup)",
-        by_path["resumes/engineering/backend_alice.txt"].resume_path == "resumes/engineering/backend_alice.txt",
+        by_path["resumes/engineering/backend_maria.txt"].resume_path == "resumes/engineering/backend_maria.txt",
     )
 
     class FakeRecommendationModel:
@@ -216,18 +218,18 @@ def test_phase3_batching_error_isolation() -> None:
 
     recs = generate_recommendations(match_results, analyses, model=FakeRecommendationModel())
     by_path = {r.resume_path: r for r in recs}
-    check("Strong Hire verdict discards improvement_suggestions", by_path["resumes/engineering/backend_alice.txt"].improvement_suggestions == [])
+    check("Strong Hire verdict discards improvement_suggestions", by_path["resumes/engineering/backend_maria.txt"].improvement_suggestions == [])
     check("a raised batch exception isolates to that candidate only", "failed" in by_path["resumes/does_not_exist.txt"].justification.lower())
 
 
 def test_phase3_full_graph_path() -> None:
     print("\n=== Phase 3: full 3-round screening graph path ===")
     graph = matching_agent.build_graph()
-    fake_analyses = [DeepAnalysisResult(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", strengths=["7 yrs Python"], nice_to_have_coverage=["AWS"])]
-    fake_recs = [Recommendation(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", verdict="Strong Hire", justification="Excellent fit.")]
+    fake_analyses = [DeepAnalysisResult(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", strengths=["7 yrs Python"], nice_to_have_coverage=["AWS"])]
+    fake_recs = [Recommendation(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", verdict="Strong Hire", justification="Excellent fit.")]
 
     with patch("matching_agent.embed_job_description", return_value={"dense": [], "sparse": {"indices": [], "values": []}}), \
-         patch("matching_agent.semantic_search", return_value=[ALICE_HIT]), \
+         patch("matching_agent.semantic_search", return_value=[MARIA_HIT]), \
          patch("matching_agent.run_deep_analysis", return_value=fake_analyses) as mock_deep, \
          patch("matching_agent.run_generate_recommendations", return_value=fake_recs) as mock_rec:
         thread_id = str(uuid.uuid4())
@@ -243,7 +245,7 @@ def test_phase3_full_graph_path() -> None:
 
     # Regression: deep_screening_requested=False must never touch Phase 3 nodes.
     with patch("matching_agent.embed_job_description", return_value={"dense": [], "sparse": {"indices": [], "values": []}}), \
-         patch("matching_agent.semantic_search", return_value=[ALICE_HIT]), \
+         patch("matching_agent.semantic_search", return_value=[MARIA_HIT]), \
          patch("matching_agent.run_deep_analysis") as mock_deep2, \
          patch("matching_agent.run_generate_recommendations") as mock_rec2:
         thread_id2 = str(uuid.uuid4())
@@ -258,23 +260,23 @@ def test_phase3_full_graph_path() -> None:
 def test_phase3_tools() -> None:
     print("\n=== Phase 3: on-demand conversational tools ===")
     tools.session.match_results = [
-        MatchResult(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", match_score=95.0, reasoning="..."),
-        MatchResult(candidate_name="Wei Zhang", resume_path="resumes/engineering/fullstack_wei.docx", match_score=70.0, reasoning="..."),
+        MatchResult(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", match_score=95.0, reasoning="..."),
+        MatchResult(candidate_name="Devon Okafor", resume_path="resumes/engineering/fullstack_devon.md", match_score=70.0, reasoning="..."),
     ]
     tools.session.deep_analysis = []
     tools.session.recommendations = []
 
-    fake_analysis = [DeepAnalysisResult(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", strengths=["strong"])]
+    fake_analysis = [DeepAnalysisResult(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", strengths=["strong"])]
     with patch("tools.run_deep_analysis", return_value=fake_analysis):
-        result = tools.deep_analyze_candidates.invoke({"candidate_identifiers": ["Alice Chen", "Nobody"]})
+        result = tools.deep_analyze_candidates.invoke({"candidate_identifiers": ["Maria Kowalski", "Nobody"]})
     check("deep_analyze_candidates tool stores results in the session", len(tools.session.deep_analysis) == 1)
     check("deep_analyze_candidates tool reports unresolvable identifiers", result["not_found"][0]["identifier"] == "Nobody")
 
-    fake_rec = [Recommendation(candidate_name="Alice Chen", resume_path="resumes/engineering/backend_alice.txt", verdict="Strong Hire", justification="Great fit.")]
+    fake_rec = [Recommendation(candidate_name="Maria Kowalski", resume_path="resumes/engineering/backend_maria.txt", verdict="Strong Hire", justification="Great fit.")]
     with patch("tools.run_generate_recommendations", return_value=fake_rec):
-        result = tools.generate_recommendation.invoke({"candidate_identifiers": ["Alice Chen", "Wei Zhang"]})
+        result = tools.generate_recommendation.invoke({"candidate_identifiers": ["Maria Kowalski", "Devon Okafor"]})
     check("generate_recommendation runs for candidates with a deep analysis", len(result["recommendations"]) == 1)
-    check("generate_recommendation reports (not silently skips) a missing deep analysis", result["missing_deep_analysis"][0]["candidate_name"] == "Wei Zhang")
+    check("generate_recommendation reports (not silently skips) a missing deep analysis", result["missing_deep_analysis"][0]["candidate_name"] == "Devon Okafor")
 
 
 def main() -> int:

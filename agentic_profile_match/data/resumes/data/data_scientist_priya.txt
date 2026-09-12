@@ -1,0 +1,29 @@
+Priya Chandrasekaran
+Senior Data Scientist
+priya.c@example.com | Seattle, WA
+
+SUMMARY
+Data scientist with 6 years of experience building and deploying machine
+learning models in Python, from experimentation through production.
+
+SKILLS
+Python, SQL, scikit-learn, PyTorch, pandas, AWS SageMaker, MLflow, A/B
+testing
+
+EXPERIENCE
+Senior Data Scientist, Northlight Health (2020-Present)
+- Built and deployed a patient no-show prediction model in PyTorch,
+  reducing missed appointments by 18%.
+- Wrote SQL pipelines extracting features from a 200M-row claims
+  warehouse.
+- Deployed models to production via AWS SageMaker endpoints, serving
+  real-time predictions.
+
+Data Scientist, Northlight Health (2018-2020)
+- Built churn-prediction models in scikit-learn for the member-retention
+  team.
+- Designed and analyzed A/B tests for a care-navigation feature, informing
+  a company-wide rollout.
+
+EDUCATION
+M.S. in Statistics, University of Washington (2018)

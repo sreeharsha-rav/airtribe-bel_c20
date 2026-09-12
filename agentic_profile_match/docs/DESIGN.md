@@ -112,17 +112,23 @@ fs_tools`, the same cwd-relative pattern `llm_file_assistant` uses — not
 package-qualified), so cross-package Python imports between uv workspace
 siblings would be fragile. Instead:
 
-- **Data is shared, code is duplicated.** `agentic_profile_match` points its
-  own `config.client` at the *same* running Qdrant (`http://localhost:6333`,
-  collection `resume_chunks`) that `rag_profile_match` already populated —
-  no reindexing, no separate collection.
+- **Code is duplicated** (from both `llm_file_assistant` and
+  `rag_profile_match`) — see the module-by-module list below.
+- **Data is now independent, not shared** (superseding this section's
+  original Phase 1 decision — see the callout right after this list for
+  why). `agentic_profile_match` has its own `docker-compose.yml` (a
+  different host port, `6350`, so it can run alongside
+  `rag_profile_match`'s own Qdrant without conflict) and its own `data/`
+  corpus (`data/jobs/`, `data/resumes/<dept>/`), deliberately `.txt`/`.md`
+  only. `indexing.py` + `scripts/reindex.py` port over
+  `rag_profile_match/resume_rag.py`'s metadata-extraction/chunking/upsert
+  pipeline so this project can index its own corpus rather than reading
+  someone else's.
 - **`fs_tools.py`** is copied over (same sandboxing design as
-  `llm_file_assistant`), with `ROOT_DIR` pointed at
-  `../rag_profile_match/root_dir` (covers both `jobs/` and `resumes/` —
-  Phase 1 only reads `jobs/`, but Phase 2's `compare_candidates` /
-  `generate_interview_questions` will want full resume text, not just a
-  chunk excerpt, so the sandbox boundary is set once here rather than
-  reconfigured later).
+  `llm_file_assistant`), with `ROOT_DIR` pointed at this project's own
+  `data/` (not a sibling project's), and narrowed to `.txt`/`.md` only —
+  no `.docx`/`.pdf` support (and no `pypdf`/`python-docx` dependency),
+  since the mock corpus is deliberately plain text/markdown.
 - **Duplicate only what the graph actually needs as separate, node-callable
   pieces** (Q4: `Search Resumes` and `Rank Candidates` are two real nodes,
   not one call to `job_matcher.match_job()`):
@@ -131,8 +137,12 @@ siblings would be fragile. Instead:
     (same bullet-parsing logic, pointed at the `nice_to_have` section).
   - `retrieval.py` — `embed_job_description`, `semantic_search`, and the
     embedding-model builders (`build_embedding_model`,
-    `build_sparse_embedding_model`, copied from `resume_rag.py` — no
-    chunking/indexing code needed here, Phase 1 never writes to Qdrant).
+    `build_sparse_embedding_model`, copied from `resume_rag.py`).
+  - `indexing.py` — `split_resume_sections`, `ResumeFields`,
+    `extract_fields_batch`, `build_chunks`, `ensure_qdrant_collection`,
+    `upsert_chunks` (copied from `resume_rag.py`'s indexing side — added
+    once this project needed to index its own corpus rather than read
+    someone else's).
   - `ranking.py` — `keyword_match_score`, `score_and_rank`, `MatchResult`
     (copied from `job_matcher.py`).
   - `matching_agent.py` stays graph/state/node wiring only — `AgentState`,
@@ -141,13 +151,19 @@ siblings would be fragile. Instead:
     `llm_file_assistant/main.py` imports from `fs_tools.py`. The CLI
     entrypoint itself lives in `cli/main.py` (Phase 4 reorganization — see
     [File map](#file-map)), not in `matching_agent.py`.
-- **No `docker-compose.yml` of its own.** The one currently scaffolded in
-  `agentic_profile_match/` is byte-identical to `rag_profile_match`'s except
-  for its named volume — running it would either fail to bind port `6333`
-  (already held by `rag_profile_match`'s container) or silently start a
-  second, empty Qdrant with no `resume_chunks` collection. **Delete it.**
-  Setup instructions instead say: start `rag_profile_match`'s Qdrant first
-  (`cd ../rag_profile_match && docker compose up -d`).
+
+**Update, post-Phase 4: this project now owns its Qdrant instance and
+corpus.** The paragraph above (and the original Phase 1 "no
+`docker-compose.yml` of its own" decision) reflected an earlier design
+choice to read `rag_profile_match`'s shared Qdrant/`root_dir` rather than
+reindex. That was reversed on request: a fresh, from-scratch mock corpus
+(3 job postings, 12 resumes across engineering/data/marketing, deliberately
+`.txt`/`.md` only — real `.docx`/`.pdf` support was never a hard
+requirement, just inherited from `llm_file_assistant`) now lives under this
+project's own `data/`, indexed into this project's own Qdrant
+(`docker-compose.yml`, host port `6350`). Nothing here reads
+`rag_profile_match`'s data or Qdrant instance anymore. See
+[File map](#file-map) for exactly what that added.
 
 ## File map
 
@@ -162,10 +178,11 @@ was added, to avoid diverging from that shared convention.
 
 | File | Responsibility | Phase |
 |---|---|---|
-| `config.py` | Env vars, model names, Qdrant client pointed at the shared instance | 1 |
-| `fs_tools.py` | Sandboxed FS tools; `ROOT_DIR` → `../rag_profile_match/root_dir` | 1 |
+| `config.py` | Env vars, model names, this project's own Qdrant client (host port `6350`) | 1 |
+| `fs_tools.py` | Sandboxed FS tools; `ROOT_DIR` → this project's own `data/`; `.txt`/`.md` only | 1 |
 | `jd_parser.py` | JD section splitting, must-have/nice-to-have bullet extraction (algorithmic) | 1 |
 | `retrieval.py` | JD embedding (dense+sparse) + hybrid RRF search against `resume_chunks` | 1 |
+| `indexing.py` | Metadata extraction (`ResumeFields`), section-aware chunking, embedding+upsert into Qdrant — this project's own indexing pipeline (added post-Phase 4, see the callout above) | 1 |
 | `ranking.py` | Must-have hard filtering, score normalization, `MatchResult` | 1 |
 | `matching_agent.py` | `AgentState`, `StateGraph` nodes/edges, checkpointer | 1 (extended in 2, 3) |
 | `tools.py` | `search_resumes`, `extract_requirements`, `compare_candidates`, `generate_interview_questions`, `deep_analyze_candidates`, `generate_recommendation` — the inner tool-calling helper's tool belt, plus the shared mutable session container they close over | 2 (+3) |
@@ -176,12 +193,13 @@ was added, to avoid diverging from that shared convention.
 | `prompts/deep_screening.py` | `DEEP_ANALYSIS_SYSTEM_PROMPT`, `RECOMMENDATION_SYSTEM_PROMPT` | 3 |
 | `prompts/interview_questions.py` | `INTERVIEW_QUESTIONS_INSTRUCTIONS` (the static tail of `generate_interview_questions`'s per-call prompt) | 2 |
 | `scripts/smoke_test.py` | Mocked plumbing/regression checks (no live API) across all three phases — see [Phase 4](#phase-4--polish) | 4 |
+| `scripts/reindex.py` | Runs `indexing.py`'s pipeline against `data/resumes/` into this project's own Qdrant; idempotent (stable point IDs) | 1 |
+| `docker-compose.yml` | This project's own Qdrant (`qdrant/qdrant:latest`, host port `6350`) | 1 |
+| `data/jobs/`, `data/resumes/<dept>/` | The mock corpus itself: 3 job postings, 12 resumes, `.txt`/`.md` only | 1 |
 | `docs/DESIGN.md`, `docs/AGENT_ARCHITECTURE.md`, `docs/TEST_SCENARIOS.md` | This document, the execution-focused reference, and the manual conversation-flow specs | 1-4 |
 
 Not introduced: a `utils/` folder (`utils.py` is one small `CustomLogger`
-class — turning it into a package would be pure ceremony) or a `data/`
-folder (there is no project-local data to hold; `root_dir/` is deliberately
-shared with `rag_profile_match`, not duplicated, per this section above).
+class — turning it into a package would be pure ceremony).
 
 ## Phase 1 — node-by-node spec
 
@@ -249,9 +267,9 @@ shared with `rag_profile_match`, not duplicated, per this section above).
 - **`Extract Requirements` is regex/heading-based**, not LLM-based (Q3). Fine
   while every posting follows the 4-heading convention; revisit with
   structured LLM extraction if that assumption breaks.
-- **No standalone Qdrant for this project** (Q2/round 3) — the scaffolded
-  `docker-compose.yml` here should be deleted; `rag_profile_match`'s Qdrant
-  is the single shared instance both projects read.
+- ~~No standalone Qdrant for this project~~ — **reversed post-Phase 4**: this
+  project now has its own `docker-compose.yml`/Qdrant instance and its own
+  `data/` corpus; see [Reuse strategy](#reuse-strategy)'s update callout.
 - **`InMemorySaver` checkpointer** (Q3/round 1) — a session doesn't survive
   a process restart. Acceptable for Phase 1 (single-shot, no feedback loop
   yet); revisit if a screening session needs to be resumed across restarts.
@@ -473,23 +491,22 @@ conversationally later, without re-running the whole pipeline.
   Phase 4) — the human can ask the conversational agent to save a copy via
   the existing `write_file` tool; the report is never auto-persisted.
 
-### Corpus growth (Q4)
+### Corpus growth (Q4) — superseded post-Phase 4
 
-31 resumes isn't enough to make "top 10 from 100" or a hire/no-hire
-recommendation demo convincing — most postings' ground truth has only 1–7
-true matches, so a "deep dive on the top 10" round has little real spread to
-show. Since Phase 1 (Q2, round 1) committed to sharing `rag_profile_match`'s
-exact Qdrant collection rather than forking the dataset, growing the corpus
-is necessarily a **cross-project** change (Q2, this phase):
-
-1. Add synthetic resumes (across departments, a mix of strong/weak/borderline
-   fits against the existing 6 job postings) into
-   `rag_profile_match/root_dir/resumes/`.
-2. Re-run `rag_profile_match/rag_analysis.ipynb`'s indexing cells so the new
-   resumes' chunks land in the same `resume_chunks` Qdrant collection.
-3. Update `rag_analysis.ipynb`'s hand-labeled `JOB_GROUND_TRUTH` to include
-   the new candidates — otherwise `rag_profile_match`'s own already-reported
-   precision/recall numbers go stale.
+This subsection originally planned growing `rag_profile_match`'s shared
+31-resume corpus as a cross-project change, back when Phase 1 committed to
+reading its exact Qdrant collection rather than forking the dataset (see
+[Reuse strategy](#reuse-strategy)). That sharing decision was itself
+reversed post-Phase 4: this project now owns its own `data/` corpus and
+Qdrant instance, so corpus growth is a same-project change —
+add resumes/postings under `data/resumes/<dept>/`/`data/jobs/` (`.txt`/`.md`
+only) and re-run `scripts/reindex.py` (idempotent — safe to re-run after
+edits, not just additions). The current mock corpus (3 postings, 12
+resumes) is intentionally small — enough to exercise every ranking/
+must-have-filter/Deep-Analysis/Recommendation code path with a few
+strong/weak/borderline fits per posting, not a "top 10 from 100" scale
+demo. Growing it further is possible at any time without touching another
+project.
 
 Actual resume authoring is deferred to implementation time, not part of this
 design pass.

@@ -101,7 +101,9 @@ as the initial state.
 ### `Parse JD`
 - **Reads:** `jd_source_path` (from initial state).
 - **Calls:** `fs_tools.read_file(jd_source_path)` — sandboxed to
-  `ROOT_DIR = ../rag_profile_match/root_dir`.
+  `ROOT_DIR = data/` (this project's own corpus, `.txt`/`.md` only; see
+  `DESIGN.md`'s [Reuse strategy](DESIGN.md#reuse-strategy) for the
+  post-Phase-4 move away from `rag_profile_match`'s shared `root_dir/`).
 - **Writes (success):** `jd_text`.
 - **Writes (failure):** `error` — path outside the sandbox, or the file
   doesn't exist. No LLM call in this node.
