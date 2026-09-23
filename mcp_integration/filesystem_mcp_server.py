@@ -309,5 +309,41 @@ async def batch_process(
     }
 
 
+@mcp.tool
+def start_watch(
+    directory_path: Annotated[str, Field(description="Directory relative to the sandbox root to watch for new files.")],
+    recursive: Annotated[bool, Field(description="Whether to watch subdirectories too.")] = False,
+    allowed_extensions: Annotated[
+        list[str] | None,
+        Field(description="Optional list of extensions to watch for, e.g. ['.pdf', '.docx']. If omitted, all files are watched."),
+    ] = None,
+    poll_interval_seconds: Annotated[
+        float | None,
+        Field(description="Seconds between scans. Defaults to the server's WATCH_POLL_INTERVAL_SECONDS setting."),
+    ] = None,
+) -> dict:
+    """Start watching a directory in the sandbox for new files, returning a watch_id to pass to poll_watch/stop_watch."""
+    logger.info(f"start_watch(directory_path={directory_path!r}, recursive={recursive!r})")
+    return fs_core.start_watch(directory_path, recursive, allowed_extensions, poll_interval_seconds)
+
+
+@mcp.tool
+def poll_watch(
+    watch_id: Annotated[str, Field(description="The watch_id returned by start_watch.")],
+) -> dict:
+    """Drain new-file events detected since the last poll for a running watch. Non-blocking; returns immediately."""
+    logger.info(f"poll_watch(watch_id={watch_id!r})")
+    return fs_core.poll_watch(watch_id)
+
+
+@mcp.tool
+def stop_watch(
+    watch_id: Annotated[str, Field(description="The watch_id returned by start_watch.")],
+) -> dict:
+    """Stop a running watch and release its background thread."""
+    logger.info(f"stop_watch(watch_id={watch_id!r})")
+    return fs_core.stop_watch(watch_id)
+
+
 if __name__ == "__main__":
     mcp.run(transport="http", host=settings.MCP_HOST, port=settings.MCP_PORT)
