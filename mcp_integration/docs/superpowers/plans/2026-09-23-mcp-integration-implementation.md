@@ -71,7 +71,7 @@ mcp_integration/
 - Produces: `config.settings` — a module-level `Settings()` singleton with attributes `ROOT_DIR: Path`, `ALLOWED_EXTENSIONS: set[str]`, `MAX_FILE_SIZE_BYTES: int`, `BATCH_MAX_CONCURRENCY: int`, `WATCH_POLL_INTERVAL_SECONDS: float`, `LOG_LEVEL: str`, `MCP_HOST: str`, `MCP_PORT: int`, `MCP_SERVER_URL: str`, `OPENROUTER_API_KEY: str`. Every later task imports `from config import settings`.
 - Produces: `utils.logger` — a `CustomLogger` instance with `.debug/.info/.warning/.error(message: str)`. Every later task imports `from utils import logger`.
 
-- [ ] **Step 1: Write `config.py`**
+- [x] **Step 1: Write `config.py`**
 
 ```python
 import os
@@ -113,7 +113,7 @@ class Settings:
 settings = Settings()
 ```
 
-- [ ] **Step 2: Write `utils.py`** (copied verbatim from `llm_file_assistant/utils.py`)
+- [x] **Step 2: Write `utils.py`** (copied verbatim from `llm_file_assistant/utils.py`)
 
 ```python
 class CustomLogger:
@@ -139,7 +139,7 @@ class CustomLogger:
 logger = CustomLogger()
 ```
 
-- [ ] **Step 3: Copy the sample resume tree**
+- [x] **Step 3: Copy the sample resume tree**
 
 ```bash
 mkdir -p mcp_integration/sample_data
@@ -154,7 +154,7 @@ find mcp_integration/sample_data/resumes -type f | wc -l
 
 Expected: `16`.
 
-- [ ] **Step 4: Update `pyproject.toml`** — add `python-dotenv` (imported directly by `config.py`; don't rely on it resolving transitively) and a `dependency-groups.dev` block for testing:
+- [x] **Step 4: Update `pyproject.toml`** — add `python-dotenv` (imported directly by `config.py`; don't rely on it resolving transitively) and a `dependency-groups.dev` block for testing:
 
 ```toml
 [project]
@@ -186,7 +186,7 @@ dev = [
 asyncio_mode = "auto"
 ```
 
-- [ ] **Step 5: Add the new settings to `sample.env`**
+- [x] **Step 5: Add the new settings to `sample.env`**
 
 ```bash
 OPENROUTER_API_KEY='your_openrouter_api_key_here'
@@ -208,7 +208,7 @@ MCP_PORT='8000'
 
 Copy `mcp_integration/sample.env` to `mcp_integration/.env` locally (already gitignored via the root `.gitignore`) and fill in a real `OPENROUTER_API_KEY` before running anything that imports `config`.
 
-- [ ] **Step 6: Sync dependencies and smoke-test the config module**
+- [x] **Step 6: Sync dependencies and smoke-test the config module**
 
 ```bash
 cd mcp_integration
@@ -218,7 +218,7 @@ uv run python -c "from config import settings; print(settings.ROOT_DIR, settings
 
 Expected: prints the resolved `sample_data/resumes` path, `http://localhost:8000/mcp`, and `['.docx', '.pdf', '.txt']`, with no `ValueError`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add mcp_integration/config.py mcp_integration/utils.py mcp_integration/sample_data \
@@ -238,7 +238,7 @@ git commit -m "feat(mcp_integration): scaffold config, logger, sample data, test
 - Consumes: `config.settings` (Task 1) — `ROOT_DIR`, `ALLOWED_EXTENSIONS`, `MAX_FILE_SIZE_BYTES`.
 - Produces: `fs_core.resolve_within_root(relative_path: str) -> Path`, `fs_core.extract_text(path: Path) -> str`, `fs_core.file_metadata(path: Path) -> dict`, `fs_core.is_allowed_extension(path: Path) -> bool`, `fs_core.exceeds_max_size(path: Path) -> bool`. `filesystem_mcp_server.py` (Task 3) and the `batch_process`/watch logic (Tasks 4-5, also added to this file) all build on these.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 # mcp_integration/tests/test_mcp_server.py
@@ -317,7 +317,7 @@ def test_is_allowed_extension_and_exceeds_max_size(sandbox, monkeypatch):
 
 Note: `test_extract_text_reads_docx_and_pdf_fixtures` uses the **real** `settings.ROOT_DIR` (not the `sandbox` fixture), so it depends on Task 1's sample-data copy already being in place.
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 cd mcp_integration
@@ -326,7 +326,7 @@ uv run pytest tests/test_mcp_server.py -v
 
 Expected: `ModuleNotFoundError: No module named 'fs_core'`.
 
-- [ ] **Step 3: Write `fs_core.py`**
+- [x] **Step 3: Write `fs_core.py`**
 
 ```python
 """Pure filesystem logic for the Filesystem MCP Server.
@@ -395,7 +395,7 @@ def exceeds_max_size(path: Path) -> bool:
     return path.stat().st_size > settings.MAX_FILE_SIZE_BYTES
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 ```bash
 uv run pytest tests/test_mcp_server.py -v
@@ -403,7 +403,7 @@ uv run pytest tests/test_mcp_server.py -v
 
 Expected: all 8 tests `PASS`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add mcp_integration/fs_core.py mcp_integration/tests/test_mcp_server.py
@@ -422,7 +422,7 @@ git commit -m "feat(mcp_integration): port sandboxed filesystem logic into fs_co
 - Consumes: `fs_core.resolve_within_root/extract_text/file_metadata` (Task 2), `config.settings`, `utils.logger`.
 - Produces: `filesystem_mcp_server.mcp` — the `FastMCP` server instance, importable by tests and by Tasks 4-5 (which add more `@mcp.tool`s to this same file) and Task 6 (Docker `CMD`). Tool names on `mcp`: `list_files`, `read_file`, `search_in_file`, `write_file` (this task); `batch_process` (Task 4); `start_watch`, `poll_watch`, `stop_watch` (Task 5).
 
-- [ ] **Step 1: Write the failing tests** (append to `tests/test_mcp_server.py`)
+- [x] **Step 1: Write the failing tests** (append to `tests/test_mcp_server.py`)
 
 ```python
 from fastmcp import Client
@@ -517,7 +517,7 @@ async def test_write_file_creates_then_refuses_overwrite(server_sandbox):
     assert second.data["error"]["code"] == "VALIDATION_ERROR"
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 uv run pytest tests/test_mcp_server.py -v
@@ -525,7 +525,7 @@ uv run pytest tests/test_mcp_server.py -v
 
 Expected: `ModuleNotFoundError: No module named 'filesystem_mcp_server'`.
 
-- [ ] **Step 3: Write `filesystem_mcp_server.py`**
+- [x] **Step 3: Write `filesystem_mcp_server.py`**
 
 ```python
 """Filesystem MCP Server -- Part A deliverable.
@@ -738,7 +738,7 @@ if __name__ == "__main__":
     mcp.run(transport="http", host=settings.MCP_HOST, port=settings.MCP_PORT)
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 ```bash
 uv run pytest tests/test_mcp_server.py -v
@@ -746,7 +746,7 @@ uv run pytest tests/test_mcp_server.py -v
 
 Expected: all tests `PASS`. If `Client(server.mcp)`, `result.data`, or `@mcp.custom_route` don't match the installed `fastmcp>=4.0.5` API exactly, check `uv run python -c "import fastmcp; help(fastmcp.Client)"` and adjust — this is the first point in the plan where the exact FastMCP client surface gets exercised for real.
 
-- [ ] **Step 5: Manually verify discovery and one tool call over real HTTP** (sanity check beyond the in-process test client)
+- [x] **Step 5: Manually verify discovery and one tool call over real HTTP** (sanity check beyond the in-process test client)
 
 ```bash
 uv run python filesystem_mcp_server.py &
@@ -760,7 +760,7 @@ kill %1
 
 Expected: `/health` returns `{"status": "ok"}`; the `tools/list` JSON-RPC response includes `list_files`, `read_file`, `search_in_file`, `write_file` with their descriptions/schemas.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add mcp_integration/filesystem_mcp_server.py mcp_integration/tests/test_mcp_server.py
@@ -779,7 +779,7 @@ git commit -m "feat(mcp_integration): add filesystem_mcp_server.py with migrated
 - Consumes: `fs_core.resolve_within_root/extract_text/file_metadata/is_allowed_extension/exceeds_max_size` (Task 2), `config.settings.BATCH_MAX_CONCURRENCY`.
 - Produces: `batch_process` MCP tool on `filesystem_mcp_server.mcp`, returning `{"success": bool, "total_files": int, "processed": int, "failed": int, "skipped": int, "results": list[dict]}`. Per-`results[]` entry: `{"path": str, "status": "success"|"error"|"skipped", "result": {...}}` or `{"path": str, "status": "error", "error": {"code": str, "message": str}}` or `{"path": str, "status": "skipped", "reason": str}`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 # mcp_integration/tests/test_batch_process.py
@@ -851,7 +851,7 @@ async def test_batch_process_skips_oversized_file(batch_sandbox, monkeypatch):
     assert result.data["results"][0]["status"] == "skipped"
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 uv run pytest tests/test_batch_process.py -v
@@ -859,7 +859,7 @@ uv run pytest tests/test_batch_process.py -v
 
 Expected: `fastmcp.exceptions.ToolError` or similar "unknown tool 'batch_process'" failure.
 
-- [ ] **Step 3: Add `batch_process` to `filesystem_mcp_server.py`**
+- [x] **Step 3: Add `batch_process` to `filesystem_mcp_server.py`**
 
 Add `import asyncio` to the top of the file (alongside the existing imports), then add:
 
@@ -955,7 +955,7 @@ async def batch_process(
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 ```bash
 uv run pytest tests/test_batch_process.py -v
@@ -963,7 +963,7 @@ uv run pytest tests/test_batch_process.py -v
 
 Expected: all tests `PASS`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add mcp_integration/filesystem_mcp_server.py mcp_integration/tests/test_batch_process.py
@@ -985,7 +985,7 @@ git commit -m "feat(mcp_integration): add batch_process tool"
 
 Design: a new file is reported twice — once as `{"ready": False}` the poll after it's first seen, and again as `{"ready": True}` on the first later poll where its size hasn't changed since the previous scan (the "stable across two consecutive polls" guard from spec §7). Files present when `start_watch` is called are snapshotted as already-stable and never reported.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 # mcp_integration/tests/test_watch_directory.py
@@ -1067,7 +1067,7 @@ async def test_watch_surfaces_runtime_failure_as_terminal_event(watch_sandbox):
         assert poll_after_deletion.data["active"] is False
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 uv run pytest tests/test_watch_directory.py -v
@@ -1075,7 +1075,7 @@ uv run pytest tests/test_watch_directory.py -v
 
 Expected: "unknown tool 'start_watch'" failures.
 
-- [ ] **Step 3: Add watch-state management to `fs_core.py`**
+- [x] **Step 3: Add watch-state management to `fs_core.py`**
 
 Add these imports to the top of `fs_core.py`: `import threading`, `import uuid`, `from dataclasses import dataclass, field`. Then append:
 
@@ -1203,7 +1203,7 @@ def stop_watch(watch_id: str) -> dict:
     return {"success": True, "watch_id": watch_id, "stopped": True, "error": None}
 ```
 
-- [ ] **Step 4: Add the three thin tool wrappers to `filesystem_mcp_server.py`**
+- [x] **Step 4: Add the three thin tool wrappers to `filesystem_mcp_server.py`**
 
 ```python
 @mcp.tool
@@ -1242,7 +1242,7 @@ def stop_watch(
     return fs_core.stop_watch(watch_id)
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 ```bash
 uv run pytest tests/test_watch_directory.py -v
@@ -1250,7 +1250,7 @@ uv run pytest tests/test_watch_directory.py -v
 
 Expected: all 4 tests `PASS`. The timing-based test is inherently a little sensitive — if it's flaky in CI, raise the `time.sleep` margins relative to `poll_interval_seconds`, don't shrink the poll interval further.
 
-- [ ] **Step 6: Run the full test suite so far**
+- [x] **Step 6: Run the full test suite so far**
 
 ```bash
 uv run pytest tests/ -v
@@ -1258,7 +1258,7 @@ uv run pytest tests/ -v
 
 Expected: all tests across `test_mcp_server.py`, `test_batch_process.py`, `test_watch_directory.py` `PASS`. This is also the point to walk the spec §8 error-code table by hand and confirm every row (`NOT_FOUND`, `PATH_ESCAPES_ROOT`, `UNSUPPORTED_FORMAT`, `FILE_PROCESSING_ERROR`, `PERMISSION_DENIED`, `VALIDATION_ERROR`, `WATCH_ERROR`) is hit by at least one test above: `NOT_FOUND`/`PATH_ESCAPES_ROOT`/`VALIDATION_ERROR` are covered directly; `UNSUPPORTED_FORMAT` and `FILE_PROCESSING_ERROR` are exercised by `fs_core.extract_text`'s unit tests plus `batch_process`'s error path; `PERMISSION_DENIED` is reachable only via an OS-level write failure (not portably testable — leave as code-reviewed, not test-covered, and note this in `docs/demo-script.md` in Task 9). `WATCH_ERROR` per spec is the code family for watch runtime failures; align the `_watch_loop` exception handler's emitted event with `{"type": "error", "message": ...}` as already implemented — no separate `code` field was specified for watch events in spec §7, so this is intentionally different in shape from the other tools' `{code, message}` errors.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add mcp_integration/fs_core.py mcp_integration/filesystem_mcp_server.py mcp_integration/tests/test_watch_directory.py
@@ -1280,7 +1280,7 @@ git commit -m "feat(mcp_integration): add watch_directory trio (start_watch/poll
 
 **Why the build context is the repo root, not `mcp_integration/`:** this repo uses a `uv` **workspace** — one root `pyproject.toml` with `[tool.uv.workspace] members`, and a single shared `uv.lock` at the repo root (confirmed: `agentic_profile_match`'s and `rag_profile_match`'s own `pyproject.toml` don't carry their own lockfiles either). `uv sync` run from inside `mcp_integration/` alone, with only that subdirectory's `pyproject.toml`/`uv.lock` available, cannot resolve the workspace. The reference `todos` project this Dockerfile pattern is adapted from is a *standalone* uv project (its own `pyproject.toml` + `uv.lock`), so its simple "bind-mount just the lockfile" layer doesn't transfer directly — the build context has to be the repo root so `uv sync --package mcp-integration` can see the workspace root and the shared lockfile. `.dockerignore` follows the build context, so it also moves to the repo root (Docker only honors a `.dockerignore` at the root of the build context, not next to the `Dockerfile`, when they differ).
 
-- [ ] **Step 1: Write `mcp_integration/Dockerfile`**
+- [x] **Step 1: Write `mcp_integration/Dockerfile`**
 
 ```dockerfile
 # Build context is the repo root (see docker-compose.yml's build.context) --
@@ -1304,7 +1304,7 @@ EXPOSE 8000
 CMD ["python", "filesystem_mcp_server.py"]
 ```
 
-- [ ] **Step 2: Write `mcp_integration/docker-compose.yml`**
+- [x] **Step 2: Write `mcp_integration/docker-compose.yml`**
 
 ```yaml
 services:
@@ -1332,7 +1332,7 @@ services:
 
 The bind mount is deliberate, not a named volume: the point is host visibility of anything `write_file`/`batch_process` produce (for grading/demo), and persistence across rebuilds, matching spec §10.
 
-- [ ] **Step 3: Write `/.dockerignore`** (repo root)
+- [x] **Step 3: Write `/.dockerignore`** (repo root)
 
 ```
 .venv/
@@ -1345,7 +1345,7 @@ mcp_integration/tests/
 mcp_integration/docs/
 ```
 
-- [ ] **Step 4: Build and run, verify the health check**
+- [x] **Step 4: Build and run, verify the health check**
 
 ```bash
 cd mcp_integration
@@ -1356,7 +1356,7 @@ curl http://localhost:8000/health
 
 Expected: `{"status": "ok"}`. If the image build fails on `uv sync --package mcp-integration`, confirm the package name in `mcp_integration/pyproject.toml`'s `[project] name` is exactly `mcp-integration` (uv normalizes underscores to hyphens for `--package` matching).
 
-- [ ] **Step 5: Verify a real tool call through the containerized server**
+- [x] **Step 5: Verify a real tool call through the containerized server**
 
 ```bash
 curl -s http://localhost:8000/mcp -X POST -H "Content-Type: application/json" \
@@ -1367,7 +1367,7 @@ docker compose down
 
 Expected: a JSON-RPC result listing the `sample_data/resumes` tree (bind-mounted from the host).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add mcp_integration/Dockerfile mcp_integration/docker-compose.yml .dockerignore
@@ -1387,14 +1387,14 @@ git commit -m "feat(mcp_integration): add Docker packaging for the filesystem MC
 
 Spec §9 flags this explicitly as unresolved: does `agent.stream_events(..., version="v3")`'s typed-projection iterator support `async for ... in stream.interleave(...)` cleanly when tool calls route through an open async `MCPAdapter` session, or does it need the `astream_events` async entry point instead? This task answers that before Task 8 is built on top of an assumption.
 
-- [ ] **Step 1: Start the server** (Task 6's container, or `uv run python filesystem_mcp_server.py` locally)
+- [x] **Step 1: Start the server** (Task 6's container, or `uv run python filesystem_mcp_server.py` locally)
 
 ```bash
 cd mcp_integration
 docker compose up -d
 ```
 
-- [ ] **Step 2: Write the spike script** to the scratchpad directory (not the repo) as `streaming_spike.py`
+- [x] **Step 2: Write the spike script** to the scratchpad directory (not the repo) as `streaming_spike.py`
 
 ```python
 import asyncio
@@ -1450,14 +1450,14 @@ async def main():
 asyncio.run(main())
 ```
 
-- [ ] **Step 3: Run it against a real `OPENROUTER_API_KEY`**
+- [x] **Step 3: Run it against a real `OPENROUTER_API_KEY`**
 
 ```bash
 cd mcp_integration
 uv run python /path/to/scratchpad/streaming_spike.py
 ```
 
-- [ ] **Step 4: Record the decision**
+- [x] **Step 4: Record the decision**
 
 Whichever variant prints "WORKS", that is the call shape Task 8's `stream_assistant_reply` uses. If neither works as written, the error message from the attempt (a `TypeError`, an `AttributeError`, or a hang) determines the actual fix — check the installed `langchain` version's exact API with `uv run python -c "from langgraph.graph.state import CompiledStateGraph; help(CompiledStateGraph.stream_events)"` and adjust Task 8 accordingly before starting it. Discard the spike script; it isn't a repo deliverable.
 
@@ -1474,7 +1474,7 @@ Whichever variant prints "WORKS", that is the call shape Task 8's `stream_assist
 - Consumes: `config.settings.MCP_SERVER_URL` (Task 1), `filesystem_mcp_server.mcp`/`.settings`/`.health` (Tasks 3-6, via the test fixture only — the agent itself never imports the server module), `langchain.mcp.MCPAdapter`, and Task 7's decision for which `stream_events` call shape to use.
 - Produces: `matching_agent.build_chat_model() -> BaseChatModel`, `matching_agent.build_assistant_agent(tools: Sequence[BaseTool], model: BaseChatModel | None = None) -> CompiledStateGraph`, `matching_agent.build_thread_config(thread_id: str = DEFAULT_THREAD_ID) -> RunnableConfig`, `async def matching_agent.run_chat_loop(agent, config, console) -> None`, `async def matching_agent.stream_assistant_reply(agent, config, user_message, console, *, show_reasoning) -> None`, `async def matching_agent.main() -> None`. Re-exports `HumanMessage`/`ToolMessage`/`AIMessage` at module level (imported from `langchain.messages`) for the test in this task to reuse.
 
-- [ ] **Step 1: Write `matching_agent.py`**
+- [x] **Step 1: Write `matching_agent.py`**
 
 (This uses Variant A's call shape from Task 7 — `async for kind, item in stream.interleave("messages")` directly on `agent.stream_events(...)`. If Task 7 found Variant B necessary instead, replace the `stream = agent.stream_events(...)` line in `stream_assistant_reply` below with `stream = await agent.astream_events(...)` before running this task's tests.)
 
@@ -1749,13 +1749,13 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-- [ ] **Step 2: Delete the placeholder entrypoint**
+- [x] **Step 2: Delete the placeholder entrypoint**
 
 ```bash
 rm mcp_integration/main.py
 ```
 
-- [ ] **Step 3: Write the failing test**
+- [x] **Step 3: Write the failing test**
 
 ```python
 # mcp_integration/tests/test_matching_agent_mcp.py
@@ -1835,7 +1835,7 @@ async def test_agent_discovers_and_calls_mcp_tool(running_server):
     assert tool_messages, "expected the fake model's tool call to round-trip through the real MCP server"
 ```
 
-- [ ] **Step 4: Run the test to verify it fails**
+- [x] **Step 4: Run the test to verify it fails**
 
 ```bash
 cd mcp_integration
@@ -1844,7 +1844,7 @@ uv run pytest tests/test_matching_agent_mcp.py -v
 
 Expected: `ModuleNotFoundError: No module named 'matching_agent'` before Step 1/2 above are applied, or a real assertion failure if something in the agent wiring is off once they are.
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 ```bash
 uv run pytest tests/test_matching_agent_mcp.py -v
@@ -1852,7 +1852,7 @@ uv run pytest tests/test_matching_agent_mcp.py -v
 
 Expected: `PASS`. If `FakeMessagesListChatModel` doesn't accept `.bind_tools()` cleanly under the installed `langchain-core` version, check `uv run python -c "from langchain_core.language_models.fake_chat_models import FakeMessagesListChatModel; help(FakeMessagesListChatModel)"` and adjust the fixture.
 
-- [ ] **Step 6: Manual end-to-end run** (requires a real `OPENROUTER_API_KEY` in `.env` and the Docker server from Task 6 running)
+- [x] **Step 6: Manual end-to-end run** (requires a real `OPENROUTER_API_KEY` in `.env` and the Docker server from Task 6 running)
 
 ```bash
 docker compose up -d
@@ -1861,7 +1861,7 @@ uv run python matching_agent.py
 
 In the REPL: ask "what resumes do we have in engineering?", confirm tool-call panels and a real streamed answer appear; try `reasoning`, `load`, `clear`, `exit`.
 
-- [ ] **Step 7: Run the full test suite**
+- [x] **Step 7: Run the full test suite**
 
 ```bash
 uv run pytest tests/ -v
@@ -1869,7 +1869,7 @@ uv run pytest tests/ -v
 
 Expected: all tests across all four files `PASS`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add mcp_integration/matching_agent.py mcp_integration/tests/test_matching_agent_mcp.py
@@ -1890,7 +1890,7 @@ git commit -m "feat(mcp_integration): add matching_agent.py, an async MCP-client
 **Interfaces:**
 - Consumes: the finished system from Tasks 1-8. No code interfaces — this task only produces documentation.
 
-- [ ] **Step 1: Write `docs/architecture.md`**
+- [x] **Step 1: Write `docs/architecture.md`**
 
 ```markdown
 # Architecture
@@ -1932,7 +1932,7 @@ sample_data/resumes/ (bind-mounted into the container)
   host.
 ```
 
-- [ ] **Step 2: Write `docs/workflow-diagram.md`**
+- [x] **Step 2: Write `docs/workflow-diagram.md`**
 
 ```markdown
 # Workflow: one agent <-> MCP interaction
@@ -1962,7 +1962,7 @@ via the existing `Tool call: {name}({args})` / `Tool result (...)` panels --
 no bespoke MCP-event plumbing was needed for this.
 ```
 
-- [ ] **Step 3: Write `docs/demo-script.md`**
+- [x] **Step 3: Write `docs/demo-script.md`**
 
 ```markdown
 # Demo script
@@ -1996,7 +1996,7 @@ Mapped to the assignment's suggested 9-step sequence.
    assignment).
 ```
 
-- [ ] **Step 4: Rewrite `README.md`**
+- [x] **Step 4: Rewrite `README.md`**
 
 ```markdown
 # MCP Integration
@@ -2075,7 +2075,7 @@ model stubbed -- no live `OPENROUTER_API_KEY` required to run the suite.
 See [`docs/spec.md`](docs/spec.md) §3.
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add mcp_integration/docs/architecture.md mcp_integration/docs/workflow-diagram.md \
