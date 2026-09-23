@@ -237,22 +237,26 @@ async def batch_process(
             target_dir = fs_core.resolve_within_root(directory)
         except ValueError as exc:
             return {"success": False, "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}
-        if not target_dir.exists() or not target_dir.is_dir():
-            return {"success": False, "error": {"code": "NOT_FOUND", "message": f"Directory not found: {directory}"}}
 
-        normalized_ext = None
-        if extension:
-            normalized_ext = extension.lower()
-            if not normalized_ext.startswith("."):
-                normalized_ext = f".{normalized_ext}"
+        try:
+            if not target_dir.exists() or not target_dir.is_dir():
+                return {"success": False, "error": {"code": "NOT_FOUND", "message": f"Directory not found: {directory}"}}
 
-        walker = target_dir.rglob("*") if recursive else target_dir.glob("*")
-        candidates = [
-            # as_posix() keeps expanded paths forward-slash-separated on every
-            # OS (notably Windows), matching fs_core.file_metadata's "path".
-            p.relative_to(settings.ROOT_DIR).as_posix() for p in sorted(walker)
-            if p.is_file() and (normalized_ext is None or p.suffix.lower() == normalized_ext)
-        ]
+            normalized_ext = None
+            if extension:
+                normalized_ext = extension.lower()
+                if not normalized_ext.startswith("."):
+                    normalized_ext = f".{normalized_ext}"
+
+            walker = target_dir.rglob("*") if recursive else target_dir.glob("*")
+            candidates = [
+                # as_posix() keeps expanded paths forward-slash-separated on every
+                # OS (notably Windows), matching fs_core.file_metadata's "path".
+                p.relative_to(settings.ROOT_DIR).as_posix() for p in sorted(walker)
+                if p.is_file() and (normalized_ext is None or p.suffix.lower() == normalized_ext)
+            ]
+        except Exception as exc:
+            return {"success": False, "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Unable to expand directory '{directory}': {exc}"}}
     else:
         candidates = list(files)
 
@@ -265,22 +269,29 @@ async def batch_process(
             except ValueError as exc:
                 return {"path": rel_path, "status": "error", "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}
 
-            if not target.exists() or not target.is_file():
-                return {"path": rel_path, "status": "error", "error": {"code": "NOT_FOUND", "message": f"File not found: {rel_path}"}}
-            if not fs_core.is_allowed_extension(target):
-                return {"path": rel_path, "status": "skipped", "reason": f"Extension '{target.suffix}' is not in ALLOWED_EXTENSIONS."}
-            if fs_core.exceeds_max_size(target):
-                return {"path": rel_path, "status": "skipped", "reason": f"File exceeds MAX_FILE_SIZE_BYTES ({settings.MAX_FILE_SIZE_BYTES})."}
-
+            # Everything below -- existence/extension/size checks, extraction,
+            # and metadata -- can raise for reasons that have nothing to do
+            # with the file being missing (permission errors, a TOCTOU race
+            # where the file disappears or locks between exists() and a later
+            # stat(), etc.). One file's failure must never abort the whole
+            # batch or propagate out of asyncio.gather, so it is all guarded
+            # by a single try/except mapped to FILE_PROCESSING_ERROR.
             try:
+                if not target.exists() or not target.is_file():
+                    return {"path": rel_path, "status": "error", "error": {"code": "NOT_FOUND", "message": f"File not found: {rel_path}"}}
+                if not fs_core.is_allowed_extension(target):
+                    return {"path": rel_path, "status": "skipped", "reason": f"Extension '{target.suffix}' is not in ALLOWED_EXTENSIONS."}
+                if fs_core.exceeds_max_size(target):
+                    return {"path": rel_path, "status": "skipped", "reason": f"File exceeds MAX_FILE_SIZE_BYTES ({settings.MAX_FILE_SIZE_BYTES})."}
+
                 content = await asyncio.to_thread(fs_core.extract_text, target)
+
+                return {
+                    "path": rel_path, "status": "success",
+                    "result": {"content": content, "metadata": fs_core.file_metadata(target)},
+                }
             except Exception as exc:
                 return {"path": rel_path, "status": "error", "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Unable to process '{rel_path}': {exc}"}}
-
-            return {
-                "path": rel_path, "status": "success",
-                "result": {"content": content, "metadata": fs_core.file_metadata(target)},
-            }
 
     results = await asyncio.gather(*(process_one(p) for p in candidates))
 

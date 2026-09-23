@@ -2,6 +2,7 @@ import pytest
 from fastmcp import Client
 
 import filesystem_mcp_server as server
+import fs_core
 
 
 @pytest.fixture
@@ -64,3 +65,37 @@ async def test_batch_process_skips_oversized_file(batch_sandbox, monkeypatch):
 
     assert result.data["skipped"] == 1
     assert result.data["results"][0]["status"] == "skipped"
+
+
+async def test_batch_process_isolates_unexpected_per_file_exception(batch_sandbox, monkeypatch):
+    # Simulate an unexpected failure (e.g. a permission error, or a TOCTOU
+    # race where the file disappears/locks between exists() and stat())
+    # for exactly one file in a multi-file batch. batch_process must not
+    # let this propagate out of asyncio.gather and abort the whole batch --
+    # it should be reported as a FILE_PROCESSING_ERROR for that one file,
+    # while every other file in the same batch still succeeds.
+    original_file_metadata = fs_core.file_metadata
+
+    def flaky_file_metadata(path):
+        if path.name == "alice.txt":
+            raise RuntimeError("simulated stat failure")
+        return original_file_metadata(path)
+
+    monkeypatch.setattr(server.fs_core, "file_metadata", flaky_file_metadata)
+
+    async with Client(server.mcp) as client:
+        result = await client.call_tool(
+            "batch_process", {"files": ["engineering/alice.txt", "engineering/bob.txt"]}
+        )
+
+    data = result.data
+    assert data["total_files"] == 2
+    assert data["processed"] == 1
+    assert data["failed"] == 1
+    assert data["skipped"] == 0
+    assert data["processed"] + data["failed"] + data["skipped"] == data["total_files"]
+
+    by_path = {r["path"]: r for r in data["results"]}
+    assert by_path["engineering/alice.txt"]["status"] == "error"
+    assert by_path["engineering/alice.txt"]["error"]["code"] == "FILE_PROCESSING_ERROR"
+    assert by_path["engineering/bob.txt"]["status"] == "success"
