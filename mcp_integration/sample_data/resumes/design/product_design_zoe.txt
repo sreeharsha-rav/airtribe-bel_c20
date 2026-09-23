@@ -1,0 +1,28 @@
+Zoe Bennett
+Senior Product Designer
+zoe.bennett@example.com | Portland, OR
+
+SUMMARY
+Product designer with 7 years shipping end-to-end flows for B2B and B2C
+products, from early prototypes to polished design systems.
+
+SKILLS
+Figma, prototyping, design systems, interaction design, usability testing
+
+EXPERIENCE
+Senior Product Designer, Willowmere Health (2021-Present)
+- Designed and prototyped the onboarding flow in Figma, lifting activation
+  rate by 24% after launch.
+- Built and maintain the company's design system, now used across 5 product
+  squads.
+- Ran usability testing sessions that informed a redesign of the core
+  dashboard.
+
+Product Designer, Talus Robotics (2018-2021)
+- Owned end-to-end design for the operator console, from low-fidelity
+  Figma wireframes to production-ready specs.
+- Partnered closely with engineering to ship a component library that cut
+  design-to-dev handoff time in half.
+
+EDUCATION
+B.F.A. Interaction Design, Rhode Island School of Design

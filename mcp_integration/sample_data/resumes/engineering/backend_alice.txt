@@ -1,0 +1,28 @@
+Alice Chen
+Backend Software Engineer
+alice.chen@example.com | Seattle, WA
+
+SUMMARY
+Backend engineer with 6 years of experience building high-throughput APIs and
+distributed services. Comfortable owning a service from design through
+production operations.
+
+SKILLS
+Python, Django, FastAPI, PostgreSQL, Redis, Docker, Kubernetes, AWS (ECS, RDS, S3)
+
+EXPERIENCE
+Senior Backend Engineer, Northwind Logistics (2021-Present)
+- Rebuilt the order-processing service in FastAPI, cutting p99 latency by 40%.
+- Migrated the deployment pipeline to Kubernetes on AWS, reducing rollout time
+  from 20 minutes to under 3.
+- Introduced PostgreSQL read replicas to handle reporting load without
+  impacting transactional throughput.
+
+Backend Engineer, Fernwood Retail (2018-2021)
+- Built the inventory-sync API (Django + PostgreSQL) connecting 40+ store
+  locations to a central warehouse system.
+- Containerized all internal services with Docker, standardizing local dev
+  environments across the team.
+
+EDUCATION
+B.S. Computer Science, University of Washington
