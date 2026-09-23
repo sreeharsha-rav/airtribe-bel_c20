@@ -6,15 +6,8 @@ through langchain.mcp.MCPAdapter -- no direct fs_tools/fs_core import here.
 """
 
 import asyncio
+import os
 from typing import Any, AsyncIterator, Sequence, cast
-
-import truststore
-
-# Some sandboxes' default TLS trust store can't verify OpenRouter's cert
-# chain even though outbound network access is fine (see task-7-report.md).
-# Repointing SSL verification at the OS trust store is a no-op everywhere
-# else, so it's safe to do unconditionally rather than guessing at CI.
-truststore.inject_into_ssl()
 
 from rich.console import Console, Group
 from rich.live import Live
@@ -70,6 +63,18 @@ SHOW_REASONING_DEFAULT = False
 # --- Agent setup -------------------------------------------------------------
 
 def build_chat_model() -> BaseChatModel:
+    if os.getenv("USE_SYSTEM_TRUST_STORE"):
+        # Some sandboxes' default TLS trust store can't verify OpenRouter's
+        # cert chain even though outbound network access is fine (see
+        # task-7-report.md). Repointing SSL verification at the OS trust
+        # store fixes that -- but it's a real behavior change (it replaces
+        # certifi's CA bundle with the OS store, which can behave worse on a
+        # slim container image with a sparse system trust store), so it's
+        # opt-in via this env var rather than applied unconditionally to
+        # every environment that imports this module.
+        import truststore
+
+        truststore.inject_into_ssl()
     return init_chat_model(model=MODEL_NAME, model_provider=MODEL_PROVIDER)
 
 

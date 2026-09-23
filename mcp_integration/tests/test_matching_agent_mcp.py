@@ -37,29 +37,38 @@ def running_server(tmp_path_factory):
     original_root_dir = server.settings.ROOT_DIR
     server.settings.ROOT_DIR = sandbox
 
-    app = server.mcp.http_app()
-    config = uvicorn.Config(app, host="127.0.0.1", port=TEST_PORT, log_level="warning")
-    uv_server = uvicorn.Server(config)
-    thread = threading.Thread(target=uv_server.run, daemon=True)
-    thread.start()
+    uv_server = None
+    thread = None
+    try:
+        app = server.mcp.http_app()
+        config = uvicorn.Config(app, host="127.0.0.1", port=TEST_PORT, log_level="warning")
+        uv_server = uvicorn.Server(config)
+        thread = threading.Thread(target=uv_server.run, daemon=True)
+        thread.start()
 
-    deadline = time.time() + 10
-    started = False
-    while time.time() < deadline:
-        try:
-            if httpx.get(f"http://127.0.0.1:{TEST_PORT}/health", timeout=1).status_code == 200:
-                started = True
-                break
-        except httpx.ConnectError:
-            time.sleep(0.2)
-    if not started:
-        raise RuntimeError("Test MCP server did not start in time")
+        deadline = time.time() + 10
+        started = False
+        while time.time() < deadline:
+            try:
+                if httpx.get(f"http://127.0.0.1:{TEST_PORT}/health", timeout=1).status_code == 200:
+                    started = True
+                    break
+            except httpx.ConnectError:
+                time.sleep(0.2)
+        if not started:
+            raise RuntimeError("Test MCP server did not start in time")
 
-    yield f"http://127.0.0.1:{TEST_PORT}/mcp"
-
-    uv_server.should_exit = True
-    thread.join(timeout=5)
-    server.settings.ROOT_DIR = original_root_dir
+        yield f"http://127.0.0.1:{TEST_PORT}/mcp"
+    finally:
+        # Runs on every path -- successful teardown, a timed-out startup, or
+        # any other exception -- so a failed setup can never leave
+        # settings.ROOT_DIR pointing at this fixture's temp sandbox for
+        # whatever test runs next in the same process.
+        if uv_server is not None:
+            uv_server.should_exit = True
+        if thread is not None:
+            thread.join(timeout=5)
+        server.settings.ROOT_DIR = original_root_dir
 
 
 async def test_agent_discovers_and_calls_mcp_tool(running_server):
