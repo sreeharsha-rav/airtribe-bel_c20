@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 import fs_core
@@ -25,6 +27,24 @@ def test_resolve_within_root_rejects_absolute_path(sandbox):
 def test_resolve_within_root_rejects_dotdot_escape(sandbox):
     with pytest.raises(ValueError):
         fs_core.resolve_within_root("../outside.txt")
+
+
+def test_resolve_within_root_rejects_path_resolving_outside_root(sandbox, monkeypatch):
+    # A syntactically clean relative path (no "..", not absolute) should still
+    # be rejected if it resolves outside the sandbox root -- e.g. via a
+    # symlink. Real symlinks are awkward to create reliably on Windows
+    # without elevated privileges, so we monkeypatch Path.resolve to simulate
+    # that outcome and exercise the post-resolve containment check directly.
+    original_resolve = Path.resolve
+
+    def fake_resolve(self, *args, **kwargs):
+        if self == sandbox / "innocuous.txt":
+            return Path("/definitely/outside")
+        return original_resolve(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", fake_resolve)
+    with pytest.raises(ValueError):
+        fs_core.resolve_within_root("innocuous.txt")
 
 
 def test_extract_text_reads_txt_file(sandbox):
