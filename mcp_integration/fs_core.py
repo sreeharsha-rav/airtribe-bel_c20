@@ -49,7 +49,10 @@ def file_metadata(path: Path) -> dict:
     stat = path.stat()
     return {
         "name": path.name,
-        "path": str(path.relative_to(settings.ROOT_DIR)),
+        # as_posix() keeps the reported path forward-slash-separated on every
+        # OS (notably Windows) so MCP tool results are portable regardless of
+        # the host filesystem.
+        "path": path.relative_to(settings.ROOT_DIR).as_posix(),
         "extension": path.suffix.lower(),
         "size_bytes": stat.st_size,
         "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
