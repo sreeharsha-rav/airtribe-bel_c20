@@ -49,12 +49,12 @@ def list_files(
     try:
         target = fs_core.resolve_within_root(directory)
     except ValueError as exc:
-        return [{"error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}]
+        return [{"success": False, "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}]
 
     if not target.exists():
-        return [{"error": {"code": "NOT_FOUND", "message": f"Path not found: {directory}"}}]
+        return [{"success": False, "error": {"code": "NOT_FOUND", "message": f"Path not found: {directory}"}}]
     if not target.is_dir():
-        return [{"error": {"code": "VALIDATION_ERROR", "message": f"Not a directory: {directory}"}}]
+        return [{"success": False, "error": {"code": "VALIDATION_ERROR", "message": f"Not a directory: {directory}"}}]
 
     normalized_ext = None
     if extension:

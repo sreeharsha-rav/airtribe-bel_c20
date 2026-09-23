@@ -133,6 +133,13 @@ async def test_list_files_not_found_directory(server_sandbox):
     assert result.data[0]["error"]["code"] == "NOT_FOUND"
 
 
+async def test_list_files_rejects_non_directory_path(server_sandbox):
+    async with Client(server.mcp) as client:
+        result = await client.call_tool("list_files", {"directory": "notes.txt"})
+    assert result.data[0]["success"] is False
+    assert result.data[0]["error"]["code"] == "VALIDATION_ERROR"
+
+
 async def test_read_file_success_and_not_found(server_sandbox):
     async with Client(server.mcp) as client:
         ok = await client.call_tool("read_file", {"filepath": "engineering/alice.txt"})
@@ -178,3 +185,20 @@ async def test_write_file_creates_then_refuses_overwrite(server_sandbox):
     assert (server_sandbox / "shortlist.txt").read_text(encoding="utf-8") == "Alice"
     assert second.data["success"] is False
     assert second.data["error"]["code"] == "VALIDATION_ERROR"
+
+
+async def test_write_file_permission_denied_on_os_error(server_sandbox, monkeypatch):
+    original_write_text = Path.write_text
+
+    def fake_write_text(self, *args, **kwargs):
+        if self == server_sandbox / "blocked.txt":
+            raise OSError("simulated disk error")
+        return original_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", fake_write_text)
+
+    async with Client(server.mcp) as client:
+        result = await client.call_tool("write_file", {"filepath": "blocked.txt", "content": "data"})
+
+    assert result.data["success"] is False
+    assert result.data["error"]["code"] == "PERMISSION_DENIED"
