@@ -85,6 +85,11 @@ class _WatchState:
 
 
 _watches: dict[str, _WatchState] = {}
+# Guards the _watches registry dict itself (inserts/lookups/removals across
+# concurrent start_watch/poll_watch/stop_watch calls). Separate from each
+# _WatchState's own per-watch `lock`, which continues to guard that watch's
+# known/pending_events/active.
+_watches_lock = threading.Lock()
 
 
 def _scan(state: "_WatchState") -> dict[str, int]:
@@ -173,14 +178,16 @@ def start_watch(
 
     watch_id = uuid.uuid4().hex
     state.thread = threading.Thread(target=_watch_loop, args=(state,), daemon=True)
-    _watches[watch_id] = state
+    with _watches_lock:
+        _watches[watch_id] = state
     state.thread.start()
 
     return {"success": True, "watch_id": watch_id, "error": None}
 
 
 def poll_watch(watch_id: str) -> dict:
-    state = _watches.get(watch_id)
+    with _watches_lock:
+        state = _watches.get(watch_id)
     if state is None:
         return {"success": False, "error": {"code": "VALIDATION_ERROR", "message": f"Unknown watch_id: {watch_id}"}}
 
@@ -193,7 +200,8 @@ def poll_watch(watch_id: str) -> dict:
 
 
 def stop_watch(watch_id: str) -> dict:
-    state = _watches.pop(watch_id, None)
+    with _watches_lock:
+        state = _watches.pop(watch_id, None)
     if state is None:
         return {"success": False, "error": {"code": "VALIDATION_ERROR", "message": f"Unknown watch_id: {watch_id}"}}
 
