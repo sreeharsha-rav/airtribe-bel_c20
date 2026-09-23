@@ -6,6 +6,7 @@ HTTP. Every tool keeps returning a structured {success, ..., error} dict
 result without needing to catch a protocol-level error.
 """
 
+import asyncio
 from typing import Annotated
 
 from fastmcp import FastMCP
@@ -202,6 +203,99 @@ def write_file(
         }
 
     return {"success": True, "filepath": filepath, "bytes_written": len(content.encode("utf-8")), "error": None}
+
+
+@mcp.tool
+async def batch_process(
+    files: Annotated[
+        list[str] | None,
+        Field(description="Explicit list of paths (relative to the sandbox root) to process. Mutually exclusive with 'directory'."),
+    ] = None,
+    directory: Annotated[
+        str | None,
+        Field(description="Directory (relative to the sandbox root) to expand into a file list, the same way list_files would. Mutually exclusive with 'files'."),
+    ] = None,
+    extension: Annotated[
+        str | None,
+        Field(description="Optional extension filter when expanding 'directory', e.g. '.pdf'."),
+    ] = None,
+    recursive: Annotated[
+        bool,
+        Field(description="Whether to recurse into subdirectories when expanding 'directory'."),
+    ] = True,
+) -> dict:
+    """Read and extract text/metadata for many files at once (bounded concurrency), returning per-file status and aggregate counts. Provide either 'files' or 'directory', not both."""
+    logger.info(f"batch_process(files={files!r}, directory={directory!r}, extension={extension!r}, recursive={recursive!r})")
+
+    if files and directory:
+        return {"success": False, "error": {"code": "VALIDATION_ERROR", "message": "Provide either 'files' or 'directory', not both."}}
+    if not files and not directory:
+        return {"success": False, "error": {"code": "VALIDATION_ERROR", "message": "Provide either 'files' or 'directory'."}}
+
+    if directory is not None:
+        try:
+            target_dir = fs_core.resolve_within_root(directory)
+        except ValueError as exc:
+            return {"success": False, "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}
+        if not target_dir.exists() or not target_dir.is_dir():
+            return {"success": False, "error": {"code": "NOT_FOUND", "message": f"Directory not found: {directory}"}}
+
+        normalized_ext = None
+        if extension:
+            normalized_ext = extension.lower()
+            if not normalized_ext.startswith("."):
+                normalized_ext = f".{normalized_ext}"
+
+        walker = target_dir.rglob("*") if recursive else target_dir.glob("*")
+        candidates = [
+            # as_posix() keeps expanded paths forward-slash-separated on every
+            # OS (notably Windows), matching fs_core.file_metadata's "path".
+            p.relative_to(settings.ROOT_DIR).as_posix() for p in sorted(walker)
+            if p.is_file() and (normalized_ext is None or p.suffix.lower() == normalized_ext)
+        ]
+    else:
+        candidates = list(files)
+
+    semaphore = asyncio.Semaphore(settings.BATCH_MAX_CONCURRENCY)
+
+    async def process_one(rel_path: str) -> dict:
+        async with semaphore:
+            try:
+                target = fs_core.resolve_within_root(rel_path)
+            except ValueError as exc:
+                return {"path": rel_path, "status": "error", "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}
+
+            if not target.exists() or not target.is_file():
+                return {"path": rel_path, "status": "error", "error": {"code": "NOT_FOUND", "message": f"File not found: {rel_path}"}}
+            if not fs_core.is_allowed_extension(target):
+                return {"path": rel_path, "status": "skipped", "reason": f"Extension '{target.suffix}' is not in ALLOWED_EXTENSIONS."}
+            if fs_core.exceeds_max_size(target):
+                return {"path": rel_path, "status": "skipped", "reason": f"File exceeds MAX_FILE_SIZE_BYTES ({settings.MAX_FILE_SIZE_BYTES})."}
+
+            try:
+                content = await asyncio.to_thread(fs_core.extract_text, target)
+            except Exception as exc:
+                return {"path": rel_path, "status": "error", "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Unable to process '{rel_path}': {exc}"}}
+
+            return {
+                "path": rel_path, "status": "success",
+                "result": {"content": content, "metadata": fs_core.file_metadata(target)},
+            }
+
+    results = await asyncio.gather(*(process_one(p) for p in candidates))
+
+    processed = sum(1 for r in results if r["status"] == "success")
+    failed = sum(1 for r in results if r["status"] == "error")
+    skipped = sum(1 for r in results if r["status"] == "skipped")
+
+    return {
+        "success": True,
+        "total_files": len(results),
+        "processed": processed,
+        "failed": failed,
+        "skipped": skipped,
+        "results": results,
+    }
 
 
 if __name__ == "__main__":
