@@ -110,11 +110,9 @@ async def test_discovery_includes_migrated_tools():
 
 
 async def test_health_route_returns_ok():
-    async with Client(server.mcp) as client:
-        # /health is a plain HTTP route, not an MCP tool -- exercised via
-        # Docker's healthcheck in Task 6, not the MCP client here. This test
-        # just confirms the route function itself returns the right body.
-        pass
+    # /health is a plain HTTP route, not an MCP tool -- exercised via
+    # Docker's healthcheck in Task 6, not the MCP client here. This test
+    # just confirms the route function itself returns the right body.
     response = await server.health(request=None)
     assert response.status_code == 200
     assert response.body == b'{"status":"ok"}'

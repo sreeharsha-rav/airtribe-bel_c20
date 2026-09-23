@@ -7,7 +7,8 @@ through langchain.mcp.MCPAdapter -- no direct fs_tools/fs_core import here.
 
 import asyncio
 import os
-from typing import Any, AsyncIterator, Sequence, cast
+from collections.abc import AsyncIterator, Sequence
+from typing import Any, cast
 
 from rich.console import Console, Group
 from rich.live import Live
@@ -65,9 +66,12 @@ SHOW_REASONING_DEFAULT = False
 def build_chat_model() -> BaseChatModel:
     if os.getenv("USE_SYSTEM_TRUST_STORE"):
         # Some sandboxes' default TLS trust store can't verify OpenRouter's
-        # cert chain even though outbound network access is fine (see
-        # task-7-report.md). Repointing SSL verification at the OS trust
-        # store fixes that -- but it's a real behavior change (it replaces
+        # cert chain even though outbound network access is fine -- confirmed
+        # via a live spike where a plain HTTPS call to OpenRouter failed
+        # certificate verification under this sandbox's bundled CA store but
+        # succeeded once repointed at the OS trust store. Repointing SSL
+        # verification at the OS trust store fixes that -- but it's a real
+        # behavior change (it replaces
         # certifi's CA bundle with the OS store, which can behave worse on a
         # slim container image with a sparse system trust store), so it's
         # opt-in via this env var rather than applied unconditionally to
@@ -148,10 +152,12 @@ async def clear_history(agent: CompiledStateGraph, config: RunnableConfig) -> No
 #
 # NOTE on the streaming call shape: the brief's literal reference code used
 # `stream = agent.stream_events(..., version="v3")` followed by
-# `async for kind, item in stream.interleave("messages")`. Task 7's live spike
-# (see task-7-report.md) found this fails -- `GraphRunStream.interleave()` is
-# a plain sync generator with no `__aiter__`, so `async for` over it is a
-# TypeError by construction. The async entry point (`astream_events`) returns
+# `async for kind, item in stream.interleave("messages")`. Confirmed via a
+# live spike against a real MCP server + model call that
+# `agent.stream_events(...).interleave(...)` doesn't work under the installed
+# langgraph/langchain versions -- `GraphRunStream.interleave()` is a plain
+# sync generator with no `__aiter__`, so `async for` over it is a TypeError
+# by construction. The async entry point (`astream_events`) returns
 # an `AsyncGraphRunStream`, which has no `.interleave()` at all -- it exposes
 # named async projections instead (`.messages`, `.values`, `.tool_calls`, ...).
 #
@@ -243,7 +249,7 @@ async def stream_assistant_reply(
                     if delta.get("name"):
                         buf["name"] = delta["name"]
                     if delta.get("args") is not None:
-                        buf["args"] = delta["args"]
+                        buf["args"] += delta["args"]
                 live.update(_render_turn(reasoning_buffer, assistant_text_buffer, tool_call_buffers))
 
         await stream.output()  # Drive the run to completion
@@ -262,7 +268,14 @@ async def run_chat_loop(agent: CompiledStateGraph, config: RunnableConfig, conso
     ))
 
     while True:
-        raw_input = await asyncio.to_thread(console.input, "\n[bold blue]You:[/bold blue] ")
+        try:
+            raw_input = await asyncio.to_thread(console.input, "\n[bold blue]You:[/bold blue] ")
+        except EOFError:
+            console.print(Panel("[yellow]Chat ended.[/yellow]", border_style="yellow"))
+            break
+        except KeyboardInterrupt:
+            console.print(Panel("[bold red]Exiting...[/bold red]", border_style="red"))
+            break
         user_message = raw_input.strip()
 
         if not user_message:

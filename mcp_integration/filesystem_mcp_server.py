@@ -63,14 +63,17 @@ def list_files(
         if not normalized_ext.startswith("."):
             normalized_ext = f".{normalized_ext}"
 
-    entries = []
-    for path in sorted(target.rglob("*")):
-        if not path.is_file():
-            continue
-        if normalized_ext and path.suffix.lower() != normalized_ext:
-            continue
-        entries.append(fs_core.file_metadata(path))
-    return entries
+    try:
+        entries = []
+        for path in sorted(target.rglob("*")):
+            if not path.is_file():
+                continue
+            if normalized_ext and path.suffix.lower() != normalized_ext:
+                continue
+            entries.append(fs_core.file_metadata(path))
+        return entries
+    except Exception as exc:
+        return [{"success": False, "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Unable to list '{directory}': {exc}"}}]
 
 
 @mcp.tool
@@ -90,7 +93,14 @@ def read_file(
             "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)},
         }
 
-    if not target.exists() or not target.is_file():
+    try:
+        missing = not target.exists() or not target.is_file()
+    except Exception as exc:
+        return {
+            "success": False, "filepath": filepath, "content": None, "metadata": None,
+            "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Could not access '{filepath}': {exc}"},
+        }
+    if missing:
         return {
             "success": False, "filepath": filepath, "content": None, "metadata": None,
             "error": {"code": "NOT_FOUND", "message": f"File not found: {filepath}"},
@@ -111,9 +121,17 @@ def read_file(
             "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Could not read '{filepath}': {exc}"},
         }
 
+    try:
+        metadata = fs_core.file_metadata(target)
+    except Exception as exc:
+        return {
+            "success": False, "filepath": filepath, "content": None, "metadata": None,
+            "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Could not read metadata for '{filepath}': {exc}"},
+        }
+
     return {
         "success": True, "filepath": filepath, "content": content,
-        "metadata": fs_core.file_metadata(target), "error": None,
+        "metadata": metadata, "error": None,
     }
 
 
@@ -182,12 +200,21 @@ def write_file(
     except ValueError as exc:
         return {"success": False, "filepath": filepath, "error": {"code": "PATH_ESCAPES_ROOT", "message": str(exc)}}
 
-    if target.is_dir():
+    try:
+        is_dir = target.is_dir()
+        already_exists = target.exists()
+    except Exception as exc:
+        return {
+            "success": False, "filepath": filepath,
+            "error": {"code": "FILE_PROCESSING_ERROR", "message": f"Could not access '{filepath}': {exc}"},
+        }
+
+    if is_dir:
         return {
             "success": False, "filepath": filepath,
             "error": {"code": "VALIDATION_ERROR", "message": f"Cannot write to '{filepath}': it is a directory."},
         }
-    if target.exists():
+    if already_exists:
         return {
             "success": False, "filepath": filepath,
             "error": {"code": "VALIDATION_ERROR", "message": f"Refusing to overwrite existing file: {filepath}"},

@@ -84,8 +84,8 @@ Settings, sourced from `.env` (local dev) or `docker-compose.yml`'s
 | Setting | Purpose | Example |
 |---|---|---|
 | `ROOT_DIR` | sandbox root for all filesystem tools | `sample_data/resumes` |
-| `ALLOWED_EXTENSIONS` | extensions the tools will read/process | `.txt,.docx,.pdf` |
-| `MAX_FILE_SIZE_BYTES` | files larger than this are skipped/rejected | `10485760` |
+| `ALLOWED_EXTENSIONS` | extensions the tools will read/process (enforced only by `batch_process`) | `.txt,.docx,.pdf` |
+| `MAX_FILE_SIZE_BYTES` | files larger than this are skipped/rejected (enforced only by `batch_process`) | `10485760` |
 | `BATCH_MAX_CONCURRENCY` | concurrent file ops inside `batch_process` | `4` |
 | `WATCH_POLL_INTERVAL_SECONDS` | default poll interval for `start_watch` | `5` |
 | `LOG_LEVEL` | `CustomLogger` verbosity | `INFO` |

@@ -100,3 +100,4 @@ async def test_agent_discovers_and_calls_mcp_tool(running_server):
 
     tool_messages = [m for m in result["messages"] if isinstance(m, matching_agent.ToolMessage)]
     assert tool_messages, "expected the fake model's tool call to round-trip through the real MCP server"
+    assert "note.txt" in str(tool_messages[0].content)

@@ -100,18 +100,25 @@ def _scan(state: "_WatchState") -> dict[str, int]:
     # deleted watch directory surfaces as the runtime failure spec §7
     # describes, rather than the watch going silently and permanently inert.
     if not state.directory.is_dir():
-        raise FileNotFoundError(f"Watched directory no longer exists: {state.directory}")
+        raise FileNotFoundError(f"Watched directory is no longer accessible: {state.directory}")
     walker = state.directory.rglob("*") if state.recursive else state.directory.glob("*")
     found = {}
     for path in walker:
-        if not path.is_file():
+        try:
+            if not path.is_file():
+                continue
+            if state.allowed_extensions and path.suffix.lower() not in state.allowed_extensions:
+                continue
+            # as_posix() keeps the reported path forward-slash-separated on every
+            # OS (notably Windows), matching file_metadata's convention -- see the
+            # comment there.
+            found[path.relative_to(state.directory).as_posix()] = path.stat().st_size
+        except OSError:
+            # A file listed by the walker can vanish, get renamed, or be
+            # mid-write by the time we get to is_file()/stat() -- a normal
+            # race for a directory being actively watched. Skip just this
+            # entry rather than letting it kill the whole watch.
             continue
-        if state.allowed_extensions and path.suffix.lower() not in state.allowed_extensions:
-            continue
-        # as_posix() keeps the reported path forward-slash-separated on every
-        # OS (notably Windows), matching file_metadata's convention -- see the
-        # comment there.
-        found[path.relative_to(state.directory).as_posix()] = path.stat().st_size
     return found
 
 
@@ -140,7 +147,9 @@ def _watch_loop(state: "_WatchState") -> None:
             state.stop_event.wait(state.poll_interval_seconds)
     except Exception as exc:
         with state.lock:
-            state.pending_events.append({"type": "error", "message": f"Watch loop failed: {exc}"})
+            state.pending_events.append(
+                {"type": "error", "code": "WATCH_ERROR", "message": f"Watch loop failed: {exc}"}
+            )
     finally:
         with state.lock:
             state.active = False
@@ -173,7 +182,17 @@ def start_watch(
         poll_interval_seconds=poll_interval_seconds or settings.WATCH_POLL_INTERVAL_SECONDS,
     )
     now = datetime.now(timezone.utc).isoformat()
-    for rel_path, size in _scan(state).items():
+    try:
+        initial_scan = _scan(state)
+    except Exception as exc:
+        return {
+            "success": False,
+            "error": {
+                "code": "WATCH_ERROR",
+                "message": f"Could not start watching '{directory_path}': {exc}",
+            },
+        }
+    for rel_path, size in initial_scan.items():
         state.known[rel_path] = {"size": size, "stable": True, "detected_at": now}
 
     watch_id = uuid.uuid4().hex

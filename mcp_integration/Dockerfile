@@ -12,6 +12,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --package mcp-integration --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app/mcp_integration
 
 EXPOSE 8000

@@ -63,9 +63,9 @@ REPL commands: `clear` (wipe chat history), `load` (show previous history),
 uv run pytest tests/ -v
 ```
 
-`tests/test_mcp_server.py`, `test_batch_process.py`, and
-`test_watch_directory.py` run against the `FastMCP` server in-process (no
-Docker needed). `tests/test_matching_agent_mcp.py` spins up a real local HTTP
+`tests/test_mcp_server.py`, `tests/test_batch_process.py`, and
+`tests/test_watch_directory.py` run against the `FastMCP` server in-process
+(no Docker needed). `tests/test_matching_agent_mcp.py` spins up a real local HTTP
 instance of the server and connects to it through `MCPAdapter`, with the chat
 model stubbed -- no live `OPENROUTER_API_KEY` required to run the suite.
 
