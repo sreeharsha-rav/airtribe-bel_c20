@@ -4,7 +4,7 @@ An MCP-based rebuild of `llm_file_assistant`'s filesystem tooling: the
 sandboxed file tools move out of a directly-imported LangChain tool module
 and behind a standalone **Filesystem MCP Server**, and the chat agent
 (**`matching_agent.py`**) is refactored to discover and call those tools
-exclusively through an MCP client — no direct filesystem access from the
+exclusively through an MCP client -- no direct filesystem access from the
 agent's primary path.
 
 Two processes:
@@ -20,11 +20,10 @@ sample_data/resumes/
 ```
 
 Full design rationale, tool specs, error handling, and the phased
-implementation plan live in [`docs/spec.md`](docs/spec.md).
-
-**Status**: design spec complete, implementation in progress. This README
-will be filled in with concrete setup/run instructions as `filesystem_mcp_server.py`,
-`matching_agent.py`, and the Docker packaging land.
+implementation plan live in [`docs/spec.md`](docs/spec.md);
+[`docs/architecture.md`](docs/architecture.md) and
+[`docs/workflow-diagram.md`](docs/workflow-diagram.md) cover the runtime
+picture in more depth.
 
 ## Prerequisites
 
@@ -33,7 +32,43 @@ will be filled in with concrete setup/run instructions as `filesystem_mcp_server
 - Docker (to run the MCP server)
 - An [OpenRouter](https://openrouter.ai/) API key (agent side)
 
-## Planned layout
+## Setup
 
-See [`docs/spec.md`](docs/spec.md) §3 for the full repository layout and §14
-for the phase-by-phase build order.
+```bash
+cp sample.env .env
+# fill in OPENROUTER_API_KEY (and optionally LANGSMITH_*) in .env
+uv sync
+```
+
+## Running
+
+Start the MCP server (Docker):
+
+```bash
+docker compose up --build
+```
+
+In a second terminal, run the agent (always on the host):
+
+```bash
+uv run python matching_agent.py
+```
+
+REPL commands: `clear` (wipe chat history), `load` (show previous history),
+`reasoning` (toggle showing the model's reasoning), `exit`/`quit`.
+
+## Testing
+
+```bash
+uv run pytest tests/ -v
+```
+
+`tests/test_mcp_server.py`, `test_batch_process.py`, and
+`test_watch_directory.py` run against the `FastMCP` server in-process (no
+Docker needed). `tests/test_matching_agent_mcp.py` spins up a real local HTTP
+instance of the server and connects to it through `MCPAdapter`, with the chat
+model stubbed -- no live `OPENROUTER_API_KEY` required to run the suite.
+
+## Repository layout
+
+See [`docs/spec.md`](docs/spec.md) §3.
