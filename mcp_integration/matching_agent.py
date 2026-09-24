@@ -58,7 +58,7 @@ SYSTEM_PROMPT = (
     "know instead of guessing."
 )
 DEFAULT_THREAD_ID = "thread_001"
-SHOW_REASONING_DEFAULT = False
+SHOW_REASONING_DEFAULT = True
 
 
 # --- Agent setup -------------------------------------------------------------
@@ -96,6 +96,21 @@ def build_thread_config(thread_id: str = DEFAULT_THREAD_ID) -> RunnableConfig:
     return {"configurable": {"thread_id": thread_id}}
 
 
+def _build_tool_provenance(tools: Sequence[BaseTool]) -> dict[str, str | None]:
+    """Maps each tool's name to a display label for its source (e.g. "MCP (server-name)"),
+    or None when it carries no MCP metadata (langchain.mcp.as_langchain_tool sets
+    tool.metadata = {"mcp": {"server": {...}, ...}} on every tool it returns)."""
+    provenance: dict[str, str | None] = {}
+    for tool in tools:
+        mcp_meta = (tool.metadata or {}).get("mcp")
+        if not mcp_meta:
+            provenance[tool.name] = None
+            continue
+        server_name = mcp_meta.get("server", {}).get("name")
+        provenance[tool.name] = f"MCP ({server_name})" if server_name else "MCP"
+    return provenance
+
+
 # --- Message content helpers (unchanged from llm_file_assistant/main.py) ---
 
 def _split_message_blocks(message: AnyMessage) -> tuple[str, str]:
@@ -115,7 +130,13 @@ def _split_message_blocks(message: AnyMessage) -> tuple[str, str]:
     return "".join(reasoning_parts), "".join(text_parts)
 
 
-def render_history(console: Console, messages: Sequence[AnyMessage], *, show_reasoning: bool) -> None:
+def render_history(
+    console: Console,
+    messages: Sequence[AnyMessage],
+    *,
+    show_reasoning: bool,
+    tool_provenance: dict[str, str | None],
+) -> None:
     if not messages:
         console.print(Panel("[yellow]No chat history found.[/yellow]", border_style="yellow"))
         return
@@ -132,7 +153,9 @@ def render_history(console: Console, messages: Sequence[AnyMessage], *, show_rea
             if text:
                 console.print(Panel(Markdown(text), title="Assistant", border_style="green"))
             for tool_call in message.tool_calls or []:
-                console.print(f"[dim]Tool call: {tool_call['name']}({tool_call['args']})[/dim]")
+                label = tool_provenance.get(tool_call["name"])
+                prefix = f"Tool call [{label}]" if label else "Tool call"
+                console.print(f"[dim]{prefix}: {tool_call['name']}({tool_call['args']})[/dim]")
         elif isinstance(message, ToolMessage):
             _, text = _split_message_blocks(message)
             console.print(f"[dim]Tool result ({message.name}): {text}[/dim]")
@@ -191,20 +214,30 @@ async def _iter_message_deltas(item: AsyncChatModelStream) -> AsyncIterator[tupl
                 yield "tool_call", fields
 
 
-def _render_tool_calls(tool_call_buffers: dict[int, dict[str, str]]) -> list[Panel]:
+def _render_tool_calls(
+    tool_call_buffers: dict[int, dict[str, str]],
+    tool_provenance: dict[str, str | None],
+) -> list[Panel]:
     panels = []
     for buf in tool_call_buffers.values():
         name = buf.get("name") or "..."
         args = buf.get("args") or ""
-        panels.append(Panel(f"{name}({args})", title="Tool Call", border_style="yellow", style="dim"))
+        label = tool_provenance.get(name)
+        title = f"Tool Call · {label}" if label else "Tool Call"
+        panels.append(Panel(f"{name}({args})", title=title, border_style="yellow", style="dim"))
     return panels
 
 
-def _render_turn(reasoning_text: str, assistant_text: str, tool_call_buffers: dict[int, dict[str, str]] | None = None) -> Group:
+def _render_turn(
+    reasoning_text: str,
+    assistant_text: str,
+    tool_call_buffers: dict[int, dict[str, str]] | None,
+    tool_provenance: dict[str, str | None],
+) -> Group:
     renderables = []
     if reasoning_text:
         renderables.append(Panel(reasoning_text, title="Reasoning", border_style="magenta", style="dim italic"))
-    renderables.extend(_render_tool_calls(tool_call_buffers or {}))
+    renderables.extend(_render_tool_calls(tool_call_buffers or {}, tool_provenance))
     renderables.append(Panel(Markdown(assistant_text or "..."), title="Assistant", border_style="green"))
     return Group(*renderables)
 
@@ -216,6 +249,7 @@ async def stream_assistant_reply(
     console: Console,
     *,
     show_reasoning: bool,
+    tool_provenance: dict[str, str | None],
 ) -> None:
     """Streams the assistant's reply for a single user turn, live-updating the console.
 
@@ -234,7 +268,7 @@ async def stream_assistant_reply(
     tool_call_buffers: dict[int, dict[str, str]] = {}
     console.print()
 
-    with Live(_render_turn("", "", tool_call_buffers), refresh_per_second=10, console=console) as live:
+    with Live(_render_turn("", "", tool_call_buffers, tool_provenance), refresh_per_second=10, console=console) as live:
         async for item in stream.messages:
             async for delta_kind, delta in _iter_message_deltas(item):
                 if delta_kind == "reasoning":
@@ -250,14 +284,19 @@ async def stream_assistant_reply(
                         buf["name"] = delta["name"]
                     if delta.get("args") is not None:
                         buf["args"] += delta["args"]
-                live.update(_render_turn(reasoning_buffer, assistant_text_buffer, tool_call_buffers))
+                live.update(_render_turn(reasoning_buffer, assistant_text_buffer, tool_call_buffers, tool_provenance))
 
         await stream.output()  # Drive the run to completion
 
 
 # --- REPL ----------------------------------------------------------------------
 
-async def run_chat_loop(agent: CompiledStateGraph, config: RunnableConfig, console: Console) -> None:
+async def run_chat_loop(
+    agent: CompiledStateGraph,
+    config: RunnableConfig,
+    console: Console,
+    tool_provenance: dict[str, str | None],
+) -> None:
     show_reasoning = SHOW_REASONING_DEFAULT
 
     console.print(Panel(
@@ -288,7 +327,7 @@ async def run_chat_loop(agent: CompiledStateGraph, config: RunnableConfig, conso
             console.print(Panel("[bold yellow]Chat history cleared![/bold yellow]", border_style="yellow"))
             continue
         if user_message.lower() == "load":
-            render_history(console, get_history(agent, config), show_reasoning=show_reasoning)
+            render_history(console, get_history(agent, config), show_reasoning=show_reasoning, tool_provenance=tool_provenance)
             continue
         if user_message.lower() == "reasoning":
             show_reasoning = not show_reasoning
@@ -296,17 +335,20 @@ async def run_chat_loop(agent: CompiledStateGraph, config: RunnableConfig, conso
             console.print(Panel(f"[bold yellow]Reasoning display turned {status}.[/bold yellow]", border_style="yellow"))
             continue
 
-        await stream_assistant_reply(agent, config, user_message, console, show_reasoning=show_reasoning)
+        await stream_assistant_reply(
+            agent, config, user_message, console, show_reasoning=show_reasoning, tool_provenance=tool_provenance
+        )
 
 
 async def main() -> None:
     console = Console()
     async with MCPAdapter(settings.MCP_SERVER_URL) as adapter:
         tools = await adapter.list_tools()
+        tool_provenance = _build_tool_provenance(tools)
         agent = build_assistant_agent(tools)
         config = build_thread_config()
         try:
-            await run_chat_loop(agent, config, console)
+            await run_chat_loop(agent, config, console, tool_provenance)
         except KeyboardInterrupt:
             console.print("\n[bold red]Exiting...[/bold red]")
 
