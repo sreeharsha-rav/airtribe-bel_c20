@@ -1,0 +1,31 @@
+Bob Martinez
+DevOps / Platform Engineer
+bob.martinez@example.com | Austin, TX
+
+SUMMARY
+Platform Engineer with 6+ years of experience designing, deploying, and operating Kubernetes-based infrastructure on AWS. Expertise in CI/CD automation, Terraform IaC, container orchestration, and monitoring (Prometheus/Grafana). Proven ability to reduce incident detection time by 50% and accelerate environment provisioning.
+
+KEY SKILLS
+- Kubernetes (EKS, multi‑tenant clusters)
+- Terraform (IaC for AWS resources)
+- AWS (EC2, VPC, IAM, EKS)
+- Docker & container orchestration
+- CI/CD pipelines (GitHub Actions, canary deployments)
+- Monitoring & observability (Prometheus, Grafana)
+- Site reliability (on‑call rotation, incident response)
+
+PROFESSIONAL EXPERIENCE
+Platform Engineer, Cascade Analytics (2020‑Present)
+  • Designed and operate a multi‑tenant Kubernetes cluster on AWS EKS serving 30+ microservices.
+  • Developed Terraform modules enabling repeatable environment creation in <10 minutes.
+  • Built automated CI/CD pipelines with GitHub Actions, implementing canary rollouts on Kubernetes.
+  • Implemented Prometheus/Grafana monitoring, cutting incident detection time by 50%.
+
+Site Reliability Engineer, Bramblewood Systems (2017‑2020)
+  • Managed on‑call rotation for 200+ Docker containers.
+  • Automated AWS infrastructure provisioning using Terraform, replacing manual console processes.
+
+EDUCATION
+B.S. Information Systems, University of Texas at Austin
+
+SOURCE: engineering/devops_bob.docx

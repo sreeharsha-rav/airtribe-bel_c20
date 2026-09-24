@@ -1,0 +1,21 @@
+services:
+  filesystem-mcp-server:
+    build:
+      context: ..
+      dockerfile: mcp_integration/Dockerfile
+    container_name: filesystem-mcp-server
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8000}:${MCP_PORT:-8000}"
+    env_file:
+      - .env
+    environment:
+      - MCP_HOST=0.0.0.0
+    volumes:
+      - ./sample_data:/app/mcp_integration/sample_data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"MCP_PORT\",\"8000\")}/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
