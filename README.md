@@ -28,6 +28,8 @@ Repository for Airtribe assignments, batch C20 for Backend-Python.
 
 - [rag_profile_match](./rag_profile_match/): A RAG pipeline that matches candidate resumes to a job description. Resumes are section-aware chunked, LLM-extracted for metadata, and indexed into Qdrant with hybrid dense+sparse embeddings; job descriptions are matched via a hybrid RRF search with algorithmic must-have filtering and 0–100 ranked scoring. See [DESIGN.md](./rag_profile_match/DESIGN.md) for the full pipeline design with flow diagrams.
 
+- [high_concurrency_booking](./high_concurrency_booking/): A high-concurrency movie ticketing and seat reservation engine designed for BookMyShow-scale traffic surges. Features a 1NF–BCNF normalized relational schema, atomic conditional seat locking, dual-layer lost-hold prevention (lazy query evaluation + periodic reaper), idempotent payment webhook handling, and an automated multi-threaded concurrency verification suite.
+
 ## Prerequisites
 
 - Python 3.12+
