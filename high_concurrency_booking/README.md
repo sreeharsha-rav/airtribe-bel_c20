@@ -405,6 +405,8 @@ HIGH-CONCURRENCY BOOKING ENGINE: SQLALCHEMY VERIFICATION SUITE
 
 ```
 high_concurrency_booking/
+├── High_Concurrency_Booking_Engine_System_Design.pdf # Complete 10-page system design PDF (P1 & P2)
+├── generate_pdf.py         # Automated ReportLab PDF generator script
 ├── docker-compose.yml      # PostgreSQL 16 service, volume, & auto-init scripts
 ├── .env.example            # Environment configuration template
 ├── .env                    # Local environment variables

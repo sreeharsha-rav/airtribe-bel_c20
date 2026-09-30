@@ -23,6 +23,7 @@ dependencies = [
     "qdrant-client>=1.19.0",
     "ipykernel>=7.3.0",
     "sqlalchemy>=2.1.1",
+    "reportlab>=5.0.1",
 ]
 
 [tool.uv.workspace]
